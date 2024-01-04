@@ -1,13 +1,14 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { View, Button, Text, TextInput, SafeAreaView, TouchableWithoutFeedback, Keyboard } from "react-native";
 import loginStyles from "../styles/LoginStyles";
+import AuthContext from "../Contexts/AuthContext";
 
 
 // here will come the props for the Login View
 const loginProps = {}
 
-const Login = () => {
-    const [isLoggedIn, setIsLoggedIn] = useState(false)
+const Login = ({route, navigation}) => {
+    const { signIn } = useContext(AuthContext)
     const [userName, setUserName] = useState("nothing")
     const [Password, setPassword] = useState("no password")
     return (
@@ -39,8 +40,8 @@ const Login = () => {
                     style={loginStyles.buttonStyle}>
                     <Button
                         title="Login here"
-                        onPress={() => setIsLoggedIn(true)}
-                        disabled={isLoggedIn}
+                        onPress={() => signIn({userName, Password})}
+                        disabled={false}
                     />
                 </View>
             </SafeAreaView>
