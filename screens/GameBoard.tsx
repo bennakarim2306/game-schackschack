@@ -1,5 +1,5 @@
 import { useContext, useEffect } from "react";
-import { Alert, BackHandler, FlatList, Text, View } from "react-native";
+import { Alert, BackHandler, FlatList, Text, TouchableOpacity, View } from "react-native";
 import GameContext from "../Contexts/GameContext";
 
 
@@ -26,15 +26,11 @@ const GameBoard = () => {
         return () => backHandler.remove();
       }, []);
     return (
-        <FlatList
-        data = {[1,2,3,4,5]}
-        renderItem={(item) => (<View style={{height: 50, width: 50}}><Text>Hi</Text></View>)}
-        keyExtractor={(item) => item.toString()}
-            >
+      <TouchableOpacity>
             <Text>
                 here is the new view
             </Text>
-        </FlatList>
+      </TouchableOpacity>
     );
 }
 

@@ -9,7 +9,7 @@ const registerAccountStyles = StyleSheet.create({
         justifyContent: "space-around"
     },
     textInputStyle: {
-        alignSelf: "center"
+        alignSelf: "center",
     },
     textStyle: {
         alignSelf: "center",
@@ -26,7 +26,7 @@ const registerAccountStyles = StyleSheet.create({
         fontSize: 50,
         fontWeight: "600",
         color: "#18B76C"
-    }
+    },
 })
 
 export default registerAccountStyles;

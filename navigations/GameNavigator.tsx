@@ -3,8 +3,8 @@ import Profile from "../screens/Profile";
 import GameStart from "../screens/GameStart";
 import FriendsList from "../screens/FriendsList";
 import Ionicons from '@expo/vector-icons/Ionicons';
-import React, { useMemo, useReducer, useState } from "react";
-import { Image, View } from "react-native";
+import React, { useEffect, useMemo, useReducer, useState } from "react";
+import { Alert, BackHandler, Image, View } from "react-native";
 import GameContext from "../Contexts/GameContext";
 import InGameNavigator from "./InGameNavigator";
 
@@ -44,6 +44,26 @@ const GameNavigator = () => {
       }), 
       []
     );
+    useEffect(() => {
+        const backAction = () => {
+          Alert.alert('Hold on!', 'Are you sure you want to leave the application?', [
+            {
+              text: 'Cancel',
+              onPress: () => null,
+              style: 'cancel',
+            },
+            {text: 'YES', onPress: () => BackHandler.exitApp()},
+          ]);
+          return true;
+        };
+    
+        const backHandler = BackHandler.addEventListener(
+          'hardwareBackPress',
+          backAction,
+        );
+    
+        return () => backHandler.remove();
+      }, []);
     return (
         <GameContext.Provider value={gameContext}>
             {state.gameStarted === false ? <GameBottomNavigator.Navigator
