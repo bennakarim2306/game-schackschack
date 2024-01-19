@@ -9,18 +9,18 @@ const loginProps = {}
 
 const Login = ({route, navigation}) => {
     const { signIn } = useContext(AuthContext)
-    const [userName, setUserName] = useState("nothing")
-    const [Password, setPassword] = useState("no password")
+    const [email, setEmail] = useState("nothing")
+    const [password, setPassword] = useState("no password")
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
             <SafeAreaView style={loginStyles.loginViewStyle}>
                 <Text
                     style={loginStyles.textStyle}>
-                    User name
+                    Email
                 </Text>
                 <TextInput
                     style={loginStyles.textInputStyle}
-                    onChangeText={(text) => setUserName(text)}
+                    onChangeText={(text) => setEmail(text)}
                     placeholder="type something here"
                 // defaultValue="text input for userName"
                 >
@@ -31,7 +31,7 @@ const Login = ({route, navigation}) => {
                 </Text>
                 <TextInput
                     style={loginStyles.textInputStyle}
-                    onChangeText={(text) => setUserName(text)}
+                    onChangeText={(text) => setPassword(text)}
                     placeholder="type something here"
                 // defaultValue="text input for password"
                 >
@@ -40,7 +40,7 @@ const Login = ({route, navigation}) => {
                     style={loginStyles.buttonStyle}>
                     <Button
                         title="Login here"
-                        onPress={() => signIn({userName, Password})}
+                        onPress={() => signIn({email, password})}
                         disabled={false}
                     />
                 </View>
