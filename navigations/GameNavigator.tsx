@@ -2,7 +2,6 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Profile from "../screens/Profile";
 import GameStart from "../screens/GameStart";
 import FriendsList from "../screens/FriendsList";
-import Ionicons from '@expo/vector-icons/Ionicons';
 import React, { useEffect, useMemo, useReducer, useState } from "react";
 import { Alert, BackHandler, Image, View } from "react-native";
 import GameContext from "../Contexts/GameContext";
@@ -11,15 +10,15 @@ import InGameNavigator from "./InGameNavigator";
 const GameBottomNavigator = createBottomTabNavigator();
 
 
-const GameNavigator = () => {
+const GameNavigator = ({ route, navigation }) => {
 
     const [state, dispatch] = useReducer((prevState, action) => {
         switch (action.type) {
             case 'GAME_STARTED':
                 return {
-                  ...prevState,
-                  gameStarted: action.gameStarted,
-                  gameId: action.gameId
+                    ...prevState,
+                    gameStarted: action.gameStarted,
+                    gameId: action.gameId
                 };
             case 'GAME_STOPPED':
                 return {
@@ -34,36 +33,36 @@ const GameNavigator = () => {
     })
     const gameContext = useMemo(() => ({
         startGame: async (data) => {
-          // here will come the logic for starting the game
-          // for now we will just passby the gameId
-          dispatch({ type: 'GAME_STARTED', gameId: 'dummy-game-id', gameStarted: true })
+            // here will come the logic for starting the game
+            // for now we will just passby the gameId
+            dispatch({ type: 'GAME_STARTED', gameId: 'dummy-game-id', gameStarted: true })
         },
         stopGame: async (data) => {
-            dispatch({ type: 'GAME_STOPPED', gameId: null, gameStarted: false})
-        }
-      }), 
-      []
+            dispatch({ type: 'GAME_STOPPED', gameId: null, gameStarted: false })
+        },
+    }),
+        []
     );
     useEffect(() => {
         const backAction = () => {
-          Alert.alert('Hold on!', 'Are you sure you want to leave the application?', [
-            {
-              text: 'Cancel',
-              onPress: () => null,
-              style: 'cancel',
-            },
-            {text: 'YES', onPress: () => BackHandler.exitApp()},
-          ]);
-          return true;
+            Alert.alert('Hold on!', 'Are you sure you want to leave the application?', [
+                {
+                    text: 'Cancel',
+                    onPress: () => null,
+                    style: 'cancel',
+                },
+                { text: 'YES', onPress: () => BackHandler.exitApp() },
+            ]);
+            return true;
         };
-    
+
         const backHandler = BackHandler.addEventListener(
-          'hardwareBackPress',
-          backAction,
+            'hardwareBackPress',
+            backAction,
         );
-    
+
         return () => backHandler.remove();
-      }, []);
+    }, []);
     return (
         <GameContext.Provider value={gameContext}>
             {state.gameStarted === false ? <GameBottomNavigator.Navigator
@@ -76,7 +75,7 @@ const GameNavigator = () => {
                                 <Image
                                     source={require('../assets/BottomTabBarIcons/user.png')}
                                     fadeDuration={0}
-                                    style={focused ? { width: 50, height: 50 } : {width: 40, height: 40}}
+                                    style={focused ? { width: 50, height: 50 } : { width: 40, height: 40 }}
                                 />
                             </View>;
                             const userIcon = '../assets/BottomTabBarIcons/user.png'
@@ -85,7 +84,7 @@ const GameNavigator = () => {
                                 <Image
                                     source={require('../assets/BottomTabBarIcons/board-game.png')}
                                     fadeDuration={0}
-                                    style={focused ? { width: 50, height: 50 } : {width: 40, height: 40}}
+                                    style={focused ? { width: 50, height: 50 } : { width: 40, height: 40 }}
                                 />
                             </View>;
                         } else {
@@ -93,7 +92,7 @@ const GameNavigator = () => {
                                 <Image
                                     source={require('../assets/BottomTabBarIcons/friends.png')}
                                     fadeDuration={0}
-                                    style={focused ? { width: 50, height: 50 } : {width: 40, height: 40}}
+                                    style={focused ? { width: 50, height: 50 } : { width: 40, height: 40 }}
                                 />
                             </View>;
                         }
@@ -117,7 +116,7 @@ const GameNavigator = () => {
                 </GameBottomNavigator.Screen>
 
             </GameBottomNavigator.Navigator>
-            : <InGameNavigator />}
+                : <InGameNavigator />}
         </GameContext.Provider>
     );
 }
