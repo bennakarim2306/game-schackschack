@@ -13,7 +13,6 @@ import { Alert } from 'react-native';
 const Stack = createNativeStackNavigator();
 
 const MainStackNavigator = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [state, dispatch] = useReducer(
     (prevState, action) => {
       switch (action.type) {
@@ -52,7 +51,7 @@ const MainStackNavigator = () => {
       let userToken;
 
       try {
-        userToken = await SecureStore.getItemAsync('userToken');
+        userToken = null;
       } catch (e) {
         // Restoring token failed
       }
@@ -69,6 +68,7 @@ const MainStackNavigator = () => {
 
   const authContext = useMemo(
     () => ({
+      getUserToken: () => state.userToken,
       signIn: async (data) => {
         // In a production app, we need to send some data (usually username, password) to server and get a token
         // We will also need to handle errors if sign in failed
@@ -95,7 +95,8 @@ const MainStackNavigator = () => {
           }
           else {
             const jsonResponse = await response.json();
-            console.log("received data from server for registration: " + JSON.stringify(jsonResponse))
+            console.log("received data from server for login: " + JSON.stringify(jsonResponse.token))
+            await SecureStore.setItemAsync('userToken', jsonResponse.token)
             dispatch({ type: 'SIGN_IN', token: jsonResponse.token });
           }
         })
