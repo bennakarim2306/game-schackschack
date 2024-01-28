@@ -32,7 +32,6 @@ const ChatNavigator = () => {
                 return {
                     ...prevState
                 }
-
             }
         }
     }, {
@@ -84,11 +83,6 @@ const ChatNavigator = () => {
                 screenOptions={{
                     headerBackTitleVisible: true
                 }}
-                screenListeners={({navigation}) => ({
-                    state: (e) => {
-                        console.log(`State changed :: ${JSON.stringify(state.chat)}`)
-                    }
-                })}
                 >
                 <ChatStackNavigator.Screen name="FriendsList" component={FriendsList}></ChatStackNavigator.Screen>
                 <ChatStackNavigator.Screen name="Chat" component={Chat} options={({route}) => ({title: route.params.title})}></ChatStackNavigator.Screen>

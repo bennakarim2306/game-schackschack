@@ -4,7 +4,7 @@ import { Button, FlatList, Text, TextInput, TouchableOpacity } from "react-nativ
 import * as SecureStore from 'expo-secure-store'
 
 const Chat = ({ navigation, route }) => {
-    console.log(`Rendering Chat with messages ${JSON.stringify(route.params.messages)}`)
+    // console.log(`Rendering Chat with messages ${JSON.stringify(route.params.messages)}`)
     const { updateChat, getSocket } = useContext(ChatContext)
     const socket = useRef()
     const [messageToSend, setMessageToSend] = useState("")
@@ -47,7 +47,8 @@ const Chat = ({ navigation, route }) => {
 
     const submitMessage = () => {
         console.log(`Submitting message for contact: ${route.params.contact} and content: ${messageToSend}`)
-        updateChat({isSent: true, contact: route.params.contact, message: messageToSend})
+        // TODO check why this update of the state of stack nav is creating weired effects
+        //updateChat({isSent: true, contact: route.params.contact, message: messageToSend})
         dispatch({ type: 'ADD_MESSAGE',isSent: true, contact: route.params.contact, message: messageToSend})
         setMessageToSend("")
     }
