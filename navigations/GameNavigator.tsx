@@ -6,6 +6,7 @@ import React, { useEffect, useMemo, useReducer, useState } from "react";
 import { Alert, BackHandler, Image, View } from "react-native";
 import GameContext from "../Contexts/GameContext";
 import InGameNavigator from "./InGameNavigator";
+import ChatNavigator from "./ChatNavigator";
 
 const GameBottomNavigator = createBottomTabNavigator();
 
@@ -69,6 +70,7 @@ const GameNavigator = ({ route, navigation }) => {
                 initialRouteName="GameStart"
                 backBehavior="history"
                 screenOptions={({ route }) => ({
+                    headerShown: false,
                     tabBarIcon: ({ focused, color, size }) => {
                         if (route.name === 'Profile') {
                             return <View >
@@ -112,7 +114,7 @@ const GameNavigator = ({ route, navigation }) => {
                 </GameBottomNavigator.Screen>
                 <GameBottomNavigator.Screen name="GameStart" component={GameStart}>
                 </GameBottomNavigator.Screen>
-                <GameBottomNavigator.Screen name="FriendsList" component={FriendsList}>
+                <GameBottomNavigator.Screen name="ChatNavigator" component={ChatNavigator}>
                 </GameBottomNavigator.Screen>
 
             </GameBottomNavigator.Navigator>

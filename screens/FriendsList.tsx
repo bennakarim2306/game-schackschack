@@ -3,15 +3,13 @@ import { Alert, Button, FlatList, GestureResponderEvent, Text, TextInput, Toucha
 import FriendsContext from "../Contexts/FriendsContext";
 import * as SecureStore from 'expo-secure-store'
 import io from "socket.io-client";
+import ChatContext from "../Contexts/ChatContext";
 
-const FriendsList = () => {
+const FriendsList = ({navigation, route}) => {
     // TODO implement a better typings
-    const socket = useRef();
+    const { getChatWithContact, initSocket } = useContext(ChatContext)
     const [contactToAdd, setContactToAdd] = useState("");
-    const [contactToMessage, setContactToMesage] = useState("")
-    const [messageToSend, setMessageToSend] = useState("")
     const [token, setToken] = useState("")
-    const [messageReceived,setMessageReceived] = useState("")
      
     
     // works but keeps reconnecting const socket = io("http://192.168.1.21:3000")
@@ -32,12 +30,6 @@ const FriendsList = () => {
                     ...prevState,
                     friendsList: action.friendsList
                 }
-            case 'SET_PRIVATE_MESSAGE': {
-                return {
-                    ...prevState,
-                    message: prevState.message == null ? action.message : prevState.message + "\n" + action.message
-                }
-            }
 
         }
     }, {
@@ -61,15 +53,10 @@ const FriendsList = () => {
                 body: null,
             })
                 .then(async response => {
+                    initSocket()
                     const jsonResponse = await response.json();
                     console.log(`received response from server ${JSON.stringify(jsonResponse)}`)
                     // setSocket(io("http://192.168.1.21:3000"))
-                    socket.current = io("http://192.168.1.21:3000")
-                    socket.current.on("response from server", message => console.log("Received socket message from backend " + message))
-                    socket.current.on("private-message-from-server", message => {
-                        dispatch({type: "SET_PRIVATE_MESSAGE", message: message.from.sub + ": " + message.message})
-                    })
-                    socket.current.emit("register-client", {token: token})
                     if (response.status !== 200) {
                         Alert.alert(
                             'issue with the friends list',
@@ -98,11 +85,6 @@ const FriendsList = () => {
 
     }, [])
 
-    const submitMessage = () => {
-        // socket.on("response from server", message => console.log("Received socket message from backend " + message))
-        socket.current.emit("private-message", {token: token, to: contactToMessage, message: messageToSend})
-        setMessageToSend("")
-    }
 
     return (
         <FriendsContext.Provider value={friendsContext}>
@@ -112,27 +94,17 @@ const FriendsList = () => {
                     <TouchableOpacity
                         key={item.email}
                         onPress={event => {
-                            console.log(`selected contact ${item.email}`)
-                            setContactToMesage(item.email)
+                            navigation.navigate("Chat", {messages: getChatWithContact(item.email).messages, title: `Chat with ${item.email}`, contact: item.email})
+                            //navigation.navigate("Chat", {contact: item.email, title: `Chat with ${item.email}`})
                         }}>
                         <Text>
                             {item.email}
                         </Text>
                     </TouchableOpacity>)}>
             </FlatList>
-            <Text>
-                    {state.message}
-                </Text>
-            <TextInput
-                style={{}}
-                onChangeText={(text) => setMessageToSend(text)}
-                placeholder="type something here"
-                value={messageToSend}
-            // defaultValue="text input for userName"
-            />
             <Button
                         title="Add a friend"
-                        onPress={() => submitMessage()}
+                        onPress={() => {}}
                         disabled={false}
                     />
         </FriendsContext.Provider>
