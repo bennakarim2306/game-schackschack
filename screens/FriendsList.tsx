@@ -1,19 +1,16 @@
-import { useContext, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { MutableRefObject, useContext, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { Alert, Button, FlatList, GestureResponderEvent, Text, TextInput, TouchableOpacity, View } from "react-native";
 import FriendsContext from "../Contexts/FriendsContext";
 import * as SecureStore from 'expo-secure-store'
-import io from "socket.io-client";
+import friendsListStyle from "../styles/FriendsListStyles";
+import FriendsListStyles from "../styles/FriendsListStyles";
 
-const FriendsList = () => {
+const FriendsList = ({ navigation, route }) => {
     // TODO implement a better typings
-    const socket = useRef();
     const [contactToAdd, setContactToAdd] = useState("");
-    const [contactToMessage, setContactToMesage] = useState("")
-    const [messageToSend, setMessageToSend] = useState("")
     const [token, setToken] = useState("")
-    const [messageReceived,setMessageReceived] = useState("")
-     
-    
+
+
     // works but keeps reconnecting const socket = io("http://192.168.1.21:3000")
     const [state, dispatch] = useReducer((prevState, action) => {
         switch (action.type) {
@@ -32,22 +29,16 @@ const FriendsList = () => {
                     ...prevState,
                     friendsList: action.friendsList
                 }
-            case 'SET_PRIVATE_MESSAGE': {
-                return {
-                    ...prevState,
-                    message: prevState.message == null ? action.message : prevState.message + "\n" + action.message
-                }
-            }
-
         }
     }, {
         friendsList: [],
-        message: null
+        message: null,
+        chat: []
     });
 
     useEffect(() => {
-        console.log("USE EFFECT USE EFFECT |||||||||||||||||")
         const getFriendsList = async () => {
+            console.log(`FriendsList getFriendsList called`)
             const token = await SecureStore.getItemAsync("userToken");
             setToken(token)
             console.log(`Sending request to get friendsList with token ${JSON.stringify(token)}`)
@@ -64,12 +55,6 @@ const FriendsList = () => {
                     const jsonResponse = await response.json();
                     console.log(`received response from server ${JSON.stringify(jsonResponse)}`)
                     // setSocket(io("http://192.168.1.21:3000"))
-                    socket.current = io("http://192.168.1.21:3000")
-                    socket.current.on("response from server", message => console.log("Received socket message from backend " + message))
-                    socket.current.on("private-message-from-server", message => {
-                        dispatch({type: "SET_PRIVATE_MESSAGE", message: message.from.sub + ": " + message.message})
-                    })
-                    socket.current.emit("register-client", {token: token})
                     if (response.status !== 200) {
                         Alert.alert(
                             'issue with the friends list',
@@ -81,7 +66,7 @@ const FriendsList = () => {
                         dispatch({ type: 'FRIENDS_LIST_GATHERED', friendsList: jsonResponse.friends });
                     }
                     console.log(`Calling socket IO`)
-                    
+
                 })
                 .catch(e => {
                     Alert.alert(
@@ -98,11 +83,6 @@ const FriendsList = () => {
 
     }, [])
 
-    const submitMessage = () => {
-        // socket.on("response from server", message => console.log("Received socket message from backend " + message))
-        socket.current.emit("private-message", {token: token, to: contactToMessage, message: messageToSend})
-        setMessageToSend("")
-    }
 
     return (
         <FriendsContext.Provider value={friendsContext}>
@@ -112,29 +92,21 @@ const FriendsList = () => {
                     <TouchableOpacity
                         key={item.email}
                         onPress={event => {
-                            console.log(`selected contact ${item.email}`)
-                            setContactToMesage(item.email)
-                        }}>
+                            // socket.current?.removeListener("private-message-from-server", socketPrivateMessageCB)
+                            navigation.navigate("Chat", { messages: state.chat[item.email]?.messages, title: `Chat with ${item.email}`, contact: item.email })
+                            //navigation.navigate("Chat", {contact: item.email, title: `Chat with ${item.email}`})
+                        }}
+                        style={FriendsListStyles.friendBox}>
                         <Text>
                             {item.email}
                         </Text>
                     </TouchableOpacity>)}>
             </FlatList>
-            <Text>
-                    {state.message}
-                </Text>
-            <TextInput
-                style={{}}
-                onChangeText={(text) => setMessageToSend(text)}
-                placeholder="type something here"
-                value={messageToSend}
-            // defaultValue="text input for userName"
-            />
             <Button
-                        title="Add a friend"
-                        onPress={() => submitMessage()}
-                        disabled={false}
-                    />
+                title="Add a friend"
+                onPress={() => { }}
+                disabled={false}
+            />
         </FriendsContext.Provider>
 
     );
