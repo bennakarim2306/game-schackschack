@@ -1,17 +1,15 @@
-import { useContext, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { MutableRefObject, useContext, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { Alert, Button, FlatList, GestureResponderEvent, Text, TextInput, TouchableOpacity, View } from "react-native";
 import FriendsContext from "../Contexts/FriendsContext";
 import * as SecureStore from 'expo-secure-store'
-import io from "socket.io-client";
-import ChatContext from "../Contexts/ChatContext";
+import io, { Socket } from "socket.io-client";
 
-const FriendsList = ({navigation, route}) => {
+const FriendsList = ({ navigation, route }) => {
     // TODO implement a better typings
-    const { getChatWithContact, initSocket } = useContext(ChatContext)
     const [contactToAdd, setContactToAdd] = useState("");
     const [token, setToken] = useState("")
-     
-    
+
+
     // works but keeps reconnecting const socket = io("http://192.168.1.21:3000")
     const [state, dispatch] = useReducer((prevState, action) => {
         switch (action.type) {
@@ -30,16 +28,16 @@ const FriendsList = ({navigation, route}) => {
                     ...prevState,
                     friendsList: action.friendsList
                 }
-
         }
     }, {
         friendsList: [],
-        message: null
+        message: null,
+        chat: []
     });
 
     useEffect(() => {
-        console.log("USE EFFECT USE EFFECT |||||||||||||||||")
         const getFriendsList = async () => {
+            console.log(`FriendsList getFriendsList called`)
             const token = await SecureStore.getItemAsync("userToken");
             setToken(token)
             console.log(`Sending request to get friendsList with token ${JSON.stringify(token)}`)
@@ -53,7 +51,6 @@ const FriendsList = ({navigation, route}) => {
                 body: null,
             })
                 .then(async response => {
-                    initSocket()
                     const jsonResponse = await response.json();
                     console.log(`received response from server ${JSON.stringify(jsonResponse)}`)
                     // setSocket(io("http://192.168.1.21:3000"))
@@ -68,7 +65,7 @@ const FriendsList = ({navigation, route}) => {
                         dispatch({ type: 'FRIENDS_LIST_GATHERED', friendsList: jsonResponse.friends });
                     }
                     console.log(`Calling socket IO`)
-                    
+
                 })
                 .catch(e => {
                     Alert.alert(
@@ -94,7 +91,8 @@ const FriendsList = ({navigation, route}) => {
                     <TouchableOpacity
                         key={item.email}
                         onPress={event => {
-                            navigation.navigate("Chat", {messages: getChatWithContact(item.email).messages, title: `Chat with ${item.email}`, contact: item.email})
+                            // socket.current?.removeListener("private-message-from-server", socketPrivateMessageCB)
+                            navigation.navigate("Chat", { messages: state.chat[item.email]?.messages, title: `Chat with ${item.email}`, contact: item.email})
                             //navigation.navigate("Chat", {contact: item.email, title: `Chat with ${item.email}`})
                         }}>
                         <Text>
@@ -103,10 +101,10 @@ const FriendsList = ({navigation, route}) => {
                     </TouchableOpacity>)}>
             </FlatList>
             <Button
-                        title="Add a friend"
-                        onPress={() => {}}
-                        disabled={false}
-                    />
+                title="Add a friend"
+                onPress={() => { }}
+                disabled={false}
+            />
         </FriendsContext.Provider>
 
     );

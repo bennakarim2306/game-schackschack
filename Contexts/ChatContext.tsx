@@ -1,6 +1,8 @@
-import { createContext } from "react";
+import { createContext, useContext } from "react";
 
 
-const ChatContext = createContext(null);
+export const ChatContext = createContext(null);
 
-export default ChatContext
+export const useChatContext = () => {
+    return useContext(ChatContext)
+}
