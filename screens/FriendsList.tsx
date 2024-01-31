@@ -2,7 +2,8 @@ import { MutableRefObject, useContext, useEffect, useMemo, useReducer, useRef, u
 import { Alert, Button, FlatList, GestureResponderEvent, Text, TextInput, TouchableOpacity, View } from "react-native";
 import FriendsContext from "../Contexts/FriendsContext";
 import * as SecureStore from 'expo-secure-store'
-import io, { Socket } from "socket.io-client";
+import friendsListStyle from "../styles/FriendsListStyles";
+import FriendsListStyles from "../styles/FriendsListStyles";
 
 const FriendsList = ({ navigation, route }) => {
     // TODO implement a better typings
@@ -92,9 +93,10 @@ const FriendsList = ({ navigation, route }) => {
                         key={item.email}
                         onPress={event => {
                             // socket.current?.removeListener("private-message-from-server", socketPrivateMessageCB)
-                            navigation.navigate("Chat", { messages: state.chat[item.email]?.messages, title: `Chat with ${item.email}`, contact: item.email})
+                            navigation.navigate("Chat", { messages: state.chat[item.email]?.messages, title: `Chat with ${item.email}`, contact: item.email })
                             //navigation.navigate("Chat", {contact: item.email, title: `Chat with ${item.email}`})
-                        }}>
+                        }}
+                        style={FriendsListStyles.friendBox}>
                         <Text>
                             {item.email}
                         </Text>

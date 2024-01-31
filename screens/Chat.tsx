@@ -1,9 +1,8 @@
-import { useContext, useEffect, useReducer, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Button, FlatList, Text, TextInput, TouchableOpacity } from "react-native";
-import * as SecureStore from 'expo-secure-store'
-import EventEmitter from "react-native/Libraries/vendor/emitter/EventEmitter";
 import { useChatDispatchContext } from "../Contexts/ChatDisptachContext";
 import { useChatContext } from "../Contexts/ChatContext";
+import ChatStyles from "../styles/ChatStyles";
 
 const Chat = ({ navigation, route }) => {
     const socket = useRef()
@@ -14,27 +13,36 @@ const Chat = ({ navigation, route }) => {
     const dispatchChatMessage = useChatDispatchContext()
 
     const submitMessage = () => {
-        dispatchChatMessage({ type: "ADD_MESSAGE_TO_CHAT", message: messageToSend, contact:route.params.contact, isSent: true })
+        dispatchChatMessage({ type: "ADD_MESSAGE_TO_CHAT", message: messageToSend, contact:route.params.contact, isSent: true, timestamp: Date.now()})
         setMessageToSend("")
+    }
+
+    const getTimeFromTimestamp = (timestamp: number) => {
+        const date = new Date(timestamp)
+        return `${date.getHours()}:${date.getMinutes()}`
     }
     return (
         <>
             <FlatList
+                style={{flexDirection: 'column-reverse'}}
                 data={chatState.chat.filter(e => e.contact === route.params.contact).length > 0 ? chatState.chat.filter(e => e.contact === route.params.contact)[0].messages : []}
                 renderItem={({ item }) => (
                     <TouchableOpacity
                         key={item.message}
-                        onPress={event => {}}>
+                        onPress={event => {}}
+                        style={ChatStyles.chatTextBox}>
+                        <Text 
+                            style={{
+                                ...ChatStyles.chatTimetext,
+                                alignSelf: item.isSent ? 'flex-end' : 'flex-start'
+                            }}>
+                            {getTimeFromTimestamp(item.timestamp)}
+                        </Text>
                         <Text
                             style={{
+                                ...ChatStyles.chatText,
                                 alignSelf: item.isSent ? 'flex-end' : 'flex-start',
-                                borderWidth: 1,
-                                flexWrap: "wrap",
                                 backgroundColor: item.isSent ? "#90EE90" : "white",
-                                width: "70%",
-                                borderRadius: 4,
-                                padding: 10,
-                                margin: 1
                             }}>
                             {item.message}
                         </Text>

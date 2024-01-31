@@ -11,7 +11,7 @@ const ChatStackNavigator = createNativeStackNavigator();
 
 const ChatNavigator = () => {
 
-    const socket: MutableRefObject<Socket<any> | undefined> = useRef(io("http://192.168.1.21:3000"));
+    const socket: MutableRefObject<Socket<any> | undefined> = useRef();
     const [token, setToken] = useState("");
     
     const chatReducer = (prevState, action) => {
@@ -21,7 +21,7 @@ const ChatNavigator = () => {
                     console.log(`Adding a chat with contact: ${action.contact} to the state`)
                     prevState.chat.push({
                         contact: action.contact,
-                        messages: new Array<{isSent: boolean, message: string}>()
+                        messages: new Array<{isSent: boolean, message: string, timestamp: number}>()
                     })
                 }
                 if (action.isSent === true) {
@@ -31,7 +31,8 @@ const ChatNavigator = () => {
                 const currentChat = prevState.chat.filter(e => e.contact === action.contact)[0]
                 currentChat.messages.push({
                     isSent: action.isSent,
-                    message: action.message
+                    message: action.message,
+                    timestamp: action.timestamp
                 })
                 console.log(`Returning state ${JSON.stringify(prevState.chat)}`)
                 return {
@@ -50,9 +51,10 @@ const ChatNavigator = () => {
         const initSocketConnection = async () => {
             const token = await SecureStore.getItemAsync("userToken");
             setToken(token)
+            socket.current = io("http://192.168.1.21:3000")
             socket.current?.on("response from server", message => console.log("Received socket message from backend " + message))
             socket.current?.on("private-message-from-server", (message) => {
-                dispatch({ type: "ADD_MESSAGE_TO_CHAT", message: message.from.sub + ": " + message.message, contact: message.from.sub, isSent: false })
+                dispatch({ type: "ADD_MESSAGE_TO_CHAT", message: message.from.sub.split("@")[0] + ": " + message.message, contact: message.from.sub, isSent: false, timestamp: Date.now() })
             })
             socket.current?.emit("register-client", { token: token })
         }

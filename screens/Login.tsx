@@ -23,6 +23,7 @@ const Login = ({route, navigation}) => {
                     onChangeText={(text) => setEmail(text)}
                     placeholder="type something here"
                     autoComplete="email"
+                    inputMode="email"
                 // defaultValue="text input for userName"
                 >
                 </TextInput>
@@ -35,7 +36,7 @@ const Login = ({route, navigation}) => {
                     onChangeText={(text) => setPassword(text)}
                     placeholder="type something here"
                     autoComplete="password"
-                    inputMode="email"
+                    inputMode="text"
                 // defaultValue="text input for password"
                 >
                 </TextInput>
