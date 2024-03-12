@@ -2,14 +2,18 @@ import { MutableRefObject, useContext, useEffect, useMemo, useReducer, useRef, u
 import { Alert, Button, FlatList, GestureResponderEvent, Text, TextInput, TouchableOpacity, View } from "react-native";
 import FriendsContext from "../Contexts/FriendsContext";
 import * as SecureStore from 'expo-secure-store'
-import friendsListStyle from "../styles/FriendsListStyles";
 import FriendsListStyles from "../styles/FriendsListStyles";
+import configs from "../config/AppConfig";
+import { ChatContext, useChatContext } from "../Contexts/ChatContext";
+import friendsListStyle from "../styles/FriendsListStyles";
+import { useChatDispatchContext } from "../Contexts/ChatDisptachContext";
 
 const FriendsList = ({ navigation, route }) => {
     // TODO implement a better typings
     const [contactToAdd, setContactToAdd] = useState("");
     const [token, setToken] = useState("")
-
+    const chatState = useChatContext();
+    const chatDispatch = useChatDispatchContext();
 
     // works but keeps reconnecting const socket = io("http://192.168.1.21:3000")
     const [state, dispatch] = useReducer((prevState, action) => {
@@ -42,7 +46,7 @@ const FriendsList = ({ navigation, route }) => {
             const token = await SecureStore.getItemAsync("userToken");
             setToken(token)
             console.log(`Sending request to get friendsList with token ${JSON.stringify(token)}`)
-            await fetch('http://192.168.1.21:8080/api/v1/account/friendsList', {
+            await fetch(configs.USER_AUTH_BASE_URL + configs.USER_AUTH_FRIENDS_LIST_PATH, {
                 method: 'GET',
                 headers: {
                     Accept: 'application/json',
@@ -83,6 +87,34 @@ const FriendsList = ({ navigation, route }) => {
 
     }, [])
 
+    const handleAddFriend = () => {
+        Alert.prompt(
+            "Add a friend",
+            "send an invitation to a friend by email",
+            [{text: 'Send', onPress:() =>  sendAFriendRequest()},
+             {text: 'Cancel', onPress: () => null, style: 'cancel'}])
+    }
+
+    const sendAFriendRequest = () => {
+        // TODO here a request needs to be sent to the server to add a friend
+        console.log("FriendsList -- sendAFriendRequest -- a request to add a friend is sent")
+    }
+
+    const getNumberOfUnreadMessagesByChat = (chat) => {
+        console.debug("FriendsList -- getNumberOfUnreadMessagesByChat -- for: " + JSON.stringify(chat))
+        if (chat == null || chat.length == 0) {
+            return 0
+        }
+        else {
+            const unreadMessages = chat[0].messages.filter(e => e.read == false)
+            return unreadMessages.length
+        }
+    }
+
+    const setMessagesToRead = (email) => {
+        console.debug("FriendsList -- setMessagesToRead -- " + email)
+        chatDispatch({type: 'SET_MESSAGES_TO_READ', email: email})
+    }
 
     return (
         <FriendsContext.Provider value={friendsContext}>
@@ -93,18 +125,26 @@ const FriendsList = ({ navigation, route }) => {
                         key={item.email}
                         onPress={event => {
                             // socket.current?.removeListener("private-message-from-server", socketPrivateMessageCB)
-                            navigation.navigate("Chat", { messages: state.chat[item.email]?.messages, title: `Chat with ${item.email}`, contact: item.email })
+                            setMessagesToRead(item.email)
+                            navigation.navigate("Chat", { title: `Chat with ${item.email}`, contact: item.email })
                             //navigation.navigate("Chat", {contact: item.email, title: `Chat with ${item.email}`})
                         }}
                         style={FriendsListStyles.friendBox}>
-                        <Text>
+                        <Text
+                            style={friendsListStyle.contactEmailStyle}>
                             {item.email}
                         </Text>
+                        {getNumberOfUnreadMessagesByChat(chatState.chat.filter(e => e.contact == item.email)) == 0 ? 
+                        null : <Text
+                        style={friendsListStyle.unreadMessagesNumber}>
+                        {getNumberOfUnreadMessagesByChat(chatState.chat.filter(e => e.contact == item.email))}
+                    </Text>}
+                        
                     </TouchableOpacity>)}>
             </FlatList>
             <Button
                 title="Add a friend"
-                onPress={() => { }}
+                onPress={() => handleAddFriend()}
                 disabled={false}
             />
         </FriendsContext.Provider>

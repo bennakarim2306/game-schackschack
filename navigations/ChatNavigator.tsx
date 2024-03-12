@@ -6,6 +6,7 @@ import { ChatContext } from "../Contexts/ChatContext";
 import { ChatDispatchContext } from "../Contexts/ChatDisptachContext";
 import io, { Socket } from "socket.io-client";
 import * as SecureStore from 'expo-secure-store'
+import configs from "../config/AppConfig";
 
 const ChatStackNavigator = createNativeStackNavigator();
 
@@ -21,7 +22,7 @@ const ChatNavigator = () => {
                     console.log(`Adding a chat with contact: ${action.contact} to the state`)
                     prevState.chat.push({
                         contact: action.contact,
-                        messages: new Array<{isSent: boolean, message: string, timestamp: number}>()
+                        messages: new Array<{isSent: boolean, message: string, timestamp: number, read: boolean}>()
                     })
                 }
                 if (action.isSent === true) {
@@ -32,12 +33,25 @@ const ChatNavigator = () => {
                 currentChat.messages.push({
                     isSent: action.isSent,
                     message: action.message,
-                    timestamp: action.timestamp
+                    timestamp: action.timestamp,
+                    read: action.isRead
                 })
                 console.log(`Returning state ${JSON.stringify(prevState.chat)}`)
                 return {
                     ...prevState
                 }
+            }
+            case 'SET_MESSAGES_TO_READ': {
+                    if (prevState.chat.length == 0 || prevState.chat.filter(e => e.contact == action.email).lenght == 0) {
+                        return {
+                            ...prevState
+                        }
+                    }
+                    const messages = prevState.chat.filter(e => e.contact == action.email)[0].messages
+                    messages.forEach(m => m.read = true)
+                    return {
+                        ...prevState
+                    }
             }
         }
     }
@@ -51,10 +65,10 @@ const ChatNavigator = () => {
         const initSocketConnection = async () => {
             const token = await SecureStore.getItemAsync("userToken");
             setToken(token)
-            socket.current = io("http://192.168.1.21:3000")
+            socket.current = io(configs.WEBSOCKER_BASE_URL)
             socket.current?.on("response from server", message => console.log("Received socket message from backend " + message))
             socket.current?.on("private-message-from-server", (message) => {
-                dispatch({ type: "ADD_MESSAGE_TO_CHAT", message: message.from.sub.split("@")[0] + ": " + message.message, contact: message.from.sub, isSent: false, timestamp: Date.now() })
+                dispatch({ type: "ADD_MESSAGE_TO_CHAT", message: message.from.sub.split("@")[0] + ": " + message.message, contact: message.from.sub, isSent: false, timestamp: Date.now(), isRead: false})
             })
             socket.current?.emit("register-client", { token: token })
         }

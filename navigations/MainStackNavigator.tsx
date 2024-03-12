@@ -9,6 +9,7 @@ import AuthContext from '../Contexts/AuthContext';
 import GameContext from '../Contexts/GameContext';
 import InGameNavigator from './InGameNavigator';
 import { Alert } from 'react-native';
+import configs from '../config/AppConfig';
 
 const Stack = createNativeStackNavigator();
 
@@ -70,11 +71,12 @@ const MainStackNavigator = () => {
     () => ({
       getUserToken: () => state.userToken,
       signIn: async (data) => {
+        console.log("authContext -- signIn called with data -- " + JSON.stringify(data))
         // In a production app, we need to send some data (usually username, password) to server and get a token
         // We will also need to handle errors if sign in failed
         // After getting token, we need to persist the token using `SecureStore`
         // In the example, we'll use a dummy token
-        await fetch('http://192.168.1.21:8080/api/v1/auth/authenticate', {
+        await fetch(configs.USER_AUTH_BASE_URL + configs.USER_AUTH_SIGN_IN_PATH, {
           method: 'POST',
           headers: {
             Accept: 'application/json',

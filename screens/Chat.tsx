@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button, FlatList, Text, TextInput, TouchableOpacity } from "react-native";
 import { useChatDispatchContext } from "../Contexts/ChatDisptachContext";
 import { useChatContext } from "../Contexts/ChatContext";
@@ -13,7 +13,7 @@ const Chat = ({ navigation, route }) => {
     const dispatchChatMessage = useChatDispatchContext()
 
     const submitMessage = () => {
-        dispatchChatMessage({ type: "ADD_MESSAGE_TO_CHAT", message: messageToSend, contact:route.params.contact, isSent: true, timestamp: Date.now()})
+        dispatchChatMessage({ type: "ADD_MESSAGE_TO_CHAT", message: messageToSend, contact:route.params.contact, isSent: true, timestamp: Date.now(), isRead: true})
         setMessageToSend("")
     }
 
@@ -21,11 +21,16 @@ const Chat = ({ navigation, route }) => {
         const date = new Date(timestamp)
         return `${date.getHours()}:${date.getMinutes()}`
     }
+
+    const getChatMessagesAndAndSetToRead = () => {
+        const messages = chatState.chat.filter(e => e.contact === route.params.contact).length > 0 ? chatState.chat.filter(e => e.contact === route.params.contact)[0].messages : []
+        return messages
+    }
     return (
         <>
             <FlatList
                 style={{flexDirection: 'column-reverse'}}
-                data={chatState.chat.filter(e => e.contact === route.params.contact).length > 0 ? chatState.chat.filter(e => e.contact === route.params.contact)[0].messages : []}
+                data={getChatMessagesAndAndSetToRead()}
                 renderItem={({ item }) => (
                     <TouchableOpacity
                         key={item.message}
