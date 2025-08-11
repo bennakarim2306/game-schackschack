@@ -8,8 +8,13 @@ const registerAccountStyles = StyleSheet.create({
         paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
         justifyContent: "space-around"
     },
+    rowInputContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        alignSelf: "center"
+    },
     textInputStyle: {
-        alignSelf: "center",
+        alignSelf: "center"
     },
     textStyle: {
         alignSelf: "center",
@@ -27,6 +32,11 @@ const registerAccountStyles = StyleSheet.create({
         fontWeight: "600",
         color: "#18B76C"
     },
+    validationErrorText: {
+        alignSelf: "center",
+        marginBottom: 8,
+        color: "red"
+    }
 })
 
 export default registerAccountStyles;

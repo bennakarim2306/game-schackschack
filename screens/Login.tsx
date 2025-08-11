@@ -7,10 +7,43 @@ import AuthContext from "../Contexts/AuthContext";
 // here will come the props for the Login View
 const loginProps = {}
 
-const Login = ({route, navigation}) => {
-    const { signIn } = useContext(AuthContext)
-    const [email, setEmail] = useState("nothing")
-    const [password, setPassword] = useState("no password")
+function Login({ route, navigation }) {
+    const { signIn } = useContext(AuthContext);
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [emailError, setEmailError] = useState("");
+    const [passwordError, setPasswordError] = useState("");
+
+    function validateEmail(email) {
+        // Simple email regex for demonstration
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    function validatePassword(password) {
+        // Example: password must be at least 6 characters
+        return password.length >= 6;
+    }
+
+    const handleEmailChange = (text) => {
+        setEmail(text);
+        setEmailError(validateEmail(text) ? "" : "Invalid email address");
+    };
+
+    const handlePasswordChange = (text) => {
+        setPassword(text);
+        setPasswordError(validatePassword(text) ? "" : "Password must be at least 6 characters");
+    };
+
+    const handleLogin = () => {
+        const emailValid = validateEmail(email);
+        const passwordValid = validatePassword(password);
+        setEmailError(emailValid ? "" : "Invalid email address");
+        setPasswordError(passwordValid ? "" : "Password must be at least 6 characters");
+        if (emailValid && passwordValid) {
+            signIn({ email, password });
+        }
+    };
+
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
             <SafeAreaView style={loginStyles.loginViewStyle}>
@@ -20,33 +53,37 @@ const Login = ({route, navigation}) => {
                 </Text>
                 <TextInput
                     style={loginStyles.textInputStyle}
-                    onChangeText={(text) => setEmail(text)}
+                    onChangeText={handleEmailChange}
+                    value={email}
                     placeholder="type something here"
                     autoComplete="email"
                     inputMode="email"
-                // defaultValue="text input for userName"
-                >
-                </TextInput>
+                />
+                {emailError ? (
+                    <Text style={loginStyles.validationErrorText}>{emailError}</Text>
+                ) : null}
                 <Text
                     style={loginStyles.textStyle}>
                     Password
                 </Text>
                 <TextInput
                     style={loginStyles.textInputStyle}
-                    onChangeText={(text) => setPassword(text)}
+                    onChangeText={handlePasswordChange}
+                    value={password}
                     placeholder="type something here"
                     autoComplete="password"
                     inputMode="text"
-                // defaultValue="text input for password"
-                >
-                </TextInput>
+                    secureTextEntry
+                />
+                {passwordError ? (
+                    <Text style={loginStyles.validationErrorText}>{passwordError}</Text>
+                ) : null}
                 <View
                     style={loginStyles.buttonStyle}>
                     <Button
                         title="Login here"
-                        onPress={() => signIn({email, password})}
-                        disabled={false}
-                    />
+                        onPress={() => signIn({ email, password })}
+                        disabled={false} />
                 </View>
             </SafeAreaView>
         </TouchableWithoutFeedback>
