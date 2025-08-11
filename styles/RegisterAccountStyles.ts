@@ -1,7 +1,7 @@
 import { Platform, StatusBar, StyleSheet } from "react-native";
 
 const registerAccountStyles = StyleSheet.create({
-    registerViewStyle:{
+    registerViewStyle: {
         backgroundColor: 'white',
         width: "100%",
         height: "100%",
@@ -36,6 +36,14 @@ const registerAccountStyles = StyleSheet.create({
         alignSelf: "center",
         marginBottom: 8,
         color: "red"
+    },
+    showPasswordButton: {
+        marginLeft: 8,
+        padding: 4
+    },
+    showPasswordText: {
+        color: "#007AFF",
+        flex: 3
     }
 })
 
