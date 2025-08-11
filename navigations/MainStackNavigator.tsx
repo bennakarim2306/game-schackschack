@@ -117,7 +117,7 @@ const MainStackNavigator = () => {
         // We will also need to handle errors if sign up failed
         // After getting token, we need to persist the token using `SecureStore`
         // In the example, we'll use a dummy token
-        await fetch('http://192.168.1.21:8080/api/v1/auth/register', {
+        await fetch('http://192.168.1.182:8080/api/v1/auth/register', {
           method: 'POST',
           headers: {
             Accept: 'application/json',

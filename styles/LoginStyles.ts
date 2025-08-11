@@ -21,6 +21,11 @@ const loginStyles = StyleSheet.create({
     },
     buttonStyle: {
         margin: "10%"
+    },
+    validationErrorText: {
+        alignSelf: "center",
+        marginBottom: 8,
+        color: "red"
     }
 })
 
