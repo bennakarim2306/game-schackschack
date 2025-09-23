@@ -16,43 +16,81 @@ const ChatNavigator = () => {
     const socket: MutableRefObject<Socket<any> | undefined> = useRef();
     const [token, setToken] = useState("");
     
-    const chatReducer = (prevState, action) => {
+    interface ChatMessage {
+        isSent: boolean;
+        message: string;
+        timestamp: number;
+        read: boolean;
+    }
+
+    interface ChatEntry {
+        contact: string;
+        messages: ChatMessage[];
+    }
+
+    interface ChatState {
+        chat: ChatEntry[];
+    }
+
+    interface AddMessageToChatAction {
+        type: 'ADD_MESSAGE_TO_CHAT';
+        message: string;
+        contact: string;
+        isSent: boolean;
+        timestamp: number;
+        isRead: boolean;
+    }
+
+    interface SetMessagesToReadAction {
+        type: 'SET_MESSAGES_TO_READ';
+        email: string;
+    }
+
+    type ChatAction = AddMessageToChatAction | SetMessagesToReadAction;
+
+    const chatReducer = (prevState: ChatState, action: ChatAction): ChatState => {
         switch (action.type) {
             case 'ADD_MESSAGE_TO_CHAT': {
-                if (prevState.chat.length == 0 && prevState.chat.filter(e => e.contact === action.contact).length == 0) {
-                    console.log(`Adding a chat with contact: ${action.contact} to the state`)
+                if (
+                    prevState.chat.length == 0 &&
+                    prevState.chat.filter(e => e.contact === action.contact).length == 0
+                ) {
+                    console.log(`Adding a chat with contact: ${action.contact} to the state`);
                     prevState.chat.push({
                         contact: action.contact,
-                        messages: new Array<{isSent: boolean, message: string, timestamp: number, read: boolean}>()
-                    })
+                        messages: new Array<ChatMessage>()
+                    });
                 }
                 if (action.isSent === true) {
-                    console.log(`Sending message to ${action.contact} with content: ${action.message}`)
-                    socket.current?.emit("private-message", { token: token, to: action.contact, message: action.message })
+                    console.log(`Sending message to ${action.contact} with content: ${action.message}`);
+                    socket.current?.emit("private-message", { token: token, to: action.contact, message: action.message });
                 }
-                const currentChat = prevState.chat.filter(e => e.contact === action.contact)[0]
+                const currentChat = prevState.chat.filter(e => e.contact === action.contact)[0];
                 currentChat.messages.push({
                     isSent: action.isSent,
                     message: action.message,
                     timestamp: action.timestamp,
                     read: action.isRead
-                })
-                console.log(`Returning state ${JSON.stringify(prevState.chat)}`)
+                });
+                console.log(`Returning state ${JSON.stringify(prevState.chat)}`);
                 return {
                     ...prevState
-                }
+                };
             }
             case 'SET_MESSAGES_TO_READ': {
-                    if (prevState.chat.length == 0 || prevState.chat.filter(e => e.contact == action.email).lenght == 0) {
-                        return {
-                            ...prevState
-                        }
-                    }
-                    const messages = prevState.chat.filter(e => e.contact == action.email)[0].messages
-                    messages.forEach(m => m.read = true)
+                if (
+                    prevState.chat.length == 0 ||
+                    prevState.chat.filter(e => e.contact == action.email).length == 0
+                ) {
                     return {
                         ...prevState
-                    }
+                    };
+                }
+                const messages = prevState.chat.filter(e => e.contact == action.email)[0].messages;
+                messages.forEach(m => m.read = true);
+                return {
+                    ...prevState
+                };
             }
         }
     }
@@ -65,49 +103,17 @@ const ChatNavigator = () => {
     useEffect(() => {
         const initSocketConnection = async () => {
             const token = await SecureStore.getItemAsync("userToken");
-            setToken(token)
+            setToken(token ?? "")
             socket.current = io(configs.WEBSOCKER_BASE_URL)
-            socket.current?.on("response from server", message => console.log("Received socket message from backend " + message))
-            socket.current?.on("private-message-from-server", (message) => {
+            socket.current?.on("response from server", (message: string) => console.log("Received socket message from backend " + message))
+            socket.current?.on("private-message-from-server", (message: { from: { sub: string }, message: string }) => {
                 dispatch({ type: "ADD_MESSAGE_TO_CHAT", message: message.from.sub.split("@")[0] + ": " + message.message, contact: message.from.sub, isSent: false, timestamp: Date.now(), isRead: false})
             })
             socket.current?.emit("register-client", { token: token })
         }
         initSocketConnection()
     },[])
-    
-    // Add state for contacts list
-    const [contactsList, setContactsList] = useState([]);
 
-    // Fetch contacts list every time ContactsList screen is focused
-    useFocusEffect(
-        useCallback(() => {
-            const fetchContactsList = async () => {
-                try {
-                    // Replace with your backend endpoint
-                    const token = await SecureStore.getItemAsync("userToken");
-                    console.debug(`Fetching contacts list with token: ${token}`);
-                    const response = await fetch(configs.USER_AUTH_BASE_URL + configs.USER_AUTH_CONTACTS_LIST_PATH, {
-                        method: "GET",
-                        headers: {
-                            Accept: "application/json",
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${token}`,
-                        },
-                    });
-                    if (!response.ok) {
-                        throw new Error("Failed to fetch contacts list");
-                    }
-                    const contacts = await response.json();
-                    setContactsList(contacts);
-                    console.debug("Fetched contacts list:", contacts);
-                } catch (error) {
-                    console.error("Error fetching contacts list:", error);
-                }
-            };
-            fetchContactsList();
-        }, [])
-    );
 
     // const chatContext = useMemo(() => ({
     //     updateChat: ({ isSent, contact, message }) => {

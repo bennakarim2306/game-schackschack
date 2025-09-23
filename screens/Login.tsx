@@ -107,11 +107,21 @@ function Login({ route, navigation }) {
                         <Text style={loginStyles.validationErrorText} accessibilityLiveRegion="polite">{passwordError}</Text>
                     ) : null}
                     <View style={loginStyles.buttonStyle}>
-                        <Button
-                            title="Login here"
+                        <Pressable
                             onPress={handleLogin}
                             disabled={isDisabled}
-                        />
+                            style={({ pressed }) => [
+                                loginStyles.loginButton,
+                                isDisabled
+                                    ? loginStyles.loginButtonDisabled
+                                    : loginStyles.loginButtonEnabled,
+                                pressed && !isDisabled && { opacity: 0.7 }
+                            ]}
+                        >
+                            <Text style={loginStyles.loginButtonText}>
+                                Login here
+                            </Text>
+                        </Pressable>
                     </View>
                 </SafeAreaView>
             </TouchableWithoutFeedback>

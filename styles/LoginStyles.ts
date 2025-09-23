@@ -39,7 +39,24 @@ const loginStyles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         alignSelf: "center"
-    }
+    },
+    loginButton: {
+        paddingVertical: 12,
+        borderRadius: 8,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    loginButtonEnabled: {
+        backgroundColor: "#007AFF",
+    },
+    loginButtonDisabled: {
+        backgroundColor: "#cccccc",
+    },
+    loginButtonText: {
+        color: "#fff",
+        fontWeight: "bold",
+        fontSize: 16,
+    },
 })
 
 export default loginStyles;

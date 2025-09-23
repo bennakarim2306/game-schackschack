@@ -1,15 +1,15 @@
-import React, { MutableRefObject, useContext, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import React, { MutableRefObject, useContext, useEffect, useMemo, useReducer, useRef, useState, useCallback } from "react";
 import { Alert, Button, FlatList, GestureResponderEvent, Text, TextInput, TouchableOpacity, View, Modal } from "react-native";
 import ContactsContext from "../Contexts/ContactsContext";
 import * as SecureStore from 'expo-secure-store'
 import ContactsListStyles from "../styles/ContactsListStyles";
 import configs from "../config/AppConfig";
-import { ChatContext, useChatContext } from "../Contexts/ChatContext";
+import { useChatContext } from "../Contexts/ChatContext";
 import ContactsListStyle from "../styles/ContactsListStyles";
 import { useChatDispatchContext } from "../Contexts/ChatDisptachContext";
 
 import type { StackNavigationProp } from '@react-navigation/stack';
-import type { RouteProp } from '@react-navigation/native';
+import { useFocusEffect, type RouteProp } from '@react-navigation/native';
 import contactsContext from "../Contexts/ContactsContext";
 
 type ContactsListProps = {
@@ -95,48 +95,49 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
         } as ContactsListState
     );
 
-    useEffect(() => {
-        const getContactsList = async () => {
-            console.log(`ContactsList getContactsList called`)
-            const token = await SecureStore.getItemAsync("userToken");
-            setToken(token)
-            console.log(`Sending request to get ContactsList with token ${JSON.stringify(token)}`)
-            await fetch(configs.USER_AUTH_BASE_URL + configs.USER_AUTH_CONTACTS_LIST_PATH, {
-                method: 'GET',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                    Authorization: 'Bearer ' + token
-                },
-                body: null,
-            })
-                .then(async response => {
-                    const jsonResponse = await response.json();
-                    console.log(`received response from server ${JSON.stringify(jsonResponse)}`)
-                    // setSocket(io("http://192.168.1.21:3000"))
-                    if (response.status !== 200) {
-                        Alert.alert(
-                            'issue with the friends list',
-                            'We are sorry but something went wrong with \n the friends list call to backend.. please try it later!',
-                            [{ text: 'Ok', onPress: () => console.log('Cancel Pressed'), style: 'cancel' }])
-                    }
-                    else {
-                        console.log("received data from server for friends list: " + JSON.stringify(jsonResponse))
-                        dispatch({ type: 'FRIENDS_LIST_GATHERED', ContactsList: jsonResponse.friends });
-                    }
-                    console.log(`Calling socket IO`)
+    useFocusEffect(
+        useCallback(() => {
+            const getContactsList = async () => {
+                console.log(`ContactsList getContactsList called`)
+                const token = await SecureStore.getItemAsync("userToken");
+                setToken(token)
+                console.log(`Sending request to get ContactsList with token ${JSON.stringify(token)}`)
+                await fetch(configs.USER_AUTH_BASE_URL + configs.USER_AUTH_CONTACTS_LIST_PATH, {
+                    method: 'GET',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                        Authorization: 'Bearer ' + token
+                    },
+                    body: null,
+                })
+                    .then(async response => {
+                        const jsonResponse = await response.json();
+                        console.log(`received response from server ${JSON.stringify(jsonResponse)}`)
+                        if (response.status !== 200) {
+                            Alert.alert(
+                                'issue with the friends list',
+                                'We are sorry but something went wrong with \n the friends list call to backend.. please try it later!',
+                                [{ text: 'Ok', onPress: () => console.log('Cancel Pressed'), style: 'cancel' }])
+                        }
+                        else {
+                            console.log("received data from server for friends list: " + JSON.stringify(jsonResponse))
+                            dispatch({ type: 'FRIENDS_LIST_GATHERED', ContactsList: jsonResponse.friends });
+                        }
+                        console.log(`Calling socket IO`)
 
-                })
-                .catch(e => {
-                    Alert.alert(
-                        'Registration issue',
-                        'We are sorry but something went wrong with \n the registration.. please try it later!',
-                        [{ text: 'Ok', onPress: () => console.log('Cancel Pressed'), style: 'cancel' }])
-                    console.log(`some error occured while calling ContactsList request${e}`)
-                })
-        }
-        getContactsList()
-    }, [])
+                    })
+                    .catch(e => {
+                        Alert.alert(
+                            'Registration issue',
+                            'We are sorry but something went wrong with \n the registration.. please try it later!',
+                            [{ text: 'Ok', onPress: () => console.log('Cancel Pressed'), style: 'cancel' }])
+                        console.log(`some error occured while calling ContactsList request${e}`)
+                    })
+            }
+            getContactsList()
+        }, [])
+    );
 
     const friendsContext = useMemo(() => {
 
@@ -174,7 +175,7 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
         try {
             const token = await SecureStore.getItemAsync("userToken");
             const response = await fetch(
-                configs.USER_AUTH_BASE_URL + configs.USER_AUTH_CONTACT_REQUEST_PATH,
+                `${configs.USER_AUTH_BASE_URL}${configs.USER_AUTH_ADD_CONTACT_PATH}?email=${encodeURIComponent(newContactEmail)}`,
                 {
                     method: "POST",
                     headers: {
@@ -182,7 +183,7 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
                         "Content-Type": "application/json",
                         Authorization: "Bearer " + token,
                     },
-                    body: JSON.stringify({ email: newContactEmail }),
+                    body: null,
                 }
             );
             if (!response.ok) {
@@ -195,9 +196,19 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
                 Alert.alert(
                     "Contact request sent",
                     "Your contact request has been sent.",
-                    [{ text: "Ok" }]
+                    [{
+                        text: "Ok",
+                        onPress: () => {
+                            setShowAddContactModal(false); // <-- Ensure modal closes after alert
+                            setNewContactEmail("");
+                            setIsEmailValid(false);
+                        }
+                    }]
                 );
+                // Also close the modal immediately in case the user doesn't press OK
                 setShowAddContactModal(false);
+                setNewContactEmail("");
+                setIsEmailValid(false);
             }
         } catch (e) {
             Alert.alert(
@@ -328,6 +339,7 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
                                 title={isSending ? "Sending..." : "Send"}
                                 onPress={sendAContactRequest}
                                 disabled={!isEmailValid || isSending}
+                                color={isEmailValid ? "#2196F3" : "#ccc"}
                             />
                         </View>
                     </View>
