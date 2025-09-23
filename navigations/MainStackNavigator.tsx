@@ -48,7 +48,7 @@ const MainStackNavigator = () => {
 
   useEffect(() => {
     // Fetch the token from storage then navigate to our appropriate place
-    const bootstrapAsync = async () => {
+    async function bootstrapAsync() {
       let userToken;
 
       try {
@@ -58,11 +58,10 @@ const MainStackNavigator = () => {
       }
 
       // After restoring token, we may need to validate it in production apps
-
       // This will switch to the App screen or Auth screen and this loading
       // screen will be unmounted and thrown away.
       dispatch({ type: 'RESTORE_TOKEN', token: userToken });
-    };
+    }
 
     bootstrapAsync();
   }, []);
@@ -71,7 +70,7 @@ const MainStackNavigator = () => {
     () => ({
       getUserToken: () => state.userToken,
       signIn: async (data) => {
-        console.log("authContext -- signIn called with data -- " + JSON.stringify(data))
+        console.log("authContext -- signIn called with data -- " + JSON.stringify(data)  + "--" + JSON.stringify(configs.USER_AUTH_BASE_URL + configs.USER_AUTH_SIGN_IN_PATH))
         // In a production app, we need to send some data (usually username, password) to server and get a token
         // We will also need to handle errors if sign in failed
         // After getting token, we need to persist the token using `SecureStore`
@@ -107,17 +106,13 @@ const MainStackNavigator = () => {
             'Registration issue',
             'We are sorry but something went wrong with \n the registration.. please try it later!',
             [{text: 'Ok', onPress: () => console.log('Cancel Pressed'), style: 'cancel'}])
-          console.error(`some error occured while registration request${e}`)
+          console.log(`some error occured while registration request${e}`)
         })
       },
       signOut: () => dispatch({ type: 'SIGN_OUT' }),
       signUp: async (data) => {
-        console.log(`sending registration request with data: ${JSON.stringify(data)}`)
-        // In a production app, we need to send user data to server and get a token
-        // We will also need to handle errors if sign up failed
-        // After getting token, we need to persist the token using `SecureStore`
-        // In the example, we'll use a dummy token
-        await fetch('http://192.168.1.182:8080/api/v1/auth/register', {
+        console.log(`sending registration request with data: ${JSON.stringify(data)} -- ${JSON.stringify(configs.USER_AUTH_BASE_URL + configs.USER_AUTH_SIGN_UP_PATH)}`)
+        await fetch(configs.USER_AUTH_BASE_URL + configs.USER_AUTH_SIGN_UP_PATH, {
           method: 'POST',
           headers: {
             Accept: 'application/json',
@@ -141,6 +136,7 @@ const MainStackNavigator = () => {
           else {
             const jsonResponse = await response.json();
             console.log("received data from server for registration: " + JSON.stringify(jsonResponse))
+            await SecureStore.setItemAsync('userToken', jsonResponse.token) // <-- Store token here
             dispatch({ type: 'SIGN_IN', token: jsonResponse.token });
           }
         })
@@ -149,7 +145,7 @@ const MainStackNavigator = () => {
             'Registration issue',
             'We are sorry but something went wrong with \n the registration.. please try it later!',
             [{text: 'Ok', onPress: () => console.log('Cancel Pressed'), style: 'cancel'}])
-          console.error(`some error occured while registration request${e}`)
+          console.log(`some error occured while registration request${e}`)
         })
       },
     }),

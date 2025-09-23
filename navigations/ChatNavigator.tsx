@@ -1,12 +1,13 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { MutableRefObject, useEffect, useMemo, useReducer, useRef, useState } from "react";
-import FriendsList from "../screens/FriendsList";
+import { MutableRefObject, useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import ContactsList from "../screens/ContactsList"; // Renamed FriendsList to ContactsList
 import Chat from "../screens/Chat";
 import { ChatContext } from "../Contexts/ChatContext";
 import { ChatDispatchContext } from "../Contexts/ChatDisptachContext";
 import io, { Socket } from "socket.io-client";
 import * as SecureStore from 'expo-secure-store'
 import configs from "../config/AppConfig";
+import { useFocusEffect } from "@react-navigation/native";
 
 const ChatStackNavigator = createNativeStackNavigator();
 
@@ -75,6 +76,39 @@ const ChatNavigator = () => {
         initSocketConnection()
     },[])
     
+    // Add state for contacts list
+    const [contactsList, setContactsList] = useState([]);
+
+    // Fetch contacts list every time ContactsList screen is focused
+    useFocusEffect(
+        useCallback(() => {
+            const fetchContactsList = async () => {
+                try {
+                    // Replace with your backend endpoint
+                    const token = await SecureStore.getItemAsync("userToken");
+                    console.debug(`Fetching contacts list with token: ${token}`);
+                    const response = await fetch(configs.USER_AUTH_BASE_URL + configs.USER_AUTH_CONTACTS_LIST_PATH, {
+                        method: "GET",
+                        headers: {
+                            Accept: "application/json",
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
+                        },
+                    });
+                    if (!response.ok) {
+                        throw new Error("Failed to fetch contacts list");
+                    }
+                    const contacts = await response.json();
+                    setContactsList(contacts);
+                    console.debug("Fetched contacts list:", contacts);
+                } catch (error) {
+                    console.error("Error fetching contacts list:", error);
+                }
+            };
+            fetchContactsList();
+        }, [])
+    );
+
     // const chatContext = useMemo(() => ({
     //     updateChat: ({ isSent, contact, message }) => {
     //         dispatch({ type: 'ADD_MESSAGE_TO_CHAT_STORAGE', isSent: isSent, contact: contact, message: message })
@@ -118,13 +152,22 @@ const ChatNavigator = () => {
         <ChatContext.Provider value={chat}>
             <ChatDispatchContext.Provider value={dispatch}>
                 <ChatStackNavigator.Navigator
-                    initialRouteName="FriendsList"
+                    initialRouteName="ContactsList"
                     screenOptions={{
                         headerBackTitleVisible: true
                     }}
                 >
-                    <ChatStackNavigator.Screen name="FriendsList" component={FriendsList}></ChatStackNavigator.Screen>
-                    <ChatStackNavigator.Screen name="Chat" component={Chat} options={({ route }) => ({ title: route.params.title })}></ChatStackNavigator.Screen>
+                    <ChatStackNavigator.Screen
+                        name="ContactsList"
+                        // Pass contactsList as a prop if needed:
+                        // children={() => <ContactsList contactsList={contactsList} />}
+                        component={ContactsList}
+                    />
+                    <ChatStackNavigator.Screen
+                        name="Chat"
+                        component={Chat}
+                        options={({ route }) => ({ title: route.params.title })}
+                    />
                 </ChatStackNavigator.Navigator>
             </ChatDispatchContext.Provider>
         </ChatContext.Provider>

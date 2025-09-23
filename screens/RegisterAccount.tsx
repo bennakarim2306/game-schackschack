@@ -2,6 +2,7 @@ import { Button, Keyboard, KeyboardAvoidingView, Pressable, Text, TextInput, Tex
 import registerAccountStyles from "../styles/RegisterAccountStyles";
 import { useContext, useState } from "react";
 import AuthContext from "../Contexts/AuthContext";
+import loginStyles from "../styles/LoginStyles";
 
 type RegisterData = {
     firstName: string;
@@ -175,9 +176,9 @@ const RegisterAccount = () => {
                         <Pressable
                             onPress={() => setShowPassword((prev) => !prev)}
                             accessibilityLabel={showPassword ? "Hide password" : "Show password"}
-                            style={{ marginLeft: 8, padding: 4 }}
+                            style={registerAccountStyles.showPasswordButton}
                         >
-                            <Text style={[{ color: "#007AFF" }, { flex: 3 }]}>
+                            <Text style={registerAccountStyles.showPasswordText}>
                                 {showPassword ? "Hide" : "Show"}
                             </Text>
                         </Pressable>
