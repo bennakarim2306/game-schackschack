@@ -1,0 +1,382 @@
+[
+  {
+    "id": "offer-1",
+    "name": "Tomatoes",
+    "type": "Vegetables",
+    "price": 2.50,
+    "quantity": 10,
+    "unit": "kg",
+    "address": { "street": "12 Main St", "city": "Faro", "zip": "8000-000", "lat": 37.0194, "lng": -7.9304 },
+    "seller": { "id": "seller-1", "name": "Seller 1", "contact": "seller1@market.com" },
+    "availableFrom": "2025-09-23",
+    "availableTo": "2025-09-30",
+    "description": "Fresh tomatoes from Faro.",
+    "imageUrl": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    "id": "offer-2",
+    "name": "Apples",
+    "type": "Fruits",
+    "price": 3.00,
+    "quantity": 15,
+    "unit": "kg",
+    "address": { "street": "34 Main St", "city": "Portimão", "zip": "8500-000", "lat": 37.1386, "lng": -8.5377 },
+    "seller": { "id": "seller-2", "name": "Seller 2", "contact": "seller2@market.com" },
+    "availableFrom": "2025-09-23",
+    "availableTo": "2025-10-05",
+    "description": "Crisp apples from Portimão.",
+    "imageUrl": "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    "id": "offer-3",
+    "name": "Milk",
+    "type": "Dairy",
+    "price": 1.20,
+    "quantity": 20,
+    "unit": "l",
+    "address": { "street": "56 Main St", "city": "Lagos", "zip": "8600-000", "lat": 37.1020, "lng": -8.6742 },
+    "seller": { "id": "seller-3", "name": "Seller 3", "contact": "seller3@market.com" },
+    "availableFrom": "2025-09-23",
+    "availableTo": "2025-09-28",
+    "description": "Fresh milk from Lagos.",
+    "imageUrl": "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    "id": "offer-4",
+    "name": "Eggs",
+    "type": "Other",
+    "price": 2.00,
+    "quantity": 30,
+    "unit": "pcs",
+    "address": { "street": "78 Main St", "city": "Albufeira", "zip": "8200-000", "lat": 37.0891, "lng": -8.2479 },
+    "seller": { "id": "seller-4", "name": "Seller 4", "contact": "seller4@market.com" },
+    "availableFrom": "2025-09-23",
+    "availableTo": "2025-09-29",
+    "description": "Farm eggs from Albufeira.",
+    "imageUrl": "https://images.unsplash.com/photo-1502741338009-cac2772e18bc?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    "id": "offer-5",
+    "name": "Bread",
+    "type": "Bakery",
+    "price": 1.50,
+    "quantity": 25,
+    "unit": "pcs",
+    "address": { "street": "90 Main St", "city": "Tavira", "zip": "8800-000", "lat": 37.1268, "lng": -7.6497 },
+    "seller": { "id": "seller-5", "name": "Seller 5", "contact": "seller5@market.com" },
+    "availableFrom": "2025-09-23",
+    "availableTo": "2025-09-27",
+    "description": "Fresh bread from Tavira.",
+    "imageUrl": "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    "id": "offer-6",
+    "name": "Oranges",
+    "type": "Fruits",
+    "price": 2.20,
+    "quantity": 12,
+    "unit": "kg",
+    "address": { "street": "15 Orange St", "city": "Olhão", "zip": "8700-000", "lat": 37.0281, "lng": -7.8411 },
+    "seller": { "id": "seller-6", "name": "Seller 6", "contact": "seller6@market.com" },
+    "availableFrom": "2025-09-23",
+    "availableTo": "2025-09-30",
+    "description": "Sweet oranges from Olhão.",
+    "imageUrl": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    "id": "offer-7",
+    "name": "Cheese",
+    "type": "Dairy",
+    "price": 4.00,
+    "quantity": 8,
+    "unit": "kg",
+    "address": { "street": "22 Cheese Rd", "city": "Loulé", "zip": "8100-000", "lat": 37.1370, "lng": -8.0198 },
+    "seller": { "id": "seller-7", "name": "Seller 7", "contact": "seller7@market.com" },
+    "availableFrom": "2025-09-23",
+    "availableTo": "2025-09-29",
+    "description": "Local cheese from Loulé.",
+    "imageUrl": "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    "id": "offer-8",
+    "name": "Carrots",
+    "type": "Vegetables",
+    "price": 1.80,
+    "quantity": 18,
+    "unit": "kg",
+    "address": { "street": "33 Carrot Ave", "city": "Silves", "zip": "8300-000", "lat": 37.1892, "lng": -8.4387 },
+    "seller": { "id": "seller-8", "name": "Seller 8", "contact": "seller8@market.com" },
+    "availableFrom": "2025-09-23",
+    "availableTo": "2025-09-28",
+    "description": "Fresh carrots from Silves.",
+    "imageUrl": "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    "id": "offer-9",
+    "name": "Bananas",
+    "type": "Fruits",
+    "price": 2.80,
+    "quantity": 14,
+    "unit": "kg",
+    "address": { "street": "44 Banana St", "city": "Quarteira", "zip": "8125-000", "lat": 37.0695, "lng": -8.1001 },
+    "seller": { "id": "seller-9", "name": "Seller 9", "contact": "seller9@market.com" },
+    "availableFrom": "2025-09-23",
+    "availableTo": "2025-09-29",
+    "description": "Bananas from Quarteira.",
+    "imageUrl": "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    "id": "offer-10",
+    "name": "Peppers",
+    "type": "Vegetables",
+    "price": 2.10,
+    "quantity": 11,
+    "unit": "kg",
+    "address": { "street": "55 Pepper Rd", "city": "Faro", "zip": "8000-000", "lat": 37.0194, "lng": -7.9304 },
+    "seller": { "id": "seller-10", "name": "Seller 10", "contact": "seller10@market.com" },
+    "availableFrom": "2025-09-23",
+    "availableTo": "2025-09-30",
+    "description": "Peppers from Faro.",
+    "imageUrl": "https://images.unsplash.com/photo-1502741338009-cac2772e18bc?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    "id": "offer-11",
+    "name": "Lettuce",
+    "type": "Vegetables",
+    "price": 1.60,
+    "quantity": 9,
+    "unit": "kg",
+    "address": {
+      "street": "66 Lettuce St",
+      "city": "Faro",
+      "zip": "8000-000",
+      "lat": 37.0194,
+      "lng": -7.9304
+    },
+    "seller": {
+      "id": "seller-11",
+      "name": "Seller 11",
+      "contact": "seller11@market.com"
+    },
+    "availableFrom": "2025-09-23",
+    "availableTo": "2025-09-30",
+    "description": "Lettuce from Faro.",
+    "imageUrl": "https://source.unsplash.com/400x300/?lettuce"
+  },
+  {
+    "id": "offer-12",
+    "name": "Strawberries",
+    "type": "Fruits",
+    "price": 3.50,
+    "quantity": 7,
+    "unit": "kg",
+    "address": {
+      "street": "77 Berry St",
+      "city": "Portimão",
+      "zip": "8500-000",
+      "lat": 37.1386,
+      "lng": -8.5377
+    },
+    "seller": {
+      "id": "seller-12",
+      "name": "Seller 12",
+      "contact": "seller12@market.com"
+    },
+    "availableFrom": "2025-09-23",
+    "availableTo": "2025-10-05",
+    "description": "Strawberries from Portimão.",
+    "imageUrl": "https://source.unsplash.com/400x300/?strawberries"
+  },
+  {
+    "id": "offer-13",
+    "name": "Butter",
+    "type": "Dairy",
+    "price": 2.70,
+    "quantity": 6,
+    "unit": "kg",
+    "address": {
+      "street": "88 Butter Rd",
+      "city": "Lagos",
+      "zip": "8600-000",
+      "lat": 37.1020,
+      "lng": -8.6742
+    },
+    "seller": {
+      "id": "seller-13",
+      "name": "Seller 13",
+      "contact": "seller13@market.com"
+    },
+    "availableFrom": "2025-09-23",
+    "availableTo": "2025-09-28",
+    "description": "Butter from Lagos.",
+    "imageUrl": "https://source.unsplash.com/400x300/?butter"
+  },
+  {
+    "id": "offer-14",
+    "name": "Chicken",
+    "type": "Meat",
+    "price": 5.00,
+    "quantity": 13,
+    "unit": "kg",
+    "address": {
+      "street": "99 Chicken St",
+      "city": "Albufeira",
+      "zip": "8200-000",
+      "lat": 37.0891,
+      "lng": -8.2479
+    },
+    "seller": {
+      "id": "seller-14",
+      "name": "Seller 14",
+      "contact": "seller14@market.com"
+    },
+    "availableFrom": "2025-09-23",
+    "availableTo": "2025-09-29",
+    "description": "Chicken from Albufeira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?chicken"
+  },
+  {
+    "id": "offer-15",
+    "name": "Yogurt",
+    "type": "Dairy",
+    "price": 1.80,
+    "quantity": 16,
+    "unit": "kg",
+    "address": {
+      "street": "101 Yogurt Rd",
+      "city": "Tavira",
+      "zip": "8800-000",
+      "lat": 37.1268,
+      "lng": -7.6497
+    },
+    "seller": {
+      "id": "seller-15",
+      "name": "Seller 15",
+      "contact": "seller15@market.com"
+    },
+    "availableFrom": "2025-09-23",
+    "availableTo": "2025-09-27",
+    "description": "Yogurt from Tavira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?yogurt"
+  },
+  {
+    "id": "offer-16",
+    "name": "Beef",
+    "type": "Meat",
+    "price": 8.00,
+    "quantity": 20,
+    "unit": "kg",
+    "address": {
+      "street": "111 Beef St",
+      "city": "Olhão",
+      "zip": "8700-000",
+      "lat": 37.0281,
+      "lng": -7.8411
+    },
+    "seller": {
+      "id": "seller-16",
+      "name": "Seller 16",
+      "contact": "seller16@market.com"
+    },
+    "availableFrom": "2025-09-23",
+    "availableTo": "2025-09-30",
+    "description": "Beef from Olhão.",
+    "imageUrl": "https://source.unsplash.com/400x300/?beef"
+  },
+  {
+    "id": "offer-17",
+    "name": "Pork",
+    "type": "Meat",
+    "price": 6.50,
+    "quantity": 17,
+    "unit": "kg",
+    "address": {
+      "street": "121 Pork Rd",
+      "city": "Loulé",
+      "zip": "8100-000",
+      "lat": 37.1370,
+      "lng": -8.0198
+    },
+    "seller": {
+      "id": "seller-17",
+      "name": "Seller 17",
+      "contact": "seller17@market.com"
+    },
+    "availableFrom": "2025-09-23",
+    "availableTo": "2025-09-29",
+    "description": "Pork from Loulé.",
+    "imageUrl": "https://source.unsplash.com/400x300/?pork"
+  },
+  {
+    "id": "offer-18",
+    "name": "Potatoes",
+    "type": "Vegetables",
+    "price": 1.40,
+    "quantity": 22,
+    "unit": "kg",
+    "address": {
+      "street": "131 Potato St",
+      "city": "Silves",
+      "zip": "8300-000",
+      "lat": 37.1892,
+      "lng": -8.4387
+    },
+    "seller": {
+      "id": "seller-18",
+      "name": "Seller 18",
+      "contact": "seller18@market.com"
+    },
+    "availableFrom": "2025-09-23",
+    "availableTo": "2025-09-28",
+    "description": "Potatoes from Silves.",
+    "imageUrl": "https://source.unsplash.com/400x300/?potatoes"
+  },
+  {
+    "id": "offer-19",
+    "name": "Grapes",
+    "type": "Fruits",
+    "price": 3.20,
+    "quantity": 19,
+    "unit": "kg",
+    "address": {
+      "street": "141 Grape St",
+      "city": "Quarteira",
+      "zip": "8125-000",
+      "lat": 37.0695,
+      "lng": -8.1001
+    },
+    "seller": {
+      "id": "seller-19",
+      "name": "Seller 19",
+      "contact": "seller19@market.com"
+    },
+    "availableFrom": "2025-09-23",
+    "availableTo": "2025-09-29",
+    "description": "Grapes from Quarteira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?grapes"
+  },
+  {
+    "id": "offer-20",
+    "name": "Cucumber",
+    "type": "Vegetables",
+    "price": 1.90,
+    "quantity": 13,
+    "unit": "kg",
+    "address": {
+      "street": "151 Cucumber St",
+      "city": "Faro",
+      "zip": "8000-000",
+      "lat": 37.0194,
+      "lng": -7.9304
+    },
+    "seller": {
+      "id": "seller-20",
+      "name": "Seller 20",
+      "contact": "seller20@market.com"
+    },
+    "availableFrom": "2025-09-23",
+    "availableTo": "2025-09-30",
+    "description": "Cucumbers from Faro.",
+    "imageUrl": "https://source.unsplash.com/400x300/?cucumber"
+  }
+]

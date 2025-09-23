@@ -1,12 +1,13 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Profile from "../screens/Profile";
 import GameStart from "../screens/GameStart";
-import FriendsList from "../screens/FriendsList";
+import FriendsList from "../screens/ContactsList";
 import React, { useEffect, useMemo, useReducer, useState } from "react";
 import { Alert, BackHandler, Image, View } from "react-native";
 import GameContext from "../Contexts/GameContext";
 import InGameNavigator from "./InGameNavigator";
 import ChatNavigator from "./ChatNavigator";
+import CoreBusinessNavigator from "./CoreBusinessNavigator";
 
 const GameBottomNavigator = createBottomTabNavigator();
 
@@ -67,7 +68,7 @@ const GameNavigator = ({ route, navigation }) => {
     return (
         <GameContext.Provider value={gameContext}>
             {state.gameStarted === false ? <GameBottomNavigator.Navigator
-                initialRouteName="GameStart"
+                initialRouteName="CoreBusinessNavigator"
                 backBehavior="history"
                 screenOptions={({ route }) => ({
                     headerShown: false,
@@ -81,7 +82,7 @@ const GameNavigator = ({ route, navigation }) => {
                                 />
                             </View>;
                             const userIcon = '../assets/BottomTabBarIcons/user.png'
-                        } else if (route.name === 'GameStart') {
+                        } else if (route.name === 'CoreBusinessNavigator') {
                             return <View >
                                 <Image
                                     source={require('../assets/BottomTabBarIcons/board-game.png')}
@@ -112,7 +113,7 @@ const GameNavigator = ({ route, navigation }) => {
             >
                 <GameBottomNavigator.Screen name="Profile" component={Profile}>
                 </GameBottomNavigator.Screen>
-                <GameBottomNavigator.Screen name="GameStart" component={GameStart}>
+                <GameBottomNavigator.Screen name="CoreBusinessNavigator" component={CoreBusinessNavigator}>
                 </GameBottomNavigator.Screen>
                 <GameBottomNavigator.Screen name="ChatNavigator" component={ChatNavigator}>
                 </GameBottomNavigator.Screen>

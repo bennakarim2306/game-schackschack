@@ -9,6 +9,8 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@react-native-community/slider": "^5.0.1",
+    "@react-native-picker/picker": "2.11.1",
     "@react-navigation/bottom-tabs": "^7.4.7",
     "@react-navigation/native": "^7.1.17",
     "@react-navigation/native-stack": "^7.3.26",
@@ -28,13 +30,13 @@
     "socket.io-client": "^4.7.4"
   },
   "devDependencies": {
-    "babel-preset-expo": "12.0.11",
     "@babel/core": "^7.26.0",
     "@tsconfig/react-native": "^3.0.2",
     "@types/jest": "^29.5.11",
     "@types/react": "~19.1.10",
     "@types/react-native": "^0.73.0",
     "@types/react-test-renderer": "^19.0.2",
+    "babel-preset-expo": "~54.0.0",
     "typescript": "~5.9.2"
   },
   "private": true
