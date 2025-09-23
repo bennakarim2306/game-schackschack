@@ -9,10 +9,23 @@ const friendsListStyle = StyleSheet.create({
         backgroundColor: '#90ee90',
         margin: 1,
         borderWidth: 1,
-        borderRadius: 4
+        borderRadius: 4,
+        flexDirection: 'row'
     },
     friendBoxText: {
 
+    },
+    unreadMessagesNumber: {
+        backgroundColor: 'red',
+        textAlign: 'center',
+        marginEnd: '2%',
+        borderWidth: 1,
+        borderRadius: 4,
+        flex: 1
+    },
+    contactEmailStyle: {
+        marginLeft: '25%',
+        flex: 10
     }
 });
 

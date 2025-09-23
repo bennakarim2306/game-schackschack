@@ -21,6 +21,24 @@ const loginStyles = StyleSheet.create({
     },
     buttonStyle: {
         margin: "10%"
+    },
+    validationErrorText: {
+        alignSelf: "center",
+        marginBottom: 8,
+        color: "red"
+    },
+        showPasswordButton: {
+        marginLeft: 8,
+        padding: 4
+    },
+    showPasswordText: {
+        color: "#007AFF",
+        flex: 3
+    },
+        rowInputContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        alignSelf: "center"
     }
 })
 
