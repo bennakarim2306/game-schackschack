@@ -9,7 +9,6 @@ const queryItemsStyles = StyleSheet.create({
     borderBottomColor: '#ccc',
     alignItems: 'center',
     height: 100,
-    flexDirection: 'row',
   },
   itemImage: {
     width: 100,
