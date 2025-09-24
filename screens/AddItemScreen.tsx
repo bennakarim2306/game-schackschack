@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, ScrollView } from "react-native";
+import { ScrollView, Text, TextInput, Button, Alert, Image, TouchableOpacity, View } from "react-native";
 import { Picker } from "@react-native-picker/picker";
+import * as ImagePicker from "expo-image-picker";
 
 const foodTypes = [
     "Vegetables",
@@ -23,6 +24,7 @@ const AddItemScreen = () => {
     const [city, setCity] = useState("");
     const [zip, setZip] = useState("");
     const [description, setDescription] = useState("");
+    const [imageUri, setImageUri] = useState<string | null>(null);
 
     const handleAddOffer = () => {
         if (!name || !price || !quantity || !street || !city || !zip) {
@@ -45,11 +47,37 @@ const AddItemScreen = () => {
         setCity("");
         setZip("");
         setDescription("");
+        setImageUri(null);
+    };
+
+    const pickImage = async () => {
+        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!permissionResult.granted) {
+            Alert.alert("Permission required", "Camera roll permission is required!");
+            return;
+        }
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: "images", // <-- fixed here
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 0.7,
+        });
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+            setImageUri(result.assets[0].uri);
+        }
     };
 
     return (
-        <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: "center", alignItems: "center", padding: 24, marginTop: 32 }}>
-            <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 16 }}>Add an item to sell</Text>
+        <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: "flex-start", alignItems: "center", padding: 24, marginTop: 0 }}>
+            <TouchableOpacity onPress={pickImage} style={{ marginBottom: 16 }}>
+                {imageUri ? (
+                    <Image source={{ uri: imageUri }} style={{ width: 120, height: 90, borderRadius: 8 }} />
+                ) : (
+                    <View style={{ width: 120, height: 90, borderRadius: 8, backgroundColor: "#eee", justifyContent: "center", alignItems: "center" }}>
+                        <Text style={{ color: "#888" }}>Tap to upload image</Text>
+                    </View>
+                )}
+            </TouchableOpacity>
             <TextInput
                 placeholder="Item name"
                 value={name}

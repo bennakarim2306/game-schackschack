@@ -165,9 +165,10 @@ const ChatNavigator = () => {
                 >
                     <ChatStackNavigator.Screen
                         name="ContactsList"
-                        // Pass contactsList as a prop if needed:
-                        // children={() => <ContactsList contactsList={contactsList} />}
                         component={ContactsList}
+                        options={{
+                            headerShown: false // Hide the header for ContactsList
+                        }}
                     />
                     <ChatStackNavigator.Screen
                         name="Chat"

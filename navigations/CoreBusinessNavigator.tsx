@@ -11,7 +11,7 @@ const Stack = createNativeStackNavigator();
 
 const QueryFoodStack = () => (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="QueryFood" component={QueryFoodScreen} />
+        <Stack.Screen name="QueryFoodScreen" component={QueryFoodScreen} />
         <Stack.Screen name="Results" component={Results} />
     </Stack.Navigator>
 );
@@ -19,36 +19,36 @@ const QueryFoodStack = () => (
 const CoreBusinessNavigator = () => {
     return (
         <Tab.Navigator
-            initialRouteName="QueryFood"
+            initialRouteName="Find Food"
             screenOptions={({ route }) => ({
-                headerShown: false, // Hide the header/title bar
+                headerShown: true,
                 tabBarIcon: ({ color, size }) => {
-                    if (route.name === "QueryFood") {
+                    if (route.name === "Find Food") {
                         return <Ionicons name="search" size={size} color={color} />;
                     }
-                    if (route.name === "AddItem") {
+                    if (route.name === "Create an offer") {
                         return <Ionicons name="add-circle" size={size} color={color} />;
                     }
                     return null;
                 },
                 tabBarLabelStyle: {
-                    display: "none" // Hide tabBarLabels
+                    display: "none"
                 },
                 tabBarStyle: {
-                    height: 64, // Make tab bar taller
-                    paddingBottom: 8 // Add space at the bottom
+                    height: 64,
+                    paddingBottom: 8
                 }
             })}
         >
             <Tab.Screen
-                name="QueryFood"
+                name="Find Food"
                 component={QueryFoodStack}
-                options={{ tabBarLabel: "" }} // Remove label
+                options={{ tabBarLabel: "" }}
             />
             <Tab.Screen
-                name="AddItem"
+                name="Create an offer"
                 component={AddItemScreen}
-                options={{ tabBarLabel: "" }} // Remove label
+                options={{ tabBarLabel: "" }}
             />
         </Tab.Navigator>
     );

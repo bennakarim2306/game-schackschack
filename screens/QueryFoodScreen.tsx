@@ -3,8 +3,9 @@ import { View, Text, TextInput, Button } from "react-native";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { Picker } from "@react-native-picker/picker";
 import Slider from "@react-native-community/slider";
+import MapView, { Marker, Circle, MapPressEvent } from "react-native-maps";
 // Import mockedItems.json
-import mockedItems from "../assets/mockedItems.json";
+import mockedItems from "../assets/raw_food_offers.json";
 
 const foodTypes = [
     "All",
@@ -22,18 +23,19 @@ type RootStackParamList = {
         selectedType: string;
         distance: number;
         items: any[];
+        searchCenter: { lat: number; lng: number };
     };
     // other screens...
 };
+
+const DEFAULT_CENTER = { lat: 37.0194, lng: -7.9304 }; // Faro, Algarve
 
 const QueryFoodScreen = () => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedType, setSelectedType] = useState("All");
     const [distance, setDistance] = useState(10);
-
-    // Example location for search center (could be user's location)
-    const searchCenter = { lat: 37.0194, lng: -7.9304 }; // Faro, Algarve
+    const [searchCenter, setSearchCenter] = useState(DEFAULT_CENTER);
 
     // Helper to calculate distance between two lat/lng points (Haversine formula)
     function getDistanceKm(lat1: number, lng1: number, lat2: number, lng2: number) {
@@ -75,12 +77,19 @@ const QueryFoodScreen = () => {
             searchTerm,
             selectedType,
             distance,
-            items: filteredItems
+            items: filteredItems,
+            searchCenter // <-- add this
         });
     };
 
+    // Handle user selecting a new center on the map
+    const handleMapPress = (event: MapPressEvent) => {
+        const { latitude, longitude } = event.nativeEvent.coordinate;
+        setSearchCenter({ lat: latitude, lng: longitude });
+    };
+
     return (
-        <View style={{ flex: 1, padding: 24, marginTop: 32 }}>
+        <View style={{ flex: 1, padding: 24, marginTop: 0 }}>
             <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 16 }}>
                 Query for food in the area
             </Text>
@@ -106,6 +115,40 @@ const QueryFoodScreen = () => {
                     <Picker.Item key={type} label={type} value={type} />
                 ))}
             </Picker>
+            <Text style={{ marginBottom: 8 }}>Select search area:</Text>
+            <MapView
+                style={{ width: "100%", height: 220, marginBottom: 16, borderRadius: 12 }}
+                initialRegion={{
+                    latitude: searchCenter.lat,
+                    longitude: searchCenter.lng,
+                    latitudeDelta: 0.09,
+                    longitudeDelta: 0.09,
+                }}
+                region={{
+                    latitude: searchCenter.lat,
+                    longitude: searchCenter.lng,
+                    latitudeDelta: 0.09,
+                    longitudeDelta: 0.09,
+                }}
+                onPress={handleMapPress}
+            >
+                <Marker
+                    coordinate={{ latitude: searchCenter.lat, longitude: searchCenter.lng }}
+                    draggable
+                    onDragEnd={e =>
+                        setSearchCenter({
+                            lat: e.nativeEvent.coordinate.latitude,
+                            lng: e.nativeEvent.coordinate.longitude
+                        })
+                    }
+                />
+                <Circle
+                    center={{ latitude: searchCenter.lat, longitude: searchCenter.lng }}
+                    radius={distance * 1000}
+                    strokeColor="#009966"
+                    fillColor="rgba(0,153,102,0.2)"
+                />
+            </MapView>
             <Text style={{ marginBottom: 8 }}>Maximum distance (km): {distance}</Text>
             <Slider
                 minimumValue={1}

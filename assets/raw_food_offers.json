@@ -1,0 +1,2354 @@
+[
+  {
+    "id": "offer-1",
+    "name": "Tomatoes",
+    "type": "Vegetables",
+    "price": 4.09,
+    "quantity": 11,
+    "unit": "kg",
+    "address": {
+      "street": "105 Market St",
+      "city": "Albufeira",
+      "zip": "8200-000",
+      "lat": 37.0891,
+      "lng": -8.2479
+    },
+    "seller": {
+      "id": "seller-1",
+      "name": "Grandma 1",
+      "contact": "grandma1@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-03",
+    "description": "Fresh tomatoes grown in a small family garden in Albufeira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?tomatoes"
+  },
+  {
+    "id": "offer-2",
+    "name": "Apples",
+    "type": "Fruits",
+    "price": 2.19,
+    "quantity": 7,
+    "unit": "kg",
+    "address": {
+      "street": "53 Market St",
+      "city": "Faro",
+      "zip": "8000-000",
+      "lat": 37.0194,
+      "lng": -7.9304
+    },
+    "seller": {
+      "id": "seller-2",
+      "name": "Grandma 2",
+      "contact": "grandma2@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-04",
+    "description": "Fresh apples grown in a small family garden in Faro.",
+    "imageUrl": "https://source.unsplash.com/400x300/?apples"
+  },
+  {
+    "id": "offer-3",
+    "name": "Oranges",
+    "type": "Fruits",
+    "price": 4.72,
+    "quantity": 19,
+    "unit": "kg",
+    "address": {
+      "street": "166 Market St",
+      "city": "Lagos",
+      "zip": "8600-000",
+      "lat": 37.102,
+      "lng": -8.6742
+    },
+    "seller": {
+      "id": "seller-3",
+      "name": "Grandma 3",
+      "contact": "grandma3@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-02",
+    "description": "Fresh oranges grown in a small family garden in Lagos.",
+    "imageUrl": "https://source.unsplash.com/400x300/?oranges"
+  },
+  {
+    "id": "offer-4",
+    "name": "Carrots",
+    "type": "Vegetables",
+    "price": 2.35,
+    "quantity": 7,
+    "unit": "kg",
+    "address": {
+      "street": "73 Market St",
+      "city": "Lagos",
+      "zip": "8600-000",
+      "lat": 37.102,
+      "lng": -8.6742
+    },
+    "seller": {
+      "id": "seller-4",
+      "name": "Grandma 4",
+      "contact": "grandma4@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-26",
+    "description": "Fresh carrots grown in a small family garden in Lagos.",
+    "imageUrl": "https://source.unsplash.com/400x300/?carrots"
+  },
+  {
+    "id": "offer-5",
+    "name": "Bananas",
+    "type": "Fruits",
+    "price": 1.6,
+    "quantity": 15,
+    "unit": "kg",
+    "address": {
+      "street": "178 Market St",
+      "city": "Faro",
+      "zip": "8000-000",
+      "lat": 37.0194,
+      "lng": -7.9304
+    },
+    "seller": {
+      "id": "seller-5",
+      "name": "Grandma 5",
+      "contact": "grandma5@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-27",
+    "description": "Fresh bananas grown in a small family garden in Faro.",
+    "imageUrl": "https://source.unsplash.com/400x300/?bananas"
+  },
+  {
+    "id": "offer-6",
+    "name": "Peppers",
+    "type": "Vegetables",
+    "price": 4.38,
+    "quantity": 13,
+    "unit": "kg",
+    "address": {
+      "street": "97 Market St",
+      "city": "Silves",
+      "zip": "8300-000",
+      "lat": 37.1892,
+      "lng": -8.4387
+    },
+    "seller": {
+      "id": "seller-6",
+      "name": "Grandma 6",
+      "contact": "grandma6@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-01",
+    "description": "Fresh peppers grown in a small family garden in Silves.",
+    "imageUrl": "https://source.unsplash.com/400x300/?peppers"
+  },
+  {
+    "id": "offer-7",
+    "name": "Lettuce",
+    "type": "Vegetables",
+    "price": 3.48,
+    "quantity": 19,
+    "unit": "kg",
+    "address": {
+      "street": "4 Market St",
+      "city": "Faro",
+      "zip": "8000-000",
+      "lat": 37.0194,
+      "lng": -7.9304
+    },
+    "seller": {
+      "id": "seller-7",
+      "name": "Grandma 7",
+      "contact": "grandma7@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-30",
+    "description": "Fresh lettuce grown in a small family garden in Faro.",
+    "imageUrl": "https://source.unsplash.com/400x300/?lettuce"
+  },
+  {
+    "id": "offer-8",
+    "name": "Strawberries",
+    "type": "Vegetables",
+    "price": 3.84,
+    "quantity": 5,
+    "unit": "kg",
+    "address": {
+      "street": "125 Market St",
+      "city": "Tavira",
+      "zip": "8800-000",
+      "lat": 37.1268,
+      "lng": -7.6497
+    },
+    "seller": {
+      "id": "seller-8",
+      "name": "Grandma 8",
+      "contact": "grandma8@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-02",
+    "description": "Fresh strawberries grown in a small family garden in Tavira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?strawberries"
+  },
+  {
+    "id": "offer-9",
+    "name": "Potatoes",
+    "type": "Vegetables",
+    "price": 3.98,
+    "quantity": 12,
+    "unit": "kg",
+    "address": {
+      "street": "31 Market St",
+      "city": "Quarteira",
+      "zip": "8125-000",
+      "lat": 37.0695,
+      "lng": -8.1001
+    },
+    "seller": {
+      "id": "seller-9",
+      "name": "Grandma 9",
+      "contact": "grandma9@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-02",
+    "description": "Fresh potatoes grown in a small family garden in Quarteira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?potatoes"
+  },
+  {
+    "id": "offer-10",
+    "name": "Grapes",
+    "type": "Fruits",
+    "price": 1.5,
+    "quantity": 21,
+    "unit": "kg",
+    "address": {
+      "street": "86 Market St",
+      "city": "Faro",
+      "zip": "8000-000",
+      "lat": 37.0194,
+      "lng": -7.9304
+    },
+    "seller": {
+      "id": "seller-10",
+      "name": "Grandma 10",
+      "contact": "grandma10@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-26",
+    "description": "Fresh grapes grown in a small family garden in Faro.",
+    "imageUrl": "https://source.unsplash.com/400x300/?grapes"
+  },
+  {
+    "id": "offer-11",
+    "name": "Cucumber",
+    "type": "Vegetables",
+    "price": 1.96,
+    "quantity": 5,
+    "unit": "kg",
+    "address": {
+      "street": "46 Market St",
+      "city": "Tavira",
+      "zip": "8800-000",
+      "lat": 37.1268,
+      "lng": -7.6497
+    },
+    "seller": {
+      "id": "seller-11",
+      "name": "Grandma 11",
+      "contact": "grandma11@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-26",
+    "description": "Fresh cucumber grown in a small family garden in Tavira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?cucumber"
+  },
+  {
+    "id": "offer-12",
+    "name": "Onions",
+    "type": "Vegetables",
+    "price": 3.29,
+    "quantity": 18,
+    "unit": "kg",
+    "address": {
+      "street": "32 Market St",
+      "city": "Albufeira",
+      "zip": "8200-000",
+      "lat": 37.0891,
+      "lng": -8.2479
+    },
+    "seller": {
+      "id": "seller-12",
+      "name": "Grandma 12",
+      "contact": "grandma12@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-29",
+    "description": "Fresh onions grown in a small family garden in Albufeira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?onions"
+  },
+  {
+    "id": "offer-13",
+    "name": "Garlic",
+    "type": "Vegetables",
+    "price": 3.84,
+    "quantity": 16,
+    "unit": "kg",
+    "address": {
+      "street": "128 Market St",
+      "city": "Loul\u00e9",
+      "zip": "8100-000",
+      "lat": 37.137,
+      "lng": -8.0198
+    },
+    "seller": {
+      "id": "seller-13",
+      "name": "Grandma 13",
+      "contact": "grandma13@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-04",
+    "description": "Fresh garlic grown in a small family garden in Loul\u00e9.",
+    "imageUrl": "https://source.unsplash.com/400x300/?garlic"
+  },
+  {
+    "id": "offer-14",
+    "name": "Zucchini",
+    "type": "Vegetables",
+    "price": 2.82,
+    "quantity": 23,
+    "unit": "kg",
+    "address": {
+      "street": "78 Market St",
+      "city": "Lagos",
+      "zip": "8600-000",
+      "lat": 37.102,
+      "lng": -8.6742
+    },
+    "seller": {
+      "id": "seller-14",
+      "name": "Grandma 14",
+      "contact": "grandma14@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-27",
+    "description": "Fresh zucchini grown in a small family garden in Lagos.",
+    "imageUrl": "https://source.unsplash.com/400x300/?zucchini"
+  },
+  {
+    "id": "offer-15",
+    "name": "Pumpkin",
+    "type": "Vegetables",
+    "price": 2.25,
+    "quantity": 9,
+    "unit": "kg",
+    "address": {
+      "street": "100 Market St",
+      "city": "Tavira",
+      "zip": "8800-000",
+      "lat": 37.1268,
+      "lng": -7.6497
+    },
+    "seller": {
+      "id": "seller-15",
+      "name": "Grandma 15",
+      "contact": "grandma15@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-03",
+    "description": "Fresh pumpkin grown in a small family garden in Tavira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?pumpkin"
+  },
+  {
+    "id": "offer-16",
+    "name": "Melon",
+    "type": "Vegetables",
+    "price": 2.0,
+    "quantity": 21,
+    "unit": "kg",
+    "address": {
+      "street": "188 Market St",
+      "city": "Loul\u00e9",
+      "zip": "8100-000",
+      "lat": 37.137,
+      "lng": -8.0198
+    },
+    "seller": {
+      "id": "seller-16",
+      "name": "Grandma 16",
+      "contact": "grandma16@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-27",
+    "description": "Fresh melon grown in a small family garden in Loul\u00e9.",
+    "imageUrl": "https://source.unsplash.com/400x300/?melon"
+  },
+  {
+    "id": "offer-17",
+    "name": "Watermelon",
+    "type": "Vegetables",
+    "price": 4.93,
+    "quantity": 13,
+    "unit": "kg",
+    "address": {
+      "street": "25 Market St",
+      "city": "Portim\u00e3o",
+      "zip": "8500-000",
+      "lat": 37.1386,
+      "lng": -8.5377
+    },
+    "seller": {
+      "id": "seller-17",
+      "name": "Grandma 17",
+      "contact": "grandma17@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-02",
+    "description": "Fresh watermelon grown in a small family garden in Portim\u00e3o.",
+    "imageUrl": "https://source.unsplash.com/400x300/?watermelon"
+  },
+  {
+    "id": "offer-18",
+    "name": "Beans",
+    "type": "Vegetables",
+    "price": 4.7,
+    "quantity": 20,
+    "unit": "kg",
+    "address": {
+      "street": "94 Market St",
+      "city": "Olh\u00e3o",
+      "zip": "8700-000",
+      "lat": 37.0281,
+      "lng": -7.8411
+    },
+    "seller": {
+      "id": "seller-18",
+      "name": "Grandma 18",
+      "contact": "grandma18@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-27",
+    "description": "Fresh beans grown in a small family garden in Olh\u00e3o.",
+    "imageUrl": "https://source.unsplash.com/400x300/?beans"
+  },
+  {
+    "id": "offer-19",
+    "name": "Chickpeas",
+    "type": "Vegetables",
+    "price": 4.84,
+    "quantity": 23,
+    "unit": "kg",
+    "address": {
+      "street": "41 Market St",
+      "city": "Loul\u00e9",
+      "zip": "8100-000",
+      "lat": 37.137,
+      "lng": -8.0198
+    },
+    "seller": {
+      "id": "seller-19",
+      "name": "Grandma 19",
+      "contact": "grandma19@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-26",
+    "description": "Fresh chickpeas grown in a small family garden in Loul\u00e9.",
+    "imageUrl": "https://source.unsplash.com/400x300/?chickpeas"
+  },
+  {
+    "id": "offer-20",
+    "name": "Lentils",
+    "type": "Vegetables",
+    "price": 4.07,
+    "quantity": 23,
+    "unit": "kg",
+    "address": {
+      "street": "87 Market St",
+      "city": "Olh\u00e3o",
+      "zip": "8700-000",
+      "lat": 37.0281,
+      "lng": -7.8411
+    },
+    "seller": {
+      "id": "seller-20",
+      "name": "Grandma 20",
+      "contact": "grandma20@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-02",
+    "description": "Fresh lentils grown in a small family garden in Olh\u00e3o.",
+    "imageUrl": "https://source.unsplash.com/400x300/?lentils"
+  },
+  {
+    "id": "offer-21",
+    "name": "Walnuts",
+    "type": "Vegetables",
+    "price": 3.96,
+    "quantity": 21,
+    "unit": "kg",
+    "address": {
+      "street": "49 Market St",
+      "city": "Portim\u00e3o",
+      "zip": "8500-000",
+      "lat": 37.1386,
+      "lng": -8.5377
+    },
+    "seller": {
+      "id": "seller-21",
+      "name": "Grandma 21",
+      "contact": "grandma21@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-01",
+    "description": "Fresh walnuts grown in a small family garden in Portim\u00e3o.",
+    "imageUrl": "https://source.unsplash.com/400x300/?walnuts"
+  },
+  {
+    "id": "offer-22",
+    "name": "Almonds",
+    "type": "Vegetables",
+    "price": 2.47,
+    "quantity": 25,
+    "unit": "kg",
+    "address": {
+      "street": "1 Market St",
+      "city": "Albufeira",
+      "zip": "8200-000",
+      "lat": 37.0891,
+      "lng": -8.2479
+    },
+    "seller": {
+      "id": "seller-22",
+      "name": "Grandma 22",
+      "contact": "grandma22@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-29",
+    "description": "Fresh almonds grown in a small family garden in Albufeira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?almonds"
+  },
+  {
+    "id": "offer-23",
+    "name": "Hazelnuts",
+    "type": "Vegetables",
+    "price": 4.16,
+    "quantity": 16,
+    "unit": "kg",
+    "address": {
+      "street": "158 Market St",
+      "city": "Tavira",
+      "zip": "8800-000",
+      "lat": 37.1268,
+      "lng": -7.6497
+    },
+    "seller": {
+      "id": "seller-23",
+      "name": "Grandma 23",
+      "contact": "grandma23@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-04",
+    "description": "Fresh hazelnuts grown in a small family garden in Tavira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?hazelnuts"
+  },
+  {
+    "id": "offer-24",
+    "name": "Sunflower Seeds",
+    "type": "Vegetables",
+    "price": 4.55,
+    "quantity": 25,
+    "unit": "kg",
+    "address": {
+      "street": "164 Market St",
+      "city": "Quarteira",
+      "zip": "8125-000",
+      "lat": 37.0695,
+      "lng": -8.1001
+    },
+    "seller": {
+      "id": "seller-24",
+      "name": "Grandma 24",
+      "contact": "grandma24@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-28",
+    "description": "Fresh sunflower seeds grown in a small family garden in Quarteira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?sunflowerseeds"
+  },
+  {
+    "id": "offer-25",
+    "name": "Sesame Seeds",
+    "type": "Vegetables",
+    "price": 1.03,
+    "quantity": 15,
+    "unit": "kg",
+    "address": {
+      "street": "96 Market St",
+      "city": "Faro",
+      "zip": "8000-000",
+      "lat": 37.0194,
+      "lng": -7.9304
+    },
+    "seller": {
+      "id": "seller-25",
+      "name": "Grandma 25",
+      "contact": "grandma25@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-04",
+    "description": "Fresh sesame seeds grown in a small family garden in Faro.",
+    "imageUrl": "https://source.unsplash.com/400x300/?sesameseeds"
+  },
+  {
+    "id": "offer-26",
+    "name": "Corn",
+    "type": "Vegetables",
+    "price": 3.03,
+    "quantity": 22,
+    "unit": "kg",
+    "address": {
+      "street": "31 Market St",
+      "city": "Portim\u00e3o",
+      "zip": "8500-000",
+      "lat": 37.1386,
+      "lng": -8.5377
+    },
+    "seller": {
+      "id": "seller-26",
+      "name": "Grandma 26",
+      "contact": "grandma26@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-03",
+    "description": "Fresh corn grown in a small family garden in Portim\u00e3o.",
+    "imageUrl": "https://source.unsplash.com/400x300/?corn"
+  },
+  {
+    "id": "offer-27",
+    "name": "Wheat",
+    "type": "Vegetables",
+    "price": 2.43,
+    "quantity": 12,
+    "unit": "kg",
+    "address": {
+      "street": "35 Market St",
+      "city": "Silves",
+      "zip": "8300-000",
+      "lat": 37.1892,
+      "lng": -8.4387
+    },
+    "seller": {
+      "id": "seller-27",
+      "name": "Grandma 27",
+      "contact": "grandma27@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-26",
+    "description": "Fresh wheat grown in a small family garden in Silves.",
+    "imageUrl": "https://source.unsplash.com/400x300/?wheat"
+  },
+  {
+    "id": "offer-28",
+    "name": "Barley",
+    "type": "Vegetables",
+    "price": 1.79,
+    "quantity": 10,
+    "unit": "kg",
+    "address": {
+      "street": "2 Market St",
+      "city": "Faro",
+      "zip": "8000-000",
+      "lat": 37.0194,
+      "lng": -7.9304
+    },
+    "seller": {
+      "id": "seller-28",
+      "name": "Grandma 28",
+      "contact": "grandma28@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-26",
+    "description": "Fresh barley grown in a small family garden in Faro.",
+    "imageUrl": "https://source.unsplash.com/400x300/?barley"
+  },
+  {
+    "id": "offer-29",
+    "name": "Oats",
+    "type": "Vegetables",
+    "price": 1.8,
+    "quantity": 21,
+    "unit": "kg",
+    "address": {
+      "street": "118 Market St",
+      "city": "Portim\u00e3o",
+      "zip": "8500-000",
+      "lat": 37.1386,
+      "lng": -8.5377
+    },
+    "seller": {
+      "id": "seller-29",
+      "name": "Grandma 29",
+      "contact": "grandma29@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-29",
+    "description": "Fresh oats grown in a small family garden in Portim\u00e3o.",
+    "imageUrl": "https://source.unsplash.com/400x300/?oats"
+  },
+  {
+    "id": "offer-30",
+    "name": "Rice",
+    "type": "Vegetables",
+    "price": 2.65,
+    "quantity": 8,
+    "unit": "kg",
+    "address": {
+      "street": "132 Market St",
+      "city": "Portim\u00e3o",
+      "zip": "8500-000",
+      "lat": 37.1386,
+      "lng": -8.5377
+    },
+    "seller": {
+      "id": "seller-30",
+      "name": "Grandma 30",
+      "contact": "grandma30@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-02",
+    "description": "Fresh rice grown in a small family garden in Portim\u00e3o.",
+    "imageUrl": "https://source.unsplash.com/400x300/?rice"
+  },
+  {
+    "id": "offer-31",
+    "name": "Peas",
+    "type": "Vegetables",
+    "price": 1.26,
+    "quantity": 5,
+    "unit": "kg",
+    "address": {
+      "street": "63 Market St",
+      "city": "Tavira",
+      "zip": "8800-000",
+      "lat": 37.1268,
+      "lng": -7.6497
+    },
+    "seller": {
+      "id": "seller-31",
+      "name": "Grandma 31",
+      "contact": "grandma31@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-02",
+    "description": "Fresh peas grown in a small family garden in Tavira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?peas"
+  },
+  {
+    "id": "offer-32",
+    "name": "Plums",
+    "type": "Fruits",
+    "price": 4.26,
+    "quantity": 5,
+    "unit": "kg",
+    "address": {
+      "street": "57 Market St",
+      "city": "Albufeira",
+      "zip": "8200-000",
+      "lat": 37.0891,
+      "lng": -8.2479
+    },
+    "seller": {
+      "id": "seller-32",
+      "name": "Grandma 32",
+      "contact": "grandma32@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-02",
+    "description": "Fresh plums grown in a small family garden in Albufeira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?plums"
+  },
+  {
+    "id": "offer-33",
+    "name": "Peaches",
+    "type": "Fruits",
+    "price": 1.14,
+    "quantity": 14,
+    "unit": "kg",
+    "address": {
+      "street": "27 Market St",
+      "city": "Lagos",
+      "zip": "8600-000",
+      "lat": 37.102,
+      "lng": -8.6742
+    },
+    "seller": {
+      "id": "seller-33",
+      "name": "Grandma 33",
+      "contact": "grandma33@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-28",
+    "description": "Fresh peaches grown in a small family garden in Lagos.",
+    "imageUrl": "https://source.unsplash.com/400x300/?peaches"
+  },
+  {
+    "id": "offer-34",
+    "name": "Pears",
+    "type": "Fruits",
+    "price": 3.54,
+    "quantity": 11,
+    "unit": "kg",
+    "address": {
+      "street": "176 Market St",
+      "city": "Portim\u00e3o",
+      "zip": "8500-000",
+      "lat": 37.1386,
+      "lng": -8.5377
+    },
+    "seller": {
+      "id": "seller-34",
+      "name": "Grandma 34",
+      "contact": "grandma34@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-27",
+    "description": "Fresh pears grown in a small family garden in Portim\u00e3o.",
+    "imageUrl": "https://source.unsplash.com/400x300/?pears"
+  },
+  {
+    "id": "offer-35",
+    "name": "Figs",
+    "type": "Fruits",
+    "price": 1.81,
+    "quantity": 13,
+    "unit": "kg",
+    "address": {
+      "street": "12 Market St",
+      "city": "Tavira",
+      "zip": "8800-000",
+      "lat": 37.1268,
+      "lng": -7.6497
+    },
+    "seller": {
+      "id": "seller-35",
+      "name": "Grandma 35",
+      "contact": "grandma35@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-02",
+    "description": "Fresh figs grown in a small family garden in Tavira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?figs"
+  },
+  {
+    "id": "offer-36",
+    "name": "Dates",
+    "type": "Fruits",
+    "price": 3.32,
+    "quantity": 9,
+    "unit": "kg",
+    "address": {
+      "street": "59 Market St",
+      "city": "Lagos",
+      "zip": "8600-000",
+      "lat": 37.102,
+      "lng": -8.6742
+    },
+    "seller": {
+      "id": "seller-36",
+      "name": "Grandma 36",
+      "contact": "grandma36@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-26",
+    "description": "Fresh dates grown in a small family garden in Lagos.",
+    "imageUrl": "https://source.unsplash.com/400x300/?dates"
+  },
+  {
+    "id": "offer-37",
+    "name": "Quince",
+    "type": "Vegetables",
+    "price": 3.72,
+    "quantity": 8,
+    "unit": "kg",
+    "address": {
+      "street": "144 Market St",
+      "city": "Faro",
+      "zip": "8000-000",
+      "lat": 37.0194,
+      "lng": -7.9304
+    },
+    "seller": {
+      "id": "seller-37",
+      "name": "Grandma 37",
+      "contact": "grandma37@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-03",
+    "description": "Fresh quince grown in a small family garden in Faro.",
+    "imageUrl": "https://source.unsplash.com/400x300/?quince"
+  },
+  {
+    "id": "offer-38",
+    "name": "Chili Peppers",
+    "type": "Vegetables",
+    "price": 3.03,
+    "quantity": 9,
+    "unit": "kg",
+    "address": {
+      "street": "29 Market St",
+      "city": "Lagos",
+      "zip": "8600-000",
+      "lat": 37.102,
+      "lng": -8.6742
+    },
+    "seller": {
+      "id": "seller-38",
+      "name": "Grandma 38",
+      "contact": "grandma38@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-28",
+    "description": "Fresh chili peppers grown in a small family garden in Lagos.",
+    "imageUrl": "https://source.unsplash.com/400x300/?chilipeppers"
+  },
+  {
+    "id": "offer-39",
+    "name": "Turnips",
+    "type": "Vegetables",
+    "price": 1.19,
+    "quantity": 5,
+    "unit": "kg",
+    "address": {
+      "street": "81 Market St",
+      "city": "Loul\u00e9",
+      "zip": "8100-000",
+      "lat": 37.137,
+      "lng": -8.0198
+    },
+    "seller": {
+      "id": "seller-39",
+      "name": "Grandma 39",
+      "contact": "grandma39@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-26",
+    "description": "Fresh turnips grown in a small family garden in Loul\u00e9.",
+    "imageUrl": "https://source.unsplash.com/400x300/?turnips"
+  },
+  {
+    "id": "offer-40",
+    "name": "Radishes",
+    "type": "Vegetables",
+    "price": 2.77,
+    "quantity": 13,
+    "unit": "kg",
+    "address": {
+      "street": "80 Market St",
+      "city": "Lagos",
+      "zip": "8600-000",
+      "lat": 37.102,
+      "lng": -8.6742
+    },
+    "seller": {
+      "id": "seller-40",
+      "name": "Grandma 40",
+      "contact": "grandma40@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-28",
+    "description": "Fresh radishes grown in a small family garden in Lagos.",
+    "imageUrl": "https://source.unsplash.com/400x300/?radishes"
+  },
+  {
+    "id": "offer-41",
+    "name": "Kale",
+    "type": "Vegetables",
+    "price": 1.15,
+    "quantity": 14,
+    "unit": "kg",
+    "address": {
+      "street": "24 Market St",
+      "city": "Quarteira",
+      "zip": "8125-000",
+      "lat": 37.0695,
+      "lng": -8.1001
+    },
+    "seller": {
+      "id": "seller-41",
+      "name": "Grandma 41",
+      "contact": "grandma41@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-27",
+    "description": "Fresh kale grown in a small family garden in Quarteira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?kale"
+  },
+  {
+    "id": "offer-42",
+    "name": "Cabbage",
+    "type": "Vegetables",
+    "price": 4.92,
+    "quantity": 6,
+    "unit": "kg",
+    "address": {
+      "street": "108 Market St",
+      "city": "Silves",
+      "zip": "8300-000",
+      "lat": 37.1892,
+      "lng": -8.4387
+    },
+    "seller": {
+      "id": "seller-42",
+      "name": "Grandma 42",
+      "contact": "grandma42@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-01",
+    "description": "Fresh cabbage grown in a small family garden in Silves.",
+    "imageUrl": "https://source.unsplash.com/400x300/?cabbage"
+  },
+  {
+    "id": "offer-43",
+    "name": "Broccoli",
+    "type": "Vegetables",
+    "price": 2.16,
+    "quantity": 10,
+    "unit": "kg",
+    "address": {
+      "street": "141 Market St",
+      "city": "Loul\u00e9",
+      "zip": "8100-000",
+      "lat": 37.137,
+      "lng": -8.0198
+    },
+    "seller": {
+      "id": "seller-43",
+      "name": "Grandma 43",
+      "contact": "grandma43@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-02",
+    "description": "Fresh broccoli grown in a small family garden in Loul\u00e9.",
+    "imageUrl": "https://source.unsplash.com/400x300/?broccoli"
+  },
+  {
+    "id": "offer-44",
+    "name": "Cauliflower",
+    "type": "Vegetables",
+    "price": 3.62,
+    "quantity": 12,
+    "unit": "kg",
+    "address": {
+      "street": "111 Market St",
+      "city": "Tavira",
+      "zip": "8800-000",
+      "lat": 37.1268,
+      "lng": -7.6497
+    },
+    "seller": {
+      "id": "seller-44",
+      "name": "Grandma 44",
+      "contact": "grandma44@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-30",
+    "description": "Fresh cauliflower grown in a small family garden in Tavira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?cauliflower"
+  },
+  {
+    "id": "offer-45",
+    "name": "Sweet Potatoes",
+    "type": "Vegetables",
+    "price": 2.76,
+    "quantity": 19,
+    "unit": "kg",
+    "address": {
+      "street": "53 Market St",
+      "city": "Portim\u00e3o",
+      "zip": "8500-000",
+      "lat": 37.1386,
+      "lng": -8.5377
+    },
+    "seller": {
+      "id": "seller-45",
+      "name": "Grandma 45",
+      "contact": "grandma45@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-27",
+    "description": "Fresh sweet potatoes grown in a small family garden in Portim\u00e3o.",
+    "imageUrl": "https://source.unsplash.com/400x300/?sweetpotatoes"
+  },
+  {
+    "id": "offer-46",
+    "name": "Beetroot",
+    "type": "Vegetables",
+    "price": 4.64,
+    "quantity": 13,
+    "unit": "kg",
+    "address": {
+      "street": "40 Market St",
+      "city": "Quarteira",
+      "zip": "8125-000",
+      "lat": 37.0695,
+      "lng": -8.1001
+    },
+    "seller": {
+      "id": "seller-46",
+      "name": "Grandma 46",
+      "contact": "grandma46@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-04",
+    "description": "Fresh beetroot grown in a small family garden in Quarteira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?beetroot"
+  },
+  {
+    "id": "offer-47",
+    "name": "Leeks",
+    "type": "Vegetables",
+    "price": 2.56,
+    "quantity": 11,
+    "unit": "kg",
+    "address": {
+      "street": "78 Market St",
+      "city": "Silves",
+      "zip": "8300-000",
+      "lat": 37.1892,
+      "lng": -8.4387
+    },
+    "seller": {
+      "id": "seller-47",
+      "name": "Grandma 47",
+      "contact": "grandma47@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-04",
+    "description": "Fresh leeks grown in a small family garden in Silves.",
+    "imageUrl": "https://source.unsplash.com/400x300/?leeks"
+  },
+  {
+    "id": "offer-48",
+    "name": "Parsley Root",
+    "type": "Vegetables",
+    "price": 2.71,
+    "quantity": 15,
+    "unit": "kg",
+    "address": {
+      "street": "96 Market St",
+      "city": "Tavira",
+      "zip": "8800-000",
+      "lat": 37.1268,
+      "lng": -7.6497
+    },
+    "seller": {
+      "id": "seller-48",
+      "name": "Grandma 48",
+      "contact": "grandma48@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-26",
+    "description": "Fresh parsley root grown in a small family garden in Tavira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?parsleyroot"
+  },
+  {
+    "id": "offer-49",
+    "name": "Celery Root",
+    "type": "Vegetables",
+    "price": 2.77,
+    "quantity": 22,
+    "unit": "kg",
+    "address": {
+      "street": "100 Market St",
+      "city": "Silves",
+      "zip": "8300-000",
+      "lat": 37.1892,
+      "lng": -8.4387
+    },
+    "seller": {
+      "id": "seller-49",
+      "name": "Grandma 49",
+      "contact": "grandma49@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-29",
+    "description": "Fresh celery root grown in a small family garden in Silves.",
+    "imageUrl": "https://source.unsplash.com/400x300/?celeryroot"
+  },
+  {
+    "id": "offer-50",
+    "name": "Spinach",
+    "type": "Vegetables",
+    "price": 3.15,
+    "quantity": 7,
+    "unit": "kg",
+    "address": {
+      "street": "6 Market St",
+      "city": "Portim\u00e3o",
+      "zip": "8500-000",
+      "lat": 37.1386,
+      "lng": -8.5377
+    },
+    "seller": {
+      "id": "seller-50",
+      "name": "Grandma 50",
+      "contact": "grandma50@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-28",
+    "description": "Fresh spinach grown in a small family garden in Portim\u00e3o.",
+    "imageUrl": "https://source.unsplash.com/400x300/?spinach"
+  },
+  {
+    "id": "offer-51",
+    "name": "Arugula",
+    "type": "Vegetables",
+    "price": 1.75,
+    "quantity": 19,
+    "unit": "kg",
+    "address": {
+      "street": "169 Market St",
+      "city": "Tavira",
+      "zip": "8800-000",
+      "lat": 37.1268,
+      "lng": -7.6497
+    },
+    "seller": {
+      "id": "seller-51",
+      "name": "Grandma 51",
+      "contact": "grandma51@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-03",
+    "description": "Fresh arugula grown in a small family garden in Tavira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?arugula"
+  },
+  {
+    "id": "offer-52",
+    "name": "Herbs Mix",
+    "type": "Vegetables",
+    "price": 2.48,
+    "quantity": 6,
+    "unit": "kg",
+    "address": {
+      "street": "64 Market St",
+      "city": "Faro",
+      "zip": "8000-000",
+      "lat": 37.0194,
+      "lng": -7.9304
+    },
+    "seller": {
+      "id": "seller-52",
+      "name": "Grandma 52",
+      "contact": "grandma52@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-03",
+    "description": "Fresh herbs mix grown in a small family garden in Faro.",
+    "imageUrl": "https://source.unsplash.com/400x300/?herbsmix"
+  },
+  {
+    "id": "offer-53",
+    "name": "Mint",
+    "type": "Vegetables",
+    "price": 4.13,
+    "quantity": 17,
+    "unit": "kg",
+    "address": {
+      "street": "165 Market St",
+      "city": "Quarteira",
+      "zip": "8125-000",
+      "lat": 37.0695,
+      "lng": -8.1001
+    },
+    "seller": {
+      "id": "seller-53",
+      "name": "Grandma 53",
+      "contact": "grandma53@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-02",
+    "description": "Fresh mint grown in a small family garden in Quarteira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?mint"
+  },
+  {
+    "id": "offer-54",
+    "name": "Basil",
+    "type": "Vegetables",
+    "price": 3.27,
+    "quantity": 14,
+    "unit": "kg",
+    "address": {
+      "street": "84 Market St",
+      "city": "Olh\u00e3o",
+      "zip": "8700-000",
+      "lat": 37.0281,
+      "lng": -7.8411
+    },
+    "seller": {
+      "id": "seller-54",
+      "name": "Grandma 54",
+      "contact": "grandma54@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-04",
+    "description": "Fresh basil grown in a small family garden in Olh\u00e3o.",
+    "imageUrl": "https://source.unsplash.com/400x300/?basil"
+  },
+  {
+    "id": "offer-55",
+    "name": "Oregano",
+    "type": "Vegetables",
+    "price": 3.13,
+    "quantity": 17,
+    "unit": "kg",
+    "address": {
+      "street": "114 Market St",
+      "city": "Silves",
+      "zip": "8300-000",
+      "lat": 37.1892,
+      "lng": -8.4387
+    },
+    "seller": {
+      "id": "seller-55",
+      "name": "Grandma 55",
+      "contact": "grandma55@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-28",
+    "description": "Fresh oregano grown in a small family garden in Silves.",
+    "imageUrl": "https://source.unsplash.com/400x300/?oregano"
+  },
+  {
+    "id": "offer-56",
+    "name": "Rosemary",
+    "type": "Vegetables",
+    "price": 1.21,
+    "quantity": 22,
+    "unit": "kg",
+    "address": {
+      "street": "174 Market St",
+      "city": "Quarteira",
+      "zip": "8125-000",
+      "lat": 37.0695,
+      "lng": -8.1001
+    },
+    "seller": {
+      "id": "seller-56",
+      "name": "Grandma 56",
+      "contact": "grandma56@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-30",
+    "description": "Fresh rosemary grown in a small family garden in Quarteira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?rosemary"
+  },
+  {
+    "id": "offer-57",
+    "name": "Thyme",
+    "type": "Vegetables",
+    "price": 3.41,
+    "quantity": 7,
+    "unit": "kg",
+    "address": {
+      "street": "192 Market St",
+      "city": "Faro",
+      "zip": "8000-000",
+      "lat": 37.0194,
+      "lng": -7.9304
+    },
+    "seller": {
+      "id": "seller-57",
+      "name": "Grandma 57",
+      "contact": "grandma57@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-29",
+    "description": "Fresh thyme grown in a small family garden in Faro.",
+    "imageUrl": "https://source.unsplash.com/400x300/?thyme"
+  },
+  {
+    "id": "offer-58",
+    "name": "Dill",
+    "type": "Vegetables",
+    "price": 2.3,
+    "quantity": 5,
+    "unit": "kg",
+    "address": {
+      "street": "150 Market St",
+      "city": "Portim\u00e3o",
+      "zip": "8500-000",
+      "lat": 37.1386,
+      "lng": -8.5377
+    },
+    "seller": {
+      "id": "seller-58",
+      "name": "Grandma 58",
+      "contact": "grandma58@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-03",
+    "description": "Fresh dill grown in a small family garden in Portim\u00e3o.",
+    "imageUrl": "https://source.unsplash.com/400x300/?dill"
+  },
+  {
+    "id": "offer-59",
+    "name": "Bay Leaves",
+    "type": "Vegetables",
+    "price": 1.23,
+    "quantity": 8,
+    "unit": "kg",
+    "address": {
+      "street": "173 Market St",
+      "city": "Portim\u00e3o",
+      "zip": "8500-000",
+      "lat": 37.1386,
+      "lng": -8.5377
+    },
+    "seller": {
+      "id": "seller-59",
+      "name": "Grandma 59",
+      "contact": "grandma59@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-27",
+    "description": "Fresh bay leaves grown in a small family garden in Portim\u00e3o.",
+    "imageUrl": "https://source.unsplash.com/400x300/?bayleaves"
+  },
+  {
+    "id": "offer-60",
+    "name": "Nectarines",
+    "type": "Fruits",
+    "price": 2.7,
+    "quantity": 17,
+    "unit": "kg",
+    "address": {
+      "street": "41 Market St",
+      "city": "Tavira",
+      "zip": "8800-000",
+      "lat": 37.1268,
+      "lng": -7.6497
+    },
+    "seller": {
+      "id": "seller-60",
+      "name": "Grandma 60",
+      "contact": "grandma60@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-27",
+    "description": "Fresh nectarines grown in a small family garden in Tavira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?nectarines"
+  },
+  {
+    "id": "offer-61",
+    "name": "Apricots",
+    "type": "Fruits",
+    "price": 2.04,
+    "quantity": 13,
+    "unit": "kg",
+    "address": {
+      "street": "142 Market St",
+      "city": "Olh\u00e3o",
+      "zip": "8700-000",
+      "lat": 37.0281,
+      "lng": -7.8411
+    },
+    "seller": {
+      "id": "seller-61",
+      "name": "Grandma 61",
+      "contact": "grandma61@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-30",
+    "description": "Fresh apricots grown in a small family garden in Olh\u00e3o.",
+    "imageUrl": "https://source.unsplash.com/400x300/?apricots"
+  },
+  {
+    "id": "offer-62",
+    "name": "Pomegranates",
+    "type": "Fruits",
+    "price": 3.37,
+    "quantity": 14,
+    "unit": "kg",
+    "address": {
+      "street": "92 Market St",
+      "city": "Portim\u00e3o",
+      "zip": "8500-000",
+      "lat": 37.1386,
+      "lng": -8.5377
+    },
+    "seller": {
+      "id": "seller-62",
+      "name": "Grandma 62",
+      "contact": "grandma62@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-02",
+    "description": "Fresh pomegranates grown in a small family garden in Portim\u00e3o.",
+    "imageUrl": "https://source.unsplash.com/400x300/?pomegranates"
+  },
+  {
+    "id": "offer-63",
+    "name": "Kiwi",
+    "type": "Fruits",
+    "price": 3.88,
+    "quantity": 25,
+    "unit": "kg",
+    "address": {
+      "street": "6 Market St",
+      "city": "Loul\u00e9",
+      "zip": "8100-000",
+      "lat": 37.137,
+      "lng": -8.0198
+    },
+    "seller": {
+      "id": "seller-63",
+      "name": "Grandma 63",
+      "contact": "grandma63@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-04",
+    "description": "Fresh kiwi grown in a small family garden in Loul\u00e9.",
+    "imageUrl": "https://source.unsplash.com/400x300/?kiwi"
+  },
+  {
+    "id": "offer-64",
+    "name": "Mango",
+    "type": "Fruits",
+    "price": 2.21,
+    "quantity": 15,
+    "unit": "kg",
+    "address": {
+      "street": "7 Market St",
+      "city": "Quarteira",
+      "zip": "8125-000",
+      "lat": 37.0695,
+      "lng": -8.1001
+    },
+    "seller": {
+      "id": "seller-64",
+      "name": "Grandma 64",
+      "contact": "grandma64@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-30",
+    "description": "Fresh mango grown in a small family garden in Quarteira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?mango"
+  },
+  {
+    "id": "offer-65",
+    "name": "Papaya",
+    "type": "Fruits",
+    "price": 1.8,
+    "quantity": 7,
+    "unit": "kg",
+    "address": {
+      "street": "152 Market St",
+      "city": "Tavira",
+      "zip": "8800-000",
+      "lat": 37.1268,
+      "lng": -7.6497
+    },
+    "seller": {
+      "id": "seller-65",
+      "name": "Grandma 65",
+      "contact": "grandma65@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-29",
+    "description": "Fresh papaya grown in a small family garden in Tavira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?papaya"
+  },
+  {
+    "id": "offer-66",
+    "name": "Guava",
+    "type": "Fruits",
+    "price": 2.61,
+    "quantity": 13,
+    "unit": "kg",
+    "address": {
+      "street": "151 Market St",
+      "city": "Lagos",
+      "zip": "8600-000",
+      "lat": 37.102,
+      "lng": -8.6742
+    },
+    "seller": {
+      "id": "seller-66",
+      "name": "Grandma 66",
+      "contact": "grandma66@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-01",
+    "description": "Fresh guava grown in a small family garden in Lagos.",
+    "imageUrl": "https://source.unsplash.com/400x300/?guava"
+  },
+  {
+    "id": "offer-67",
+    "name": "Passionfruit",
+    "type": "Fruits",
+    "price": 4.82,
+    "quantity": 21,
+    "unit": "kg",
+    "address": {
+      "street": "166 Market St",
+      "city": "Faro",
+      "zip": "8000-000",
+      "lat": 37.0194,
+      "lng": -7.9304
+    },
+    "seller": {
+      "id": "seller-67",
+      "name": "Grandma 67",
+      "contact": "grandma67@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-03",
+    "description": "Fresh passionfruit grown in a small family garden in Faro.",
+    "imageUrl": "https://source.unsplash.com/400x300/?passionfruit"
+  },
+  {
+    "id": "offer-68",
+    "name": "Cactus Fruit",
+    "type": "Fruits",
+    "price": 3.63,
+    "quantity": 15,
+    "unit": "kg",
+    "address": {
+      "street": "16 Market St",
+      "city": "Tavira",
+      "zip": "8800-000",
+      "lat": 37.1268,
+      "lng": -7.6497
+    },
+    "seller": {
+      "id": "seller-68",
+      "name": "Grandma 68",
+      "contact": "grandma68@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-27",
+    "description": "Fresh cactus fruit grown in a small family garden in Tavira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?cactusfruit"
+  },
+  {
+    "id": "offer-69",
+    "name": "Chestnuts",
+    "type": "Vegetables",
+    "price": 3.54,
+    "quantity": 21,
+    "unit": "kg",
+    "address": {
+      "street": "128 Market St",
+      "city": "Loul\u00e9",
+      "zip": "8100-000",
+      "lat": 37.137,
+      "lng": -8.0198
+    },
+    "seller": {
+      "id": "seller-69",
+      "name": "Grandma 69",
+      "contact": "grandma69@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-30",
+    "description": "Fresh chestnuts grown in a small family garden in Loul\u00e9.",
+    "imageUrl": "https://source.unsplash.com/400x300/?chestnuts"
+  },
+  {
+    "id": "offer-70",
+    "name": "Groundnuts",
+    "type": "Vegetables",
+    "price": 4.51,
+    "quantity": 13,
+    "unit": "kg",
+    "address": {
+      "street": "129 Market St",
+      "city": "Faro",
+      "zip": "8000-000",
+      "lat": 37.0194,
+      "lng": -7.9304
+    },
+    "seller": {
+      "id": "seller-70",
+      "name": "Grandma 70",
+      "contact": "grandma70@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-28",
+    "description": "Fresh groundnuts grown in a small family garden in Faro.",
+    "imageUrl": "https://source.unsplash.com/400x300/?groundnuts"
+  },
+  {
+    "id": "offer-71",
+    "name": "Horse Beans",
+    "type": "Vegetables",
+    "price": 4.85,
+    "quantity": 15,
+    "unit": "kg",
+    "address": {
+      "street": "177 Market St",
+      "city": "Lagos",
+      "zip": "8600-000",
+      "lat": 37.102,
+      "lng": -8.6742
+    },
+    "seller": {
+      "id": "seller-71",
+      "name": "Grandma 71",
+      "contact": "grandma71@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-01",
+    "description": "Fresh horse beans grown in a small family garden in Lagos.",
+    "imageUrl": "https://source.unsplash.com/400x300/?horsebeans"
+  },
+  {
+    "id": "offer-72",
+    "name": "Broad Beans",
+    "type": "Vegetables",
+    "price": 1.88,
+    "quantity": 5,
+    "unit": "kg",
+    "address": {
+      "street": "113 Market St",
+      "city": "Loul\u00e9",
+      "zip": "8100-000",
+      "lat": 37.137,
+      "lng": -8.0198
+    },
+    "seller": {
+      "id": "seller-72",
+      "name": "Grandma 72",
+      "contact": "grandma72@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-27",
+    "description": "Fresh broad beans grown in a small family garden in Loul\u00e9.",
+    "imageUrl": "https://source.unsplash.com/400x300/?broadbeans"
+  },
+  {
+    "id": "offer-73",
+    "name": "Green Beans",
+    "type": "Vegetables",
+    "price": 2.67,
+    "quantity": 25,
+    "unit": "kg",
+    "address": {
+      "street": "125 Market St",
+      "city": "Faro",
+      "zip": "8000-000",
+      "lat": 37.0194,
+      "lng": -7.9304
+    },
+    "seller": {
+      "id": "seller-73",
+      "name": "Grandma 73",
+      "contact": "grandma73@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-03",
+    "description": "Fresh green beans grown in a small family garden in Faro.",
+    "imageUrl": "https://source.unsplash.com/400x300/?greenbeans"
+  },
+  {
+    "id": "offer-74",
+    "name": "Chard",
+    "type": "Vegetables",
+    "price": 2.48,
+    "quantity": 16,
+    "unit": "kg",
+    "address": {
+      "street": "104 Market St",
+      "city": "Loul\u00e9",
+      "zip": "8100-000",
+      "lat": 37.137,
+      "lng": -8.0198
+    },
+    "seller": {
+      "id": "seller-74",
+      "name": "Grandma 74",
+      "contact": "grandma74@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-01",
+    "description": "Fresh chard grown in a small family garden in Loul\u00e9.",
+    "imageUrl": "https://source.unsplash.com/400x300/?chard"
+  },
+  {
+    "id": "offer-75",
+    "name": "Artichokes",
+    "type": "Vegetables",
+    "price": 3.65,
+    "quantity": 23,
+    "unit": "kg",
+    "address": {
+      "street": "110 Market St",
+      "city": "Portim\u00e3o",
+      "zip": "8500-000",
+      "lat": 37.1386,
+      "lng": -8.5377
+    },
+    "seller": {
+      "id": "seller-75",
+      "name": "Grandma 75",
+      "contact": "grandma75@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-26",
+    "description": "Fresh artichokes grown in a small family garden in Portim\u00e3o.",
+    "imageUrl": "https://source.unsplash.com/400x300/?artichokes"
+  },
+  {
+    "id": "offer-76",
+    "name": "Asparagus",
+    "type": "Vegetables",
+    "price": 2.17,
+    "quantity": 22,
+    "unit": "kg",
+    "address": {
+      "street": "162 Market St",
+      "city": "Albufeira",
+      "zip": "8200-000",
+      "lat": 37.0891,
+      "lng": -8.2479
+    },
+    "seller": {
+      "id": "seller-76",
+      "name": "Grandma 76",
+      "contact": "grandma76@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-02",
+    "description": "Fresh asparagus grown in a small family garden in Albufeira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?asparagus"
+  },
+  {
+    "id": "offer-77",
+    "name": "Okra",
+    "type": "Vegetables",
+    "price": 3.22,
+    "quantity": 20,
+    "unit": "kg",
+    "address": {
+      "street": "31 Market St",
+      "city": "Albufeira",
+      "zip": "8200-000",
+      "lat": 37.0891,
+      "lng": -8.2479
+    },
+    "seller": {
+      "id": "seller-77",
+      "name": "Grandma 77",
+      "contact": "grandma77@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-28",
+    "description": "Fresh okra grown in a small family garden in Albufeira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?okra"
+  },
+  {
+    "id": "offer-78",
+    "name": "Mushrooms",
+    "type": "Vegetables",
+    "price": 3.07,
+    "quantity": 16,
+    "unit": "kg",
+    "address": {
+      "street": "54 Market St",
+      "city": "Albufeira",
+      "zip": "8200-000",
+      "lat": 37.0891,
+      "lng": -8.2479
+    },
+    "seller": {
+      "id": "seller-78",
+      "name": "Grandma 78",
+      "contact": "grandma78@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-28",
+    "description": "Fresh mushrooms grown in a small family garden in Albufeira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?mushrooms"
+  },
+  {
+    "id": "offer-79",
+    "name": "Squash",
+    "type": "Vegetables",
+    "price": 3.25,
+    "quantity": 8,
+    "unit": "kg",
+    "address": {
+      "street": "102 Market St",
+      "city": "Loul\u00e9",
+      "zip": "8100-000",
+      "lat": 37.137,
+      "lng": -8.0198
+    },
+    "seller": {
+      "id": "seller-79",
+      "name": "Grandma 79",
+      "contact": "grandma79@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-01",
+    "description": "Fresh squash grown in a small family garden in Loul\u00e9.",
+    "imageUrl": "https://source.unsplash.com/400x300/?squash"
+  },
+  {
+    "id": "offer-80",
+    "name": "Elderberries",
+    "type": "Vegetables",
+    "price": 4.66,
+    "quantity": 17,
+    "unit": "kg",
+    "address": {
+      "street": "190 Market St",
+      "city": "Silves",
+      "zip": "8300-000",
+      "lat": 37.1892,
+      "lng": -8.4387
+    },
+    "seller": {
+      "id": "seller-80",
+      "name": "Grandma 80",
+      "contact": "grandma80@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-29",
+    "description": "Fresh elderberries grown in a small family garden in Silves.",
+    "imageUrl": "https://source.unsplash.com/400x300/?elderberries"
+  },
+  {
+    "id": "offer-81",
+    "name": "Gooseberries",
+    "type": "Vegetables",
+    "price": 2.79,
+    "quantity": 22,
+    "unit": "kg",
+    "address": {
+      "street": "55 Market St",
+      "city": "Silves",
+      "zip": "8300-000",
+      "lat": 37.1892,
+      "lng": -8.4387
+    },
+    "seller": {
+      "id": "seller-81",
+      "name": "Grandma 81",
+      "contact": "grandma81@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-01",
+    "description": "Fresh gooseberries grown in a small family garden in Silves.",
+    "imageUrl": "https://source.unsplash.com/400x300/?gooseberries"
+  },
+  {
+    "id": "offer-82",
+    "name": "Mulberries",
+    "type": "Vegetables",
+    "price": 4.73,
+    "quantity": 22,
+    "unit": "kg",
+    "address": {
+      "street": "128 Market St",
+      "city": "Loul\u00e9",
+      "zip": "8100-000",
+      "lat": 37.137,
+      "lng": -8.0198
+    },
+    "seller": {
+      "id": "seller-82",
+      "name": "Grandma 82",
+      "contact": "grandma82@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-03",
+    "description": "Fresh mulberries grown in a small family garden in Loul\u00e9.",
+    "imageUrl": "https://source.unsplash.com/400x300/?mulberries"
+  },
+  {
+    "id": "offer-83",
+    "name": "Blackberries",
+    "type": "Fruits",
+    "price": 3.71,
+    "quantity": 13,
+    "unit": "kg",
+    "address": {
+      "street": "164 Market St",
+      "city": "Loul\u00e9",
+      "zip": "8100-000",
+      "lat": 37.137,
+      "lng": -8.0198
+    },
+    "seller": {
+      "id": "seller-83",
+      "name": "Grandma 83",
+      "contact": "grandma83@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-01",
+    "description": "Fresh blackberries grown in a small family garden in Loul\u00e9.",
+    "imageUrl": "https://source.unsplash.com/400x300/?blackberries"
+  },
+  {
+    "id": "offer-84",
+    "name": "Blueberries",
+    "type": "Fruits",
+    "price": 2.41,
+    "quantity": 18,
+    "unit": "kg",
+    "address": {
+      "street": "130 Market St",
+      "city": "Portim\u00e3o",
+      "zip": "8500-000",
+      "lat": 37.1386,
+      "lng": -8.5377
+    },
+    "seller": {
+      "id": "seller-84",
+      "name": "Grandma 84",
+      "contact": "grandma84@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-26",
+    "description": "Fresh blueberries grown in a small family garden in Portim\u00e3o.",
+    "imageUrl": "https://source.unsplash.com/400x300/?blueberries"
+  },
+  {
+    "id": "offer-85",
+    "name": "Raspberries",
+    "type": "Fruits",
+    "price": 3.16,
+    "quantity": 12,
+    "unit": "kg",
+    "address": {
+      "street": "163 Market St",
+      "city": "Albufeira",
+      "zip": "8200-000",
+      "lat": 37.0891,
+      "lng": -8.2479
+    },
+    "seller": {
+      "id": "seller-85",
+      "name": "Grandma 85",
+      "contact": "grandma85@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-03",
+    "description": "Fresh raspberries grown in a small family garden in Albufeira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?raspberries"
+  },
+  {
+    "id": "offer-86",
+    "name": "Currants",
+    "type": "Fruits",
+    "price": 2.32,
+    "quantity": 25,
+    "unit": "kg",
+    "address": {
+      "street": "45 Market St",
+      "city": "Albufeira",
+      "zip": "8200-000",
+      "lat": 37.0891,
+      "lng": -8.2479
+    },
+    "seller": {
+      "id": "seller-86",
+      "name": "Grandma 86",
+      "contact": "grandma86@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-30",
+    "description": "Fresh currants grown in a small family garden in Albufeira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?currants"
+  },
+  {
+    "id": "offer-87",
+    "name": "Cranberries",
+    "type": "Fruits",
+    "price": 2.09,
+    "quantity": 25,
+    "unit": "kg",
+    "address": {
+      "street": "84 Market St",
+      "city": "Albufeira",
+      "zip": "8200-000",
+      "lat": 37.0891,
+      "lng": -8.2479
+    },
+    "seller": {
+      "id": "seller-87",
+      "name": "Grandma 87",
+      "contact": "grandma87@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-01",
+    "description": "Fresh cranberries grown in a small family garden in Albufeira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?cranberries"
+  },
+  {
+    "id": "offer-88",
+    "name": "Sorghum",
+    "type": "Vegetables",
+    "price": 4.11,
+    "quantity": 17,
+    "unit": "kg",
+    "address": {
+      "street": "190 Market St",
+      "city": "Silves",
+      "zip": "8300-000",
+      "lat": 37.1892,
+      "lng": -8.4387
+    },
+    "seller": {
+      "id": "seller-88",
+      "name": "Grandma 88",
+      "contact": "grandma88@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-26",
+    "description": "Fresh sorghum grown in a small family garden in Silves.",
+    "imageUrl": "https://source.unsplash.com/400x300/?sorghum"
+  },
+  {
+    "id": "offer-89",
+    "name": "Millet",
+    "type": "Vegetables",
+    "price": 4.92,
+    "quantity": 22,
+    "unit": "kg",
+    "address": {
+      "street": "48 Market St",
+      "city": "Tavira",
+      "zip": "8800-000",
+      "lat": 37.1268,
+      "lng": -7.6497
+    },
+    "seller": {
+      "id": "seller-89",
+      "name": "Grandma 89",
+      "contact": "grandma89@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-29",
+    "description": "Fresh millet grown in a small family garden in Tavira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?millet"
+  },
+  {
+    "id": "offer-90",
+    "name": "Spelt",
+    "type": "Vegetables",
+    "price": 2.8,
+    "quantity": 13,
+    "unit": "kg",
+    "address": {
+      "street": "169 Market St",
+      "city": "Faro",
+      "zip": "8000-000",
+      "lat": 37.0194,
+      "lng": -7.9304
+    },
+    "seller": {
+      "id": "seller-90",
+      "name": "Grandma 90",
+      "contact": "grandma90@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-26",
+    "description": "Fresh spelt grown in a small family garden in Faro.",
+    "imageUrl": "https://source.unsplash.com/400x300/?spelt"
+  },
+  {
+    "id": "offer-91",
+    "name": "Buckwheat",
+    "type": "Vegetables",
+    "price": 1.63,
+    "quantity": 21,
+    "unit": "kg",
+    "address": {
+      "street": "9 Market St",
+      "city": "Albufeira",
+      "zip": "8200-000",
+      "lat": 37.0891,
+      "lng": -8.2479
+    },
+    "seller": {
+      "id": "seller-91",
+      "name": "Grandma 91",
+      "contact": "grandma91@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-28",
+    "description": "Fresh buckwheat grown in a small family garden in Albufeira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?buckwheat"
+  },
+  {
+    "id": "offer-92",
+    "name": "Quinoa",
+    "type": "Vegetables",
+    "price": 2.3,
+    "quantity": 7,
+    "unit": "kg",
+    "address": {
+      "street": "185 Market St",
+      "city": "Lagos",
+      "zip": "8600-000",
+      "lat": 37.102,
+      "lng": -8.6742
+    },
+    "seller": {
+      "id": "seller-92",
+      "name": "Grandma 92",
+      "contact": "grandma92@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-30",
+    "description": "Fresh quinoa grown in a small family garden in Lagos.",
+    "imageUrl": "https://source.unsplash.com/400x300/?quinoa"
+  },
+  {
+    "id": "offer-93",
+    "name": "Amaranth",
+    "type": "Vegetables",
+    "price": 1.03,
+    "quantity": 5,
+    "unit": "kg",
+    "address": {
+      "street": "60 Market St",
+      "city": "Quarteira",
+      "zip": "8125-000",
+      "lat": 37.0695,
+      "lng": -8.1001
+    },
+    "seller": {
+      "id": "seller-93",
+      "name": "Grandma 93",
+      "contact": "grandma93@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-01",
+    "description": "Fresh amaranth grown in a small family garden in Quarteira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?amaranth"
+  },
+  {
+    "id": "offer-94",
+    "name": "Mustard Seeds",
+    "type": "Vegetables",
+    "price": 1.94,
+    "quantity": 15,
+    "unit": "kg",
+    "address": {
+      "street": "134 Market St",
+      "city": "Faro",
+      "zip": "8000-000",
+      "lat": 37.0194,
+      "lng": -7.9304
+    },
+    "seller": {
+      "id": "seller-94",
+      "name": "Grandma 94",
+      "contact": "grandma94@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-03",
+    "description": "Fresh mustard seeds grown in a small family garden in Faro.",
+    "imageUrl": "https://source.unsplash.com/400x300/?mustardseeds"
+  },
+  {
+    "id": "offer-95",
+    "name": "Pumpkin Seeds",
+    "type": "Vegetables",
+    "price": 1.08,
+    "quantity": 15,
+    "unit": "kg",
+    "address": {
+      "street": "45 Market St",
+      "city": "Silves",
+      "zip": "8300-000",
+      "lat": 37.1892,
+      "lng": -8.4387
+    },
+    "seller": {
+      "id": "seller-95",
+      "name": "Grandma 95",
+      "contact": "grandma95@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-04",
+    "description": "Fresh pumpkin seeds grown in a small family garden in Silves.",
+    "imageUrl": "https://source.unsplash.com/400x300/?pumpkinseeds"
+  },
+  {
+    "id": "offer-96",
+    "name": "Carob Pods",
+    "type": "Vegetables",
+    "price": 1.19,
+    "quantity": 19,
+    "unit": "kg",
+    "address": {
+      "street": "187 Market St",
+      "city": "Olh\u00e3o",
+      "zip": "8700-000",
+      "lat": 37.0281,
+      "lng": -7.8411
+    },
+    "seller": {
+      "id": "seller-96",
+      "name": "Grandma 96",
+      "contact": "grandma96@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-09-26",
+    "description": "Fresh carob pods grown in a small family garden in Olh\u00e3o.",
+    "imageUrl": "https://source.unsplash.com/400x300/?carobpods"
+  },
+  {
+    "id": "offer-97",
+    "name": "Medlar",
+    "type": "Fruits",
+    "price": 4.28,
+    "quantity": 8,
+    "unit": "kg",
+    "address": {
+      "street": "4 Market St",
+      "city": "Olh\u00e3o",
+      "zip": "8700-000",
+      "lat": 37.0281,
+      "lng": -7.8411
+    },
+    "seller": {
+      "id": "seller-97",
+      "name": "Grandma 97",
+      "contact": "grandma97@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-02",
+    "description": "Fresh medlar grown in a small family garden in Olh\u00e3o.",
+    "imageUrl": "https://source.unsplash.com/400x300/?medlar"
+  },
+  {
+    "id": "offer-98",
+    "name": "Loquat",
+    "type": "Fruits",
+    "price": 1.48,
+    "quantity": 7,
+    "unit": "kg",
+    "address": {
+      "street": "4 Market St",
+      "city": "Quarteira",
+      "zip": "8125-000",
+      "lat": 37.0695,
+      "lng": -8.1001
+    },
+    "seller": {
+      "id": "seller-98",
+      "name": "Grandma 98",
+      "contact": "grandma98@garden.com"
+    },
+    "availableFrom": "2025-09-24",
+    "availableTo": "2025-10-02",
+    "description": "Fresh loquat grown in a small family garden in Quarteira.",
+    "imageUrl": "https://source.unsplash.com/400x300/?loquat"
+  }
+]

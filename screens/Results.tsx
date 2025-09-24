@@ -2,6 +2,19 @@ import React, { useState } from "react";
 import { View, Text, Button, FlatList, TouchableOpacity, Image, Modal, TextInput } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 
+// Helper to calculate distance between two lat/lng points (Haversine formula)
+function getDistanceKm(lat1: number, lng1: number, lat2: number, lng2: number) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+}
+
 type FoodOffer = {
     id: string;
     name: string;
@@ -32,12 +45,13 @@ type ResultsParams = {
     selectedType?: string;
     distance?: number;
     items?: FoodOffer[];
+    searchCenter?: { lat: number; lng: number };
 };
 
 const Results = () => {
     const navigation = useNavigation();
     const route = useRoute();
-    const { searchTerm, selectedType, distance, items = [] } = (route.params as ResultsParams) || {};
+    const { searchTerm, selectedType, distance, items = [], searchCenter } = (route.params as ResultsParams) || {};
 
     const [selectedItem, setSelectedItem] = useState<FoodOffer | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
@@ -72,42 +86,59 @@ const Results = () => {
     };
 
     return (
-        <View style={{ flex: 1, padding: 24, marginTop: 32 }}>
+        <View style={{ flex: 1, padding: 24, marginTop: 0 }}>
             <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 16 }}>
                 Results
             </Text>
-            <Text>Search term: {searchTerm}</Text>
-            <Text>Type: {selectedType}</Text>
-            <Text>Distance: {distance} km</Text>
             <FlatList
                 data={items}
                 keyExtractor={item => item.id}
-                renderItem={({ item }) => (
-                    <TouchableOpacity
-                        onPress={() => handleItemPress(item)}
-                        style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                            padding: 12,
-                            marginVertical: 6,
-                            backgroundColor: "#f2f2f2",
-                            borderRadius: 8
-                        }}
-                    >
-                        <Image
-                            source={{ uri: item.imageUrl }}
-                            style={{ width: 60, height: 60, borderRadius: 8, marginRight: 12 }}
-                        />
-                        <View style={{ flex: 1 }}>
-                            <Text style={{ fontWeight: "bold", fontSize: 16 }}>{item.name}</Text>
-                            <Text>{item.type} • {item.price}€/{item.unit}</Text>
-                            <Text numberOfLines={1} style={{ color: "#555" }}>{item.description}</Text>
-                            <Text style={{ fontSize: 12, color: "#888" }}>
-                                {item.address.city}, {item.address.street}
-                            </Text>
-                        </View>
-                    </TouchableOpacity>
-                )}
+                renderItem={({ item }) => {
+                    let itemDistance = null;
+                    if (searchCenter && item.address?.lat && item.address?.lng) {
+                        itemDistance = getDistanceKm(
+                            searchCenter.lat,
+                            searchCenter.lng,
+                            item.address.lat,
+                            item.address.lng
+                        );
+                    }
+                    return (
+                        <TouchableOpacity
+                            onPress={() => handleItemPress(item)}
+                            style={{
+                                flexDirection: "row",
+                                alignItems: "center",
+                                padding: 12,
+                                marginVertical: 6,
+                                backgroundColor: "#f2f2f2",
+                                borderRadius: 8
+                            }}
+                        >
+                            <Image
+                                source={{ uri: item.imageUrl }}
+                                style={{ width: 60, height: 60, borderRadius: 8, marginRight: 12 }}
+                            />
+                            <View style={{ flex: 1 }}>
+                                <Text style={{ fontWeight: "bold", fontSize: 16 }}>{item.name}</Text>
+                                <Text>
+                                    {item.type} • {item.price}€/{item.unit}
+                                </Text>
+                                <Text numberOfLines={1} style={{ color: "#555" }}>
+                                    {item.description}
+                                </Text>
+                                <Text style={{ fontSize: 12, color: "#888" }}>
+                                    {item.address.city}, {item.address.street}
+                                </Text>
+                                {itemDistance !== null && (
+                                    <Text style={{ fontSize: 12, color: "#009966" }}>
+                                        Distance: {itemDistance.toFixed(2)} km
+                                    </Text>
+                                )}
+                            </View>
+                        </TouchableOpacity>
+                    );
+                }}
                 ListEmptyComponent={
                     <Text style={{ marginTop: 24, color: "#888" }}>No items found.</Text>
                 }

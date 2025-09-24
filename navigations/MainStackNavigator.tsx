@@ -71,89 +71,69 @@ const MainStackNavigator = () => {
     () => ({
       getUserToken: () => state.userToken,
       signIn: async (data) => {
-        console.log("authContext -- signIn called with data -- " + JSON.stringify(data))
-        // In a production app, we need to send some data (usually username, password) to server and get a token
-        // We will also need to handle errors if sign in failed
-        // After getting token, we need to persist the token using `SecureStore`
-        // In the example, we'll use a dummy token
-        await fetch(configs.USER_AUTH_BASE_URL + configs.USER_AUTH_SIGN_IN_PATH, {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email: data.email,
-            password: data.password,
-          }),
-        })
-        .then(async response => {
-          console.log(`received response from server ${JSON.stringify(response)}`)
-          if(response.status !== 200) {
-            Alert.alert(
-            'Registration issue',
-            'We are sorry but something went wrong with \n the registration.. please try it later!',
-            [{text: 'Ok', onPress: () => console.log('Cancel Pressed'), style: 'cancel'}])
-          }
-          else {
-            const jsonResponse = await response.json();
-            console.log("received data from server for login: " + JSON.stringify(jsonResponse.token))
-            await SecureStore.setItemAsync('userToken', jsonResponse.token)
-            dispatch({ type: 'SIGN_IN', token: jsonResponse.token });
-          }
-        })
-        .catch(e => {
-          Alert.alert(
-            'Registration issue',
-            'We are sorry but something went wrong with \n the registration.. please try it later!',
-            [{text: 'Ok', onPress: () => console.log('Cancel Pressed'), style: 'cancel'}])
-          console.error(`some error occured while registration request${e}`)
-        })
+        try {
+            const response = await fetch(configs.USER_AUTH_BASE_URL + configs.USER_AUTH_SIGN_IN_PATH, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: data.email,
+                    password: data.password,
+                }),
+            });
+
+            if (response.status !== 200) {
+                throw new Error("Login failed");
+            } else {
+                const jsonResponse = await response.json();
+                await SecureStore.setItemAsync('userToken', jsonResponse.token);
+                dispatch({ type: 'SIGN_IN', token: jsonResponse.token });
+            }
+        } catch (e) {
+            throw e;
+        }
       },
       signOut: async () => {
-        await SecureStore.deleteItemAsync('userToken'); // Remove token from store
+        await SecureStore.deleteItemAsync('userToken');
         dispatch({ type: 'SIGN_OUT' });
       },
       signUp: async (data) => {
-        console.log(`sending registration request with data: ${JSON.stringify(data)}`)
-        // In a production app, we need to send user data to server and get a token
-        // We will also need to handle errors if sign up failed
-        // After getting token, we need to persist the token using `SecureStore`
-        // In the example, we'll use a dummy token
-        await fetch('http://192.168.1.182:8080/api/v1/auth/register', {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            firstname: data.firstName,
-            lastname: data.lastName,
-            email: data.email,
-            password: data.password,
-          }),
-        })
-        .then(async response => {
-          console.log(`received response from server ${JSON.stringify(response)}`)
-          if(response.status !== 200) {
+        try {
+          const response = await fetch(configs.USER_AUTH_BASE_URL + configs.USER_AUTH_SIGN_UP_PATH, {
+            method: 'POST',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              firstname: data.firstName,
+              lastname: data.lastName,
+              email: data.email,
+              password: data.password,
+            }),
+          });
+
+          if (response.status !== 200) {
             Alert.alert(
-            'Registration issue',
-            'We are sorry but something went wrong with \n the registration.. please try it later!',
-            [{text: 'Ok', onPress: () => console.log('Cancel Pressed'), style: 'cancel'}])
-          }
-          else {
+              'Registration issue',
+              'We are sorry but something went wrong with \n the registration.. please try it later!',
+              [{text: 'Ok', onPress: () => console.log('Cancel Pressed'), style: 'cancel'}]
+            );
+          } else {
             const jsonResponse = await response.json();
-            console.log("received data from server for registration: " + JSON.stringify(jsonResponse))
+            await SecureStore.setItemAsync('userToken', jsonResponse.token);
             dispatch({ type: 'SIGN_IN', token: jsonResponse.token });
           }
-        })
-        .catch(e => {
+        } catch (e) {
           Alert.alert(
             'Registration issue',
             'We are sorry but something went wrong with \n the registration.. please try it later!',
-            [{text: 'Ok', onPress: () => console.log('Cancel Pressed'), style: 'cancel'}])
-          console.error(`some error occured while registration request${e}`)
-        })
+            [{text: 'Ok', onPress: () => console.log('Cancel Pressed'), style: 'cancel'}]
+          );
+          console.error(`some error occured while registration request${e}`);
+        }
       },
     }),
     [state.userToken]
