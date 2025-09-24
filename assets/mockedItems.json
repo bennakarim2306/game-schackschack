@@ -6,8 +6,18 @@
     "price": 2.50,
     "quantity": 10,
     "unit": "kg",
-    "address": { "street": "12 Main St", "city": "Faro", "zip": "8000-000", "lat": 37.0194, "lng": -7.9304 },
-    "seller": { "id": "seller-1", "name": "Seller 1", "contact": "seller1@market.com" },
+    "address": {
+      "street": "12 Main St",
+      "city": "Faro",
+      "zip": "8000-000",
+      "lat": 37.0194,
+      "lng": -7.9304
+    },
+    "seller": {
+      "id": "seller-1",
+      "name": "Seller 1",
+      "contact": "seller1@market.com"
+    },
     "availableFrom": "2025-09-23",
     "availableTo": "2025-09-30",
     "description": "Fresh tomatoes from Faro.",
@@ -20,8 +30,18 @@
     "price": 3.00,
     "quantity": 15,
     "unit": "kg",
-    "address": { "street": "34 Main St", "city": "Portimão", "zip": "8500-000", "lat": 37.1386, "lng": -8.5377 },
-    "seller": { "id": "seller-2", "name": "Seller 2", "contact": "seller2@market.com" },
+    "address": {
+      "street": "34 Main St",
+      "city": "Portimão",
+      "zip": "8500-000",
+      "lat": 37.1386,
+      "lng": -8.5377
+    },
+    "seller": {
+      "id": "seller-2",
+      "name": "Seller 2",
+      "contact": "seller2@market.com"
+    },
     "availableFrom": "2025-09-23",
     "availableTo": "2025-10-05",
     "description": "Crisp apples from Portimão.",
@@ -34,8 +54,18 @@
     "price": 1.20,
     "quantity": 20,
     "unit": "l",
-    "address": { "street": "56 Main St", "city": "Lagos", "zip": "8600-000", "lat": 37.1020, "lng": -8.6742 },
-    "seller": { "id": "seller-3", "name": "Seller 3", "contact": "seller3@market.com" },
+    "address": {
+      "street": "56 Main St",
+      "city": "Lagos",
+      "zip": "8600-000",
+      "lat": 37.1020,
+      "lng": -8.6742
+    },
+    "seller": {
+      "id": "seller-3",
+      "name": "Seller 3",
+      "contact": "seller3@market.com"
+    },
     "availableFrom": "2025-09-23",
     "availableTo": "2025-09-28",
     "description": "Fresh milk from Lagos.",
@@ -48,8 +78,18 @@
     "price": 2.00,
     "quantity": 30,
     "unit": "pcs",
-    "address": { "street": "78 Main St", "city": "Albufeira", "zip": "8200-000", "lat": 37.0891, "lng": -8.2479 },
-    "seller": { "id": "seller-4", "name": "Seller 4", "contact": "seller4@market.com" },
+    "address": {
+      "street": "78 Main St",
+      "city": "Albufeira",
+      "zip": "8200-000",
+      "lat": 37.0891,
+      "lng": -8.2479
+    },
+    "seller": {
+      "id": "seller-4",
+      "name": "Seller 4",
+      "contact": "seller4@market.com"
+    },
     "availableFrom": "2025-09-23",
     "availableTo": "2025-09-29",
     "description": "Farm eggs from Albufeira.",
@@ -62,8 +102,18 @@
     "price": 1.50,
     "quantity": 25,
     "unit": "pcs",
-    "address": { "street": "90 Main St", "city": "Tavira", "zip": "8800-000", "lat": 37.1268, "lng": -7.6497 },
-    "seller": { "id": "seller-5", "name": "Seller 5", "contact": "seller5@market.com" },
+    "address": {
+      "street": "90 Main St",
+      "city": "Tavira",
+      "zip": "8800-000",
+      "lat": 37.1268,
+      "lng": -7.6497
+    },
+    "seller": {
+      "id": "seller-5",
+      "name": "Seller 5",
+      "contact": "seller5@market.com"
+    },
     "availableFrom": "2025-09-23",
     "availableTo": "2025-09-27",
     "description": "Fresh bread from Tavira.",
@@ -76,8 +126,18 @@
     "price": 2.20,
     "quantity": 12,
     "unit": "kg",
-    "address": { "street": "15 Orange St", "city": "Olhão", "zip": "8700-000", "lat": 37.0281, "lng": -7.8411 },
-    "seller": { "id": "seller-6", "name": "Seller 6", "contact": "seller6@market.com" },
+    "address": {
+      "street": "15 Orange St",
+      "city": "Olhão",
+      "zip": "8700-000",
+      "lat": 37.0281,
+      "lng": -7.8411
+    },
+    "seller": {
+      "id": "seller-6",
+      "name": "Seller 6",
+      "contact": "seller6@market.com"
+    },
     "availableFrom": "2025-09-23",
     "availableTo": "2025-09-30",
     "description": "Sweet oranges from Olhão.",
@@ -90,8 +150,18 @@
     "price": 4.00,
     "quantity": 8,
     "unit": "kg",
-    "address": { "street": "22 Cheese Rd", "city": "Loulé", "zip": "8100-000", "lat": 37.1370, "lng": -8.0198 },
-    "seller": { "id": "seller-7", "name": "Seller 7", "contact": "seller7@market.com" },
+    "address": {
+      "street": "22 Cheese Rd",
+      "city": "Loulé",
+      "zip": "8100-000",
+      "lat": 37.1370,
+      "lng": -8.0198
+    },
+    "seller": {
+      "id": "seller-7",
+      "name": "Seller 7",
+      "contact": "seller7@market.com"
+    },
     "availableFrom": "2025-09-23",
     "availableTo": "2025-09-29",
     "description": "Local cheese from Loulé.",
@@ -104,8 +174,18 @@
     "price": 1.80,
     "quantity": 18,
     "unit": "kg",
-    "address": { "street": "33 Carrot Ave", "city": "Silves", "zip": "8300-000", "lat": 37.1892, "lng": -8.4387 },
-    "seller": { "id": "seller-8", "name": "Seller 8", "contact": "seller8@market.com" },
+    "address": {
+      "street": "33 Carrot Ave",
+      "city": "Silves",
+      "zip": "8300-000",
+      "lat": 37.1892,
+      "lng": -8.4387
+    },
+    "seller": {
+      "id": "seller-8",
+      "name": "Seller 8",
+      "contact": "seller8@market.com"
+    },
     "availableFrom": "2025-09-23",
     "availableTo": "2025-09-28",
     "description": "Fresh carrots from Silves.",
@@ -118,8 +198,18 @@
     "price": 2.80,
     "quantity": 14,
     "unit": "kg",
-    "address": { "street": "44 Banana St", "city": "Quarteira", "zip": "8125-000", "lat": 37.0695, "lng": -8.1001 },
-    "seller": { "id": "seller-9", "name": "Seller 9", "contact": "seller9@market.com" },
+    "address": {
+      "street": "44 Banana St",
+      "city": "Quarteira",
+      "zip": "8125-000",
+      "lat": 37.0695,
+      "lng": -8.1001
+    },
+    "seller": {
+      "id": "seller-9",
+      "name": "Seller 9",
+      "contact": "seller9@market.com"
+    },
     "availableFrom": "2025-09-23",
     "availableTo": "2025-09-29",
     "description": "Bananas from Quarteira.",
@@ -132,8 +222,18 @@
     "price": 2.10,
     "quantity": 11,
     "unit": "kg",
-    "address": { "street": "55 Pepper Rd", "city": "Faro", "zip": "8000-000", "lat": 37.0194, "lng": -7.9304 },
-    "seller": { "id": "seller-10", "name": "Seller 10", "contact": "seller10@market.com" },
+    "address": {
+      "street": "55 Pepper Rd",
+      "city": "Faro",
+      "zip": "8000-000",
+      "lat": 37.0194,
+      "lng": -7.9304
+    },
+    "seller": {
+      "id": "seller-10",
+      "name": "Seller 10",
+      "contact": "seller10@market.com"
+    },
     "availableFrom": "2025-09-23",
     "availableTo": "2025-09-30",
     "description": "Peppers from Faro.",

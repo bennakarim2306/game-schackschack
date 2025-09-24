@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button } from "react-native";
+import { View, Text, TextInput, Button, Alert } from "react-native";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { Picker } from "@react-native-picker/picker";
 import Slider from "@react-native-community/slider";
 import MapView, { Marker, Circle, MapPressEvent } from "react-native-maps";
-// Import mockedItems.json
-import mockedItems from "../assets/raw_food_offers.json";
+import * as SecureStore from "expo-secure-store";
+import configs from "../config/AppConfig";
 
 const foodTypes = [
     "All",
@@ -50,36 +50,42 @@ const QueryFoodScreen = () => {
         return R * c;
     }
 
-    const handleSearch = () => {
-        // Filter mockedItems based on searchTerm, selectedType, and distance
-        const filteredItems = mockedItems.filter((item: any) => {
-            const matchesType = selectedType === "All" || item.type === selectedType;
-            const matchesTerm =
-                searchTerm.trim() === "" ||
-                item.name.toLowerCase().includes(searchTerm.trim().toLowerCase()) ||
-                item.description.toLowerCase().includes(searchTerm.trim().toLowerCase());
-            const itemDistance = getDistanceKm(
-                searchCenter.lat,
-                searchCenter.lng,
-                item.address.lat,
-                item.address.lng
+    const handleSearch = async () => {
+        try {
+            const token = await SecureStore.getItemAsync("userToken");
+            const params = new URLSearchParams();
+            if (searchTerm.trim()) params.append("name", searchTerm.trim());
+            if (selectedType !== "All") params.append("type", selectedType);
+            params.append("lat", String(searchCenter.lat));
+            params.append("lng", String(searchCenter.lng));
+            params.append("distanceKm", String(distance));
+            console.log(`Searching with params: ${params.toString()} and token: ${token}`);
+            const response = await fetch(
+                `${configs.USER_AUTH_BASE_URL}${configs.ITEM_FILTER_PATH}?${params.toString()}`,
+                {
+                    method: "GET",
+                    headers: {
+                        "Accept": "application/json",
+                        "Authorization": `Bearer ${token}`,
+                    },
+                }
             );
-            const matchesDistance = itemDistance <= distance;
-            
-            const result = matchesType && matchesTerm && matchesDistance;
-            if (result) {
-                console.log("Matched item:", item);
-            }
-            return result;
-        });
 
-        navigation.navigate("Results", {
-            searchTerm,
-            selectedType,
-            distance,
-            items: filteredItems,
-            searchCenter // <-- add this
-        });
+            if (response.status === 200) {
+                const items = await response.json();
+                navigation.navigate("Results", {
+                    searchTerm,
+                    selectedType,
+                    distance,
+                    items,
+                    searchCenter,
+                });
+            } else {
+                Alert.alert("Search Error", "Could not fetch items. Please try again.");
+            }
+        } catch (error) {
+            Alert.alert("Search Error", "An error occurred while searching.");
+        }
     };
 
     // Handle user selecting a new center on the map

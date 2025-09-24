@@ -1,13 +1,13 @@
 import React from "react";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
-import MyOrdersScreen from "./MyOrdersScreen";
-import MySellsScreen from "./MySellsScreen";
+import AddItemScreen from "../screens/AddItemScreen";
+import MyOffersScreen from "../screens/MyOffersScreen";
 
 const TopTab = createMaterialTopTabNavigator();
 
-const MySpaceScreen = () => (
+const ItemNavigator = () => (
     <TopTab.Navigator
-        initialRouteName="MyOrdersScreen"
+        initialRouteName="AddItemScreen"
         screenOptions={{
             tabBarLabelStyle: { fontSize: 14, fontWeight: "bold" },
             tabBarStyle: { backgroundColor: "#fff", height: 48 },
@@ -15,16 +15,16 @@ const MySpaceScreen = () => (
         }}
     >
         <TopTab.Screen
-            name="MyOrdersScreen"
-            component={MyOrdersScreen}
-            options={{ tabBarLabel: "My Orders" }}
+            name="AddItemScreen"
+            component={AddItemScreen}
+            options={{ tabBarLabel: "Create an offer" }}
         />
         <TopTab.Screen
-            name="MySellsScreen"
-            component={MySellsScreen}
-            options={{ tabBarLabel: "My Sells" }}
+            name="MyOffersScreen"
+            component={MyOffersScreen}
+            options={{ tabBarLabel: "My Offers" }}
         />
     </TopTab.Navigator>
 );
 
-export default MySpaceScreen;
+export default ItemNavigator;

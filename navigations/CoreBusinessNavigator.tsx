@@ -2,9 +2,9 @@ import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import QueryFoodScreen from "../screens/QueryFoodScreen";
-import AddItemScreen from "../screens/AddItemScreen";
 import Results from "../screens/Results";
 import { Ionicons } from "@expo/vector-icons";
+import ItemNavigator from "./ItemNavigator";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -47,8 +47,8 @@ const CoreBusinessNavigator = () => {
             />
             <Tab.Screen
                 name="Create an offer"
-                component={AddItemScreen}
-                options={{ tabBarLabel: "" }}
+                component={ItemNavigator}
+                options={{ headerShown: false, tabBarLabel: "" }} // Hide parent header
             />
         </Tab.Navigator>
     );

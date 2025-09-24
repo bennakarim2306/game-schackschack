@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useLayoutEffect } from "react";
 import { ScrollView, Text, TextInput, Button, Alert, Image, TouchableOpacity, View } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import * as ImagePicker from "expo-image-picker";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation, NavigationProp } from "@react-navigation/native";
 
 const foodTypes = [
     "Vegetables",
@@ -14,7 +16,14 @@ const foodTypes = [
 
 const units = ["kg", "g", "l", "pcs", "box"];
 
+type RootStackParamList = {
+    AddItemScreen: undefined;
+    MyOffersScreen: undefined;
+    // add other screens here if needed
+};
+
 const AddItemScreen = () => {
+    const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const [name, setName] = useState("");
     const [type, setType] = useState(foodTypes[0]);
     const [price, setPrice] = useState("");
@@ -25,6 +34,10 @@ const AddItemScreen = () => {
     const [zip, setZip] = useState("");
     const [description, setDescription] = useState("");
     const [imageUri, setImageUri] = useState<string | null>(null);
+
+    // Label state
+    const [labelInput, setLabelInput] = useState("");
+    const [labels, setLabels] = useState<string[]>([]);
 
     const handleAddOffer = () => {
         if (!name || !price || !quantity || !street || !city || !zip) {
@@ -48,6 +61,7 @@ const AddItemScreen = () => {
         setZip("");
         setDescription("");
         setImageUri(null);
+        setLabels([]);
     };
 
     const pickImage = async () => {
@@ -57,7 +71,7 @@ const AddItemScreen = () => {
             return;
         }
         let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: "images", // <-- fixed here
+            mediaTypes: "images",
             allowsEditing: true,
             aspect: [4, 3],
             quality: 0.7,
@@ -67,17 +81,104 @@ const AddItemScreen = () => {
         }
     };
 
+    useLayoutEffect(() => {
+        navigation.setOptions({
+            headerRight: () => (
+                <TouchableOpacity
+                    onPress={() => navigation.navigate("MyOffersScreen")}
+                    style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        backgroundColor: "#2196F3",
+                        paddingHorizontal: 14,
+                        paddingVertical: 6,
+                        borderRadius: 20,
+                        marginRight: 16,
+                    }}
+                >
+                    <Ionicons name="pricetag" size={22} color="#fff" style={{ marginRight: 6 }} />
+                    <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>My Offers</Text>
+                </TouchableOpacity>
+            ),
+        });
+    }, [navigation]);
+
+    // Add label handler
+    const handleAddLabel = () => {
+        const trimmed = labelInput.trim();
+        if (trimmed && labels.length < 5 && !labels.includes(trimmed)) {
+            setLabels([...labels, trimmed]);
+            setLabelInput("");
+        }
+    };
+
+    // Remove label handler
+    const handleRemoveLabel = (labelToRemove: string) => {
+        setLabels(labels.filter(label => label !== labelToRemove));
+    };
+
     return (
         <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: "flex-start", alignItems: "center", padding: 24, marginTop: 0 }}>
-            <TouchableOpacity onPress={pickImage} style={{ marginBottom: 16 }}>
-                {imageUri ? (
-                    <Image source={{ uri: imageUri }} style={{ width: 120, height: 90, borderRadius: 8 }} />
-                ) : (
-                    <View style={{ width: 120, height: 90, borderRadius: 8, backgroundColor: "#eee", justifyContent: "center", alignItems: "center" }}>
-                        <Text style={{ color: "#888" }}>Tap to upload image</Text>
+            <View style={{ flexDirection: "row", alignItems: "flex-start", marginBottom: 16, width: "100%" }}>
+                {/* Labels input and list */}
+                <View style={{ flex: 1, marginRight: 12 }}>
+                    <Text style={{ fontWeight: "bold", marginBottom: 6 }}>Labels (max 5):</Text>
+                    <View style={{ flexDirection: "row", marginBottom: 8 }}>
+                        <TextInput
+                            placeholder="Add label"
+                            value={labelInput}
+                            onChangeText={setLabelInput}
+                            style={{
+                                borderWidth: 1,
+                                borderColor: "#ccc",
+                                borderRadius: 6,
+                                padding: 8,
+                                flex: 1,
+                                marginRight: 8,
+                            }}
+                            onSubmitEditing={handleAddLabel}
+                            returnKeyType="done"
+                        />
+                        <Button
+                            title="Add"
+                            onPress={handleAddLabel}
+                            disabled={!labelInput.trim() || labels.length >= 5}
+                        />
                     </View>
-                )}
-            </TouchableOpacity>
+                    <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+                        {labels.map(label => (
+                            <View
+                                key={label}
+                                style={{
+                                    flexDirection: "row",
+                                    alignItems: "center",
+                                    backgroundColor: "#e0e0e0",
+                                    borderRadius: 16,
+                                    paddingHorizontal: 10,
+                                    paddingVertical: 4,
+                                    marginRight: 6,
+                                    marginBottom: 6,
+                                }}
+                            >
+                                <Text style={{ marginRight: 4 }}>{label}</Text>
+                                <TouchableOpacity onPress={() => handleRemoveLabel(label)}>
+                                    <Ionicons name="close" size={16} color="#888" />
+                                </TouchableOpacity>
+                            </View>
+                        ))}
+                    </View>
+                </View>
+                {/* Image picker */}
+                <TouchableOpacity onPress={pickImage} style={{ marginBottom: 0 }}>
+                    {imageUri ? (
+                        <Image source={{ uri: imageUri }} style={{ width: 120, height: 90, borderRadius: 8 }} />
+                    ) : (
+                        <View style={{ width: 120, height: 90, borderRadius: 8, backgroundColor: "#eee", justifyContent: "center", alignItems: "center" }}>
+                            <Text style={{ color: "#888" }}>Tap to upload image</Text>
+                        </View>
+                    )}
+                </TouchableOpacity>
+            </View>
             <TextInput
                 placeholder="Item name"
                 value={name}
