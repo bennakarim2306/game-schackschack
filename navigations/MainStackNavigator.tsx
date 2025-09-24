@@ -4,7 +4,7 @@ import { Screen } from 'react-native-screens';
 import GameNavigator from './GameNavigator';
 import LoginStackNavigator from './LoginStackNavigator'
 import { createContext, useEffect, useMemo, useReducer, useState } from 'react';
-import * as SecureStore from 'expo-secure-store'
+import * as SecureStore from 'expo-secure-store';
 import AuthContext from '../Contexts/AuthContext';
 import GameContext from '../Contexts/GameContext';
 import InGameNavigator from './InGameNavigator';
@@ -110,7 +110,10 @@ const MainStackNavigator = () => {
           console.error(`some error occured while registration request${e}`)
         })
       },
-      signOut: () => dispatch({ type: 'SIGN_OUT' }),
+      signOut: async () => {
+        await SecureStore.deleteItemAsync('userToken'); // Remove token from store
+        dispatch({ type: 'SIGN_OUT' });
+      },
       signUp: async (data) => {
         console.log(`sending registration request with data: ${JSON.stringify(data)}`)
         // In a production app, we need to send user data to server and get a token
@@ -153,7 +156,7 @@ const MainStackNavigator = () => {
         })
       },
     }),
-    []
+    [state.userToken]
   );
 
 

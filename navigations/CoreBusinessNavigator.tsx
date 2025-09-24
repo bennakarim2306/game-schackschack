@@ -1,19 +1,27 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import QueryFoodScreen from "../screens/QueryFoodScreen";
 import AddItemScreen from "../screens/AddItemScreen";
 import Results from "../screens/Results";
-import { View, Text } from "react-native";
-import { Ionicons } from "@expo/vector-icons"; // Make sure expo/vector-icons is installed
+import { Ionicons } from "@expo/vector-icons";
 
 const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
+
+const QueryFoodStack = () => (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="QueryFood" component={QueryFoodScreen} />
+        <Stack.Screen name="Results" component={Results} />
+    </Stack.Navigator>
+);
 
 const CoreBusinessNavigator = () => {
     return (
         <Tab.Navigator
             initialRouteName="QueryFood"
             screenOptions={({ route }) => ({
-                headerShown: true,
+                headerShown: false, // Hide the header/title bar
                 tabBarIcon: ({ color, size }) => {
                     if (route.name === "QueryFood") {
                         return <Ionicons name="search" size={size} color={color} />;
@@ -23,22 +31,24 @@ const CoreBusinessNavigator = () => {
                     }
                     return null;
                 },
+                tabBarLabelStyle: {
+                    display: "none" // Hide tabBarLabels
+                },
+                tabBarStyle: {
+                    height: 64, // Make tab bar taller
+                    paddingBottom: 8 // Add space at the bottom
+                }
             })}
         >
             <Tab.Screen
                 name="QueryFood"
-                component={QueryFoodScreen}
-                options={{ tabBarLabel: "Query for food in the area" }}
+                component={QueryFoodStack}
+                options={{ tabBarLabel: "" }} // Remove label
             />
             <Tab.Screen
                 name="AddItem"
                 component={AddItemScreen}
-                options={{ tabBarLabel: "Add an item to sell" }}
-            />
-            <Tab.Screen
-                name="Results"
-                component={Results}
-                options={{ tabBarLabel: "View search results" }}
+                options={{ tabBarLabel: "" }} // Remove label
             />
         </Tab.Navigator>
     );

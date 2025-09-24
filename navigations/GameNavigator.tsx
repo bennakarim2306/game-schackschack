@@ -3,7 +3,7 @@ import Profile from "../screens/Profile";
 import GameStart from "../screens/GameStart";
 import FriendsList from "../screens/ContactsList";
 import React, { useEffect, useMemo, useReducer, useState } from "react";
-import { Alert, BackHandler, Image, View } from "react-native";
+import { Alert, BackHandler, Image, View, Animated } from "react-native";
 import GameContext from "../Contexts/GameContext";
 import InGameNavigator from "./InGameNavigator";
 import ChatNavigator from "./ChatNavigator";
@@ -73,35 +73,39 @@ const GameNavigator = ({ route, navigation }) => {
                 screenOptions={({ route }) => ({
                     headerShown: false,
                     tabBarIcon: ({ focused, color, size }) => {
+                        // Animated value for scaling
+                        const scaleAnim = React.useRef(new Animated.Value(focused ? 1.2 : 1)).current;
+
+                        useEffect(() => {
+                            Animated.spring(scaleAnim, {
+                                toValue: focused ? 1.2 : 1,
+                                useNativeDriver: true,
+                                friction: 5
+                            }).start();
+                        }, [focused]);
+
+                        let iconSource;
                         if (route.name === 'Profile') {
-                            return <View >
-                                <Image
-                                    source={require('../assets/BottomTabBarIcons/user.png')}
-                                    fadeDuration={0}
-                                    style={focused ? { width: 50, height: 50 } : { width: 40, height: 40 }}
-                                />
-                            </View>;
-                            const userIcon = '../assets/BottomTabBarIcons/user.png'
+                            iconSource = require('../assets/BottomTabBarIcons/profile.png');
                         } else if (route.name === 'CoreBusinessNavigator') {
-                            return <View >
-                                <Image
-                                    source={require('../assets/BottomTabBarIcons/board-game.png')}
-                                    fadeDuration={0}
-                                    style={focused ? { width: 50, height: 50 } : { width: 40, height: 40 }}
-                                />
-                            </View>;
+                            iconSource = require('../assets/BottomTabBarIcons/food.png');
                         } else {
-                            return <View >
-                                <Image
-                                    source={require('../assets/BottomTabBarIcons/friends.png')}
-                                    fadeDuration={0}
-                                    style={focused ? { width: 50, height: 50 } : { width: 40, height: 40 }}
-                                />
-                            </View>;
+                            iconSource = require('../assets/BottomTabBarIcons/chat.png');
                         }
 
-                        // You can return any component that you like here!
-
+                        return (
+                            <View>
+                                <Animated.Image
+                                    source={iconSource}
+                                    fadeDuration={0}
+                                    style={{
+                                        width: focused ? 60 : 40,
+                                        height: focused ? 60 : 40,
+                                        transform: [{ scale: scaleAnim }]
+                                    }}
+                                />
+                            </View>
+                        );
                     },
                     tabBarActiveTintColor: 'tomato',
                     tabBarInactiveTintColor: 'white',
@@ -111,13 +115,9 @@ const GameNavigator = ({ route, navigation }) => {
                     }
                 })}
             >
-                <GameBottomNavigator.Screen name="Profile" component={Profile}>
-                </GameBottomNavigator.Screen>
-                <GameBottomNavigator.Screen name="CoreBusinessNavigator" component={CoreBusinessNavigator}>
-                </GameBottomNavigator.Screen>
-                <GameBottomNavigator.Screen name="ChatNavigator" component={ChatNavigator}>
-                </GameBottomNavigator.Screen>
-
+                <GameBottomNavigator.Screen name="Profile" component={Profile} />
+                <GameBottomNavigator.Screen name="CoreBusinessNavigator" component={CoreBusinessNavigator} />
+                <GameBottomNavigator.Screen name="ChatNavigator" component={ChatNavigator} />
             </GameBottomNavigator.Navigator>
                 : <InGameNavigator />}
         </GameContext.Provider>

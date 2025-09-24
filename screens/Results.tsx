@@ -1,5 +1,5 @@
-import React from "react";
-import { View, Text, Button, FlatList, TouchableOpacity, Image } from "react-native";
+import React, { useState } from "react";
+import { View, Text, Button, FlatList, TouchableOpacity, Image, Modal, TextInput } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 
 type FoodOffer = {
@@ -39,13 +39,40 @@ const Results = () => {
     const route = useRoute();
     const { searchTerm, selectedType, distance, items = [] } = (route.params as ResultsParams) || {};
 
+    const [selectedItem, setSelectedItem] = useState<FoodOffer | null>(null);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [orderQuantity, setOrderQuantity] = useState("");
+    const [orderError, setOrderError] = useState("");
+
     const handleItemPress = (item: FoodOffer) => {
-        // You can navigate to a detail screen or show more info here
-        alert(`Selected: ${item.name}\n${item.description}`);
+        setSelectedItem(item);
+        setOrderQuantity("");
+        setOrderError("");
+        setModalVisible(true);
+    };
+
+    const handleCancelOrder = () => {
+        setModalVisible(false);
+        setSelectedItem(null);
+        setOrderQuantity("");
+        setOrderError("");
+    };
+
+    const handleConfirmOrder = () => {
+        const qty = parseFloat(orderQuantity);
+        if (isNaN(qty) || qty <= 0 || qty > (selectedItem?.quantity ?? 0)) {
+            setOrderError(`Enter a valid quantity (max ${selectedItem?.quantity})`);
+            return;
+        }
+        setModalVisible(false);
+        alert(`Order confirmed!\n${qty} ${selectedItem?.unit} of ${selectedItem?.name} for ${(selectedItem?.price ?? 0) * qty}€`);
+        setSelectedItem(null);
+        setOrderQuantity("");
+        setOrderError("");
     };
 
     return (
-        <View style={{ flex: 1, padding: 24 }}>
+        <View style={{ flex: 1, padding: 24, marginTop: 32 }}>
             <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 16 }}>
                 Results
             </Text>
@@ -86,6 +113,84 @@ const Results = () => {
                 }
             />
             <Button title="Back to Search" onPress={() => navigation.goBack()} />
+
+            {/* Modal for item details and order */}
+            <Modal
+                visible={modalVisible}
+                animationType="slide"
+                transparent={true}
+                onRequestClose={handleCancelOrder}
+            >
+                <View style={{
+                    flex: 1,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    backgroundColor: "rgba(0,0,0,0.3)"
+                }}>
+                    <View style={{
+                        backgroundColor: "#fff",
+                        borderRadius: 16,
+                        padding: 24,
+                        width: "85%",
+                        alignItems: "center"
+                    }}>
+                        {selectedItem && (
+                            <>
+                                <Image
+                                    source={{ uri: selectedItem.imageUrl }}
+                                    style={{ width: 120, height: 120, borderRadius: 12, marginBottom: 16 }}
+                                />
+                                <Text style={{ fontSize: 22, fontWeight: "bold", marginBottom: 8 }}>
+                                    {selectedItem.name}
+                                </Text>
+                                <Text style={{ fontSize: 16, marginBottom: 4 }}>
+                                    {selectedItem.type} • {selectedItem.price}€/{selectedItem.unit}
+                                </Text>
+                                <Text style={{ color: "#555", marginBottom: 8 }}>
+                                    {selectedItem.description}
+                                </Text>
+                                <Text style={{ fontSize: 13, color: "#888", marginBottom: 8 }}>
+                                    Seller: {selectedItem.seller.name} ({selectedItem.seller.contact})
+                                </Text>
+                                <Text style={{ fontSize: 13, color: "#888", marginBottom: 8 }}>
+                                    Address: {selectedItem.address.city}, {selectedItem.address.street}
+                                </Text>
+                                <Text style={{ fontSize: 13, color: "#888", marginBottom: 8 }}>
+                                    Available: {selectedItem.availableFrom} - {selectedItem.availableTo}
+                                </Text>
+                                <TextInput
+                                    placeholder={`Quantity (max ${selectedItem.quantity})`}
+                                    value={orderQuantity}
+                                    onChangeText={setOrderQuantity}
+                                    keyboardType="numeric"
+                                    style={{
+                                        borderWidth: 1,
+                                        borderColor: "#ccc",
+                                        borderRadius: 8,
+                                        padding: 10,
+                                        fontSize: 16,
+                                        width: "100%",
+                                        marginBottom: 8
+                                    }}
+                                />
+                                {orderQuantity && !isNaN(parseFloat(orderQuantity)) && (
+                                    <Text style={{ fontSize: 16, marginBottom: 8 }}>
+                                        Total: {((selectedItem.price) * (parseFloat(orderQuantity) || 0)).toFixed(2)}€
+                                    </Text>
+                                )}
+                                {orderError ? (
+                                    <Text style={{ color: "red", marginBottom: 8 }}>{orderError}</Text>
+                                ) : null}
+                                <View style={{ flexDirection: "row", justifyContent: "space-between", width: "100%" }}>
+                                    <Button title="Cancel" color="#888" onPress={handleCancelOrder} />
+                                    <View style={{ width: 16 }} />
+                                    <Button title="Confirm Order" color="#009966" onPress={handleConfirmOrder} />
+                                </View>
+                            </>
+                        )}
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 };

@@ -80,7 +80,7 @@ const QueryFoodScreen = () => {
     };
 
     return (
-        <View style={{ flex: 1, padding: 24 }}>
+        <View style={{ flex: 1, padding: 24, marginTop: 32 }}>
             <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 16 }}>
                 Query for food in the area
             </Text>
