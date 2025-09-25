@@ -5,7 +5,6 @@ import * as SecureStore from 'expo-secure-store'
 import ContactsListStyles from "../styles/ContactsListStyles";
 import configs from "../config/AppConfig";
 import { useChatContext } from "../Contexts/ChatContext";
-import ContactsListStyle from "../styles/ContactsListStyles";
 import { useChatDispatchContext } from "../Contexts/ChatDisptachContext";
 
 import type { StackNavigationProp } from '@react-navigation/stack';

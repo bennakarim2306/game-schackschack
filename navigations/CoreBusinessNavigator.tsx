@@ -5,15 +5,18 @@ import QueryFoodScreen from "../screens/QueryFoodScreen";
 import Results from "../screens/Results";
 import { Ionicons } from "@expo/vector-icons";
 import ItemNavigator from "./ItemNavigator";
+import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
+const TopTab = createMaterialTopTabNavigator();
+
 const QueryFoodStack = () => (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="QueryFoodScreen" component={QueryFoodScreen} />
-        <Stack.Screen name="Results" component={Results} />
-    </Stack.Navigator>
+    <TopTab.Navigator initialRouteName="QueryFoodScreen">
+        <TopTab.Screen name="QueryFoodScreen" component={QueryFoodScreen} options={{ tabBarLabel: "Find Food" }} />
+        <TopTab.Screen name="Results" component={Results} options={{ tabBarLabel: "Results" }} />
+    </TopTab.Navigator>
 );
 
 const CoreBusinessNavigator = () => {
@@ -21,7 +24,7 @@ const CoreBusinessNavigator = () => {
         <Tab.Navigator
             initialRouteName="Find Food"
             screenOptions={({ route }) => ({
-                headerShown: true,
+                headerShown: false,
                 tabBarIcon: ({ color, size }) => {
                     if (route.name === "Find Food") {
                         return <Ionicons name="search" size={size} color={color} />;
