@@ -16,6 +16,12 @@ const configs = {
     ITEM_UPDATE_PATH: (id: string) => `/api/v1/items/${id}`, // PUT application/json
     ITEM_DELETE_PATH: (id: string) => `/api/v1/items/${id}`, // DELETE
     ITEM_FILTER_PATH: '/api/v1/items/filter', // GET with query params
+
+    // Address API endpoints
+    ACCOUNT_SET_ADDRESS_BY_USER_ID_PATH: (userId: string) => `/api/v1/account/setAddressByUserId/${userId}`, // POST
+    ACCOUNT_SET_ADDRESS_BY_EMAIL_PATH: '/api/v1/account/setAddressByEmail', // POST
+    ACCOUNT_GET_ADDRESS_BY_USER_ID_PATH: (userId: string) => `/api/v1/account/getAddressByUserId/${userId}`, // GET
+    ACCOUNT_GET_ADDRESS_BY_EMAIL_PATH: '/api/v1/account/getAddressByEmail', // GET
 };
 
 export default configs;
