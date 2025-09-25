@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { View, Button, Text, TextInput, SafeAreaView, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Platform, Pressable } from "react-native";
+import { View, Button, Text, TextInput, SafeAreaView, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Platform, Pressable, Alert } from "react-native";
 import loginStyles from "../styles/LoginStyles";
 import AuthContext from "../Contexts/AuthContext";
 
@@ -34,15 +34,23 @@ function Login({ route, navigation }) {
         setPasswordError(validatePassword(text) ? "" : "Password must be at least 6 characters");
     };
 
-    const handleLogin = () => {
+    const handleLogin = async () => {
         const trimmedEmail = email.trim();
-        const passwordValue = password; // Don't trim password
+        const passwordValue = password;
         const emailValid = validateEmail(trimmedEmail);
         const passwordValid = validatePassword(passwordValue);
         setEmailError(emailValid ? "" : "Invalid email address");
         setPasswordError(passwordValid ? "" : "Password must be at least 6 characters");
         if (emailValid && passwordValid) {
-            signIn({ email: trimmedEmail, password: passwordValue });
+            try {
+                await signIn({ email: trimmedEmail, password: passwordValue });
+            } catch (error) {
+                Alert.alert(
+                    "Login Failed",
+                    "We couldn't log you in. Please check your email and password and try again.",
+                    [{ text: "OK" }]
+                );
+            }
         }
     };
 
@@ -107,11 +115,21 @@ function Login({ route, navigation }) {
                         <Text style={loginStyles.validationErrorText} accessibilityLiveRegion="polite">{passwordError}</Text>
                     ) : null}
                     <View style={loginStyles.buttonStyle}>
-                        <Button
-                            title="Login here"
+                        <Pressable
                             onPress={handleLogin}
                             disabled={isDisabled}
-                        />
+                            style={({ pressed }) => [
+                                loginStyles.loginButton,
+                                isDisabled
+                                    ? loginStyles.loginButtonDisabled
+                                    : loginStyles.loginButtonEnabled,
+                                pressed && !isDisabled && { opacity: 0.7 }
+                            ]}
+                        >
+                            <Text style={loginStyles.loginButtonText}>
+                                Login here
+                            </Text>
+                        </Pressable>
                     </View>
                 </SafeAreaView>
             </TouchableWithoutFeedback>

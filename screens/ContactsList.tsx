@@ -1,15 +1,14 @@
-import React, { MutableRefObject, useContext, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import React, { MutableRefObject, useContext, useEffect, useMemo, useReducer, useRef, useState, useCallback } from "react";
 import { Alert, Button, FlatList, GestureResponderEvent, Text, TextInput, TouchableOpacity, View, Modal } from "react-native";
 import ContactsContext from "../Contexts/ContactsContext";
 import * as SecureStore from 'expo-secure-store'
 import ContactsListStyles from "../styles/ContactsListStyles";
 import configs from "../config/AppConfig";
-import { ChatContext, useChatContext } from "../Contexts/ChatContext";
-import ContactsListStyle from "../styles/ContactsListStyles";
+import { useChatContext } from "../Contexts/ChatContext";
 import { useChatDispatchContext } from "../Contexts/ChatDisptachContext";
 
 import type { StackNavigationProp } from '@react-navigation/stack';
-import type { RouteProp } from '@react-navigation/native';
+import { useFocusEffect, type RouteProp } from '@react-navigation/native';
 import contactsContext from "../Contexts/ContactsContext";
 
 type ContactsListProps = {
@@ -95,48 +94,49 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
         } as ContactsListState
     );
 
-    useEffect(() => {
-        const getContactsList = async () => {
-            console.log(`ContactsList getContactsList called`)
-            const token = await SecureStore.getItemAsync("userToken");
-            setToken(token)
-            console.log(`Sending request to get ContactsList with token ${JSON.stringify(token)}`)
-            await fetch(configs.USER_AUTH_BASE_URL + configs.USER_AUTH_CONTACTS_LIST_PATH, {
-                method: 'GET',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                    Authorization: 'Bearer ' + token
-                },
-                body: null,
-            })
-                .then(async response => {
-                    const jsonResponse = await response.json();
-                    console.log(`received response from server ${JSON.stringify(jsonResponse)}`)
-                    // setSocket(io("http://192.168.1.21:3000"))
-                    if (response.status !== 200) {
-                        Alert.alert(
-                            'issue with the friends list',
-                            'We are sorry but something went wrong with \n the friends list call to backend.. please try it later!',
-                            [{ text: 'Ok', onPress: () => console.log('Cancel Pressed'), style: 'cancel' }])
-                    }
-                    else {
-                        console.log("received data from server for friends list: " + JSON.stringify(jsonResponse))
-                        dispatch({ type: 'FRIENDS_LIST_GATHERED', ContactsList: jsonResponse.friends });
-                    }
-                    console.log(`Calling socket IO`)
+    useFocusEffect(
+        useCallback(() => {
+            const getContactsList = async () => {
+                console.log(`ContactsList getContactsList called`)
+                const token = await SecureStore.getItemAsync("userToken");
+                setToken(token)
+                console.log(`Sending request to get ContactsList with token ${JSON.stringify(token)}`)
+                await fetch(configs.USER_AUTH_BASE_URL + configs.USER_AUTH_CONTACTS_LIST_PATH, {
+                    method: 'GET',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                        Authorization: 'Bearer ' + token
+                    },
+                    body: null,
+                })
+                    .then(async response => {
+                        const jsonResponse = await response.json();
+                        console.log(`received response from server ${JSON.stringify(jsonResponse)}`)
+                        if (response.status !== 200) {
+                            Alert.alert(
+                                'issue with the friends list',
+                                'We are sorry but something went wrong with \n the friends list call to backend.. please try it later!',
+                                [{ text: 'Ok', onPress: () => console.log('Cancel Pressed'), style: 'cancel' }])
+                        }
+                        else {
+                            console.log("received data from server for friends list: " + JSON.stringify(jsonResponse))
+                            dispatch({ type: 'FRIENDS_LIST_GATHERED', ContactsList: jsonResponse.friends });
+                        }
+                        console.log(`Calling socket IO`)
 
-                })
-                .catch(e => {
-                    Alert.alert(
-                        'Registration issue',
-                        'We are sorry but something went wrong with \n the registration.. please try it later!',
-                        [{ text: 'Ok', onPress: () => console.log('Cancel Pressed'), style: 'cancel' }])
-                    console.log(`some error occured while calling ContactsList request${e}`)
-                })
-        }
-        getContactsList()
-    }, [])
+                    })
+                    .catch(e => {
+                        Alert.alert(
+                            'Registration issue',
+                            'We are sorry but something went wrong with \n the registration.. please try it later!',
+                            [{ text: 'Ok', onPress: () => console.log('Cancel Pressed'), style: 'cancel' }])
+                        console.log(`some error occured while calling ContactsList request${e}`)
+                    })
+            }
+            getContactsList()
+        }, [])
+    );
 
     const friendsContext = useMemo(() => {
 
@@ -174,7 +174,7 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
         try {
             const token = await SecureStore.getItemAsync("userToken");
             const response = await fetch(
-                configs.USER_AUTH_BASE_URL + configs.USER_AUTH_CONTACT_REQUEST_PATH,
+                `${configs.USER_AUTH_BASE_URL}${configs.USER_AUTH_ADD_CONTACT_PATH}?email=${encodeURIComponent(newContactEmail)}`,
                 {
                     method: "POST",
                     headers: {
@@ -182,7 +182,7 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
                         "Content-Type": "application/json",
                         Authorization: "Bearer " + token,
                     },
-                    body: JSON.stringify({ email: newContactEmail }),
+                    body: null,
                 }
             );
             if (!response.ok) {
@@ -195,9 +195,19 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
                 Alert.alert(
                     "Contact request sent",
                     "Your contact request has been sent.",
-                    [{ text: "Ok" }]
+                    [{
+                        text: "Ok",
+                        onPress: () => {
+                            setShowAddContactModal(false); // <-- Ensure modal closes after alert
+                            setNewContactEmail("");
+                            setIsEmailValid(false);
+                        }
+                    }]
                 );
+                // Also close the modal immediately in case the user doesn't press OK
                 setShowAddContactModal(false);
+                setNewContactEmail("");
+                setIsEmailValid(false);
             }
         } catch (e) {
             Alert.alert(
@@ -246,93 +256,100 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
 
     return (
         <ContactsContext.Provider value={contactsContext}>
-            <FlatList
-                data={state.ContactsList}
-                renderItem={({ item }) => (
-                    <TouchableOpacity
-                        key={item.email}
-                        onPress={event => {
-                            // socket.current?.removeListener("private-message-from-server", socketPrivateMessageCB)
-                            setMessagesToRead(item.email)
-                            navigation.navigate("Chat", { title: `Chat with ${item.email}`, contact: item.email })
-                            //navigation.navigate("Chat", {contact: item.email, title: `Chat with ${item.email}`})
-                        }}
-                        style={ContactsListStyles.friendBox}>
-                        <Text
-                            style={ContactsListStyle.contactEmailStyle}>
-                            {item.email}
-                        </Text>
-                        {chatState && getNumberOfUnreadMessagesByChat(chatState.chat.filter(e => e.contact == item.email)) == 0 ? 
-                        null : chatState && <Text
-                        style={ContactsListStyle.unreadMessagesNumber}>
-                        {getNumberOfUnreadMessagesByChat(chatState ? chatState.chat.filter(e => e.contact == item.email) : [])}
-                    </Text>}
-                        
-                    </TouchableOpacity>)}>
-            </FlatList>
-            <Button
-                title="Add a friend"
-                onPress={handleAddContact}
-                disabled={false}
-            />
-
-            {/* Add Contact Modal */}
-            <Modal
-                visible={showAddContactModal}
-                transparent
-                animationType="slide"
-                onRequestClose={handleCancelAddContact}
-            >
-                <View style={{
-                    flex: 1,
-                    backgroundColor: "rgba(0,0,0,0.5)",
-                    justifyContent: "center",
-                    alignItems: "center"
-                }}>
-                    <View style={{
-                        backgroundColor: "white",
-                        padding: 24,
-                        borderRadius: 12,
-                        width: "80%",
-                        alignItems: "center"
-                    }}>
-                        <Text style={{ fontSize: 18, marginBottom: 12 }}>Add a contact</Text>
-                        <TextInput
-                            style={{
-                                borderWidth: 1,
-                                borderColor: "#ccc",
-                                borderRadius: 6,
-                                padding: 8,
-                                width: "100%",
-                                marginBottom: 12
+            <View style={ContactsListStyles.container}>
+                <Text style={ContactsListStyles.header}>
+                    Your Contacts
+                </Text>
+                <FlatList
+                    data={state.ContactsList}
+                    renderItem={({ item }) => (
+                        <TouchableOpacity
+                            key={item.email}
+                            onPress={event => {
+                                setMessagesToRead(item.email)
+                                navigation.navigate("Chat", { title: `Chat with ${item.email}`, contact: item.email })
                             }}
-                            placeholder="Enter contact's email"
-                            value={newContactEmail}
-                            onChangeText={handleEmailInputChange}
-                            autoCapitalize="none"
-                            keyboardType="email-address"
-                            autoFocus
-                        />
-                        {!isEmailValid && newContactEmail.length > 0 && (
-                            <Text style={{ color: "red", marginBottom: 8 }}>Invalid email address</Text>
-                        )}
-                        <View style={{ flexDirection: "row", justifyContent: "space-between", width: "100%" }}>
-                            <Button
-                                title="Cancel"
-                                onPress={handleCancelAddContact}
-                                color="#888"
-                                disabled={isSending}
+                            style={ContactsListStyles.contactCard}>
+                            <View style={ContactsListStyles.avatar}>
+                                <Text style={ContactsListStyles.avatarText}>
+                                    {item.email[0].toUpperCase()}
+                                </Text>
+                            </View>
+                            <View style={{ flex: 1 }}>
+                                <Text style={ContactsListStyles.contactEmail}>
+                                    {item.email}
+                                </Text>
+                                {item.userName && (
+                                    <Text style={ContactsListStyles.contactUserName}>
+                                        {item.userName}
+                                    </Text>
+                                )}
+                            </View>
+                            {chatState && getNumberOfUnreadMessagesByChat(chatState.chat.filter(e => e.contact == item.email)) > 0 && (
+                                <View style={ContactsListStyles.unreadBadge}>
+                                    <Text style={ContactsListStyles.unreadBadgeText}>
+                                        {getNumberOfUnreadMessagesByChat(chatState.chat.filter(e => e.contact == item.email))}
+                                    </Text>
+                                </View>
+                            )}
+                        </TouchableOpacity>
+                    )}
+                    ListEmptyComponent={
+                        <Text style={ContactsListStyles.emptyText}>
+                            No contacts found.
+                        </Text>
+                    }
+                />
+                <Button
+                    title="Add a friend"
+                    onPress={handleAddContact}
+                    disabled={false}
+                    color="#2196F3"
+                />
+
+                {/* Add Contact Modal */}
+                <Modal
+                    visible={showAddContactModal}
+                    transparent
+                    animationType="slide"
+                    onRequestClose={handleCancelAddContact}
+                >
+                    <View style={ContactsListStyles.modalOverlay}>
+                        <View style={ContactsListStyles.modalContainer}>
+                            <Text style={ContactsListStyles.modalHeader}>
+                                Add a contact
+                            </Text>
+                            <TextInput
+                                style={ContactsListStyles.modalInput}
+                                placeholder="Enter contact's email"
+                                value={newContactEmail}
+                                onChangeText={handleEmailInputChange}
+                                autoCapitalize="none"
+                                keyboardType="email-address"
+                                autoFocus
                             />
-                            <View style={{ width: 16 }} />
-                            <Button
-                                title={isSending ? "Sending..." : "Send"}
-                                onPress={sendAContactRequest}
-                                disabled={!isEmailValid || isSending}
-                            />
+                            {!isEmailValid && newContactEmail.length > 0 && (
+                                <Text style={ContactsListStyles.modalError}>Invalid email address</Text>
+                            )}
+                            <View style={ContactsListStyles.modalButtonRow}>
+                                <Button
+                                    title="Cancel"
+                                    onPress={handleCancelAddContact}
+                                    color="#888"
+                                    disabled={isSending}
+                                />
+                                <View style={{ width: 16 }} />
+                                <Button
+                                    title={isSending ? "Sending..." : "Send"}
+                                    onPress={sendAContactRequest}
+                                    disabled={!isEmailValid || isSending}
+                                    color={isEmailValid ? "#2196F3" : "#ccc"}
+                                />
+                            </View>
                         </View>
                     </View>
-                </View>
-            </Modal>
+                </Modal>
+            </View>
         </ContactsContext.Provider>
 
     );

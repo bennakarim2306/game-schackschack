@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 import MainStackNavigator from './navigations/MainStackNavigator'
 
 export default function App() {

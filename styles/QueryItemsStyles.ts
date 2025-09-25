@@ -1,11 +1,11 @@
-import { Platform, StatusBar, StyleSheet } from "react-native";
+import { StatusBar, StyleSheet } from "react-native";
 
 const queryItemsStyles = StyleSheet.create({
   itemContainer: {
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+    paddingTop: StatusBar.currentHeight ?? 0,
     flexDirection: 'row',
     padding: 10,
-    borderBottomWidth: 1,
+    borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#ccc',
     alignItems: 'center',
     height: 100,
@@ -14,10 +14,11 @@ const queryItemsStyles = StyleSheet.create({
     width: 100,
     height: 100,
     marginRight: 10,
+    resizeMode: 'cover',
   },
   itemDetails: {
     flex: 1,
-    flexDirection: 'row'
+    flexDirection: 'row',
   },
   itemText: {
     fontWeight: 'bold',

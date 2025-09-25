@@ -4,7 +4,7 @@ import { Screen } from 'react-native-screens';
 import GameNavigator from './GameNavigator';
 import LoginStackNavigator from './LoginStackNavigator'
 import { createContext, useEffect, useMemo, useReducer, useState } from 'react';
-import * as SecureStore from 'expo-secure-store'
+import * as SecureStore from 'expo-secure-store';
 import AuthContext from '../Contexts/AuthContext';
 import GameContext from '../Contexts/GameContext';
 import InGameNavigator from './InGameNavigator';
@@ -48,7 +48,7 @@ const MainStackNavigator = () => {
 
   useEffect(() => {
     // Fetch the token from storage then navigate to our appropriate place
-    async function bootstrapAsync() {
+    const bootstrapAsync = async () => {
       let userToken;
 
       try {
@@ -58,10 +58,11 @@ const MainStackNavigator = () => {
       }
 
       // After restoring token, we may need to validate it in production apps
+
       // This will switch to the App screen or Auth screen and this loading
       // screen will be unmounted and thrown away.
       dispatch({ type: 'RESTORE_TOKEN', token: userToken });
-    }
+    };
 
     bootstrapAsync();
   }, []);
@@ -70,86 +71,72 @@ const MainStackNavigator = () => {
     () => ({
       getUserToken: () => state.userToken,
       signIn: async (data) => {
-        console.log("authContext -- signIn called with data -- " + JSON.stringify(data)  + "--" + JSON.stringify(configs.USER_AUTH_BASE_URL + configs.USER_AUTH_SIGN_IN_PATH))
-        // In a production app, we need to send some data (usually username, password) to server and get a token
-        // We will also need to handle errors if sign in failed
-        // After getting token, we need to persist the token using `SecureStore`
-        // In the example, we'll use a dummy token
-        await fetch(configs.USER_AUTH_BASE_URL + configs.USER_AUTH_SIGN_IN_PATH, {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email: data.email,
-            password: data.password,
-          }),
-        })
-        .then(async response => {
-          console.log(`received response from server ${JSON.stringify(response)}`)
-          if(response.status !== 200) {
-            Alert.alert(
-            'Registration issue',
-            'We are sorry but something went wrong with \n the registration.. please try it later!',
-            [{text: 'Ok', onPress: () => console.log('Cancel Pressed'), style: 'cancel'}])
-          }
-          else {
-            const jsonResponse = await response.json();
-            console.log("received data from server for login: " + JSON.stringify(jsonResponse.token))
-            await SecureStore.setItemAsync('userToken', jsonResponse.token)
-            dispatch({ type: 'SIGN_IN', token: jsonResponse.token });
-          }
-        })
-        .catch(e => {
-          Alert.alert(
-            'Registration issue',
-            'We are sorry but something went wrong with \n the registration.. please try it later!',
-            [{text: 'Ok', onPress: () => console.log('Cancel Pressed'), style: 'cancel'}])
-          console.log(`some error occured while registration request${e}`)
-        })
+        try {
+            const response = await fetch(configs.USER_AUTH_BASE_URL + configs.USER_AUTH_SIGN_IN_PATH, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: data.email,
+                    password: data.password,
+                }),
+            });
+
+            if (response.status !== 200) {
+                throw new Error("Login failed");
+            } else {
+                const jsonResponse = await response.json();
+                await SecureStore.setItemAsync('userToken', jsonResponse.token);
+                dispatch({ type: 'SIGN_IN', token: jsonResponse.token });
+            }
+        } catch (e) {
+            throw e;
+        }
       },
-      signOut: () => dispatch({ type: 'SIGN_OUT' }),
+      signOut: async () => {
+        await SecureStore.deleteItemAsync('userToken');
+        dispatch({ type: 'SIGN_OUT' });
+      },
       signUp: async (data) => {
-        console.log(`sending registration request with data: ${JSON.stringify(data)} -- ${JSON.stringify(configs.USER_AUTH_BASE_URL + configs.USER_AUTH_SIGN_UP_PATH)}`)
-        await fetch(configs.USER_AUTH_BASE_URL + configs.USER_AUTH_SIGN_UP_PATH, {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            firstname: data.firstName,
-            lastname: data.lastName,
-            email: data.email,
-            password: data.password,
-          }),
-        })
-        .then(async response => {
-          console.log(`received response from server ${JSON.stringify(response)}`)
-          if(response.status !== 200) {
+        try {
+          const response = await fetch(configs.USER_AUTH_BASE_URL + configs.USER_AUTH_SIGN_UP_PATH, {
+            method: 'POST',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              firstname: data.firstName,
+              lastname: data.lastName,
+              email: data.email,
+              password: data.password,
+            }),
+          });
+
+          if (response.status !== 200) {
             Alert.alert(
-            'Registration issue',
-            'We are sorry but something went wrong with \n the registration.. please try it later!',
-            [{text: 'Ok', onPress: () => console.log('Cancel Pressed'), style: 'cancel'}])
-          }
-          else {
+              'Registration issue',
+              'We are sorry but something went wrong with \n the registration.. please try it later!',
+              [{text: 'Ok', onPress: () => console.log('Cancel Pressed'), style: 'cancel'}]
+            );
+          } else {
             const jsonResponse = await response.json();
-            console.log("received data from server for registration: " + JSON.stringify(jsonResponse))
-            await SecureStore.setItemAsync('userToken', jsonResponse.token) // <-- Store token here
+            await SecureStore.setItemAsync('userToken', jsonResponse.token);
             dispatch({ type: 'SIGN_IN', token: jsonResponse.token });
           }
-        })
-        .catch(e => {
+        } catch (e) {
           Alert.alert(
             'Registration issue',
             'We are sorry but something went wrong with \n the registration.. please try it later!',
-            [{text: 'Ok', onPress: () => console.log('Cancel Pressed'), style: 'cancel'}])
-          console.log(`some error occured while registration request${e}`)
-        })
+            [{text: 'Ok', onPress: () => console.log('Cancel Pressed'), style: 'cancel'}]
+          );
+          console.error(`some error occured while registration request${e}`);
+        }
       },
     }),
-    []
+    [state.userToken]
   );
 
 
@@ -158,7 +145,7 @@ const MainStackNavigator = () => {
     <NavigationContainer>
       <AuthContext.Provider value={authContext}>
         <Stack.Navigator
-          initialRouteName="Main"
+          initialRouteName={state.userToken != null ? "GameNavigator" : "LoginStackNavigator"}
           screenOptions={{
             headerShown: false
           }}>

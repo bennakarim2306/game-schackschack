@@ -1,21 +1,44 @@
 import { StyleSheet } from "react-native";
 
-const profileStyles = StyleSheet.create({
+const ProfileStyles = StyleSheet.create({
     profileViewStyle: {
-        justifyContent: 'space-around',
-        backgroundColor: 'white',
-        height: '100%',
+        flex: 1,
+        backgroundColor: "#fff",
+        paddingHorizontal: 24,
+        paddingTop: 32,
+        alignItems: "center"
+    },
+    profileHeaderStyle: {
+        fontSize: 24,
+        fontWeight: "bold",
+        color: "#009966",
+        marginBottom: 24,
+        alignSelf: "center"
     },
     profileKeyStyle: {
-        alignSelf: "center",
-        color: "#18B76C",
-        fontSize: 26,
-        fontFamily: "sans-serif-condensed",
-        fontWeight: "bold"
+        fontSize: 16,
+        fontWeight: "600",
+        color: "#009966",
+        marginTop: 16,
+        marginBottom: 4,
+        alignSelf: "flex-start"
     },
     profileValueStyle: {
-        alignSelf: "center"
+        fontSize: 15,
+        color: "#333",
+        marginBottom: 8,
+        alignSelf: "flex-start"
+    },
+    profileInputStyle: {
+        width: "100%",
+        borderWidth: 1,
+        borderColor: "#e0e0e0",
+        borderRadius: 8,
+        padding: 10,
+        fontSize: 15,
+        marginBottom: 4,
+        backgroundColor: "#f8f8f8"
     }
-})
+});
 
-export default profileStyles;
+export default ProfileStyles;

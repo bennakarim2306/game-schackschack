@@ -1,18 +1,23 @@
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createDrawerNavigator, DrawerToggleButton } from "@react-navigation/drawer";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Profile from "../screens/Profile";
 import GameStart from "../screens/GameStart";
-import FriendsList from "../screens/FriendsList";
-import React, { useEffect, useMemo, useReducer, useState } from "react";
-import { Alert, BackHandler, Image, View } from "react-native";
+import FriendsList from "../screens/ContactsList";
+import React, { useEffect, useMemo, useReducer } from "react";
+import { Alert, BackHandler } from "react-native";
 import GameContext from "../Contexts/GameContext";
 import InGameNavigator from "./InGameNavigator";
 import ChatNavigator from "./ChatNavigator";
+import CoreBusinessNavigator from "./CoreBusinessNavigator";
 
-const GameBottomNavigator = createBottomTabNavigator();
+// Dummy screens for demonstration
+import MySpaceScreen from "../screens/MySpaceScreen";
+
+const GameDrawerNavigator = createDrawerNavigator();
+const MySpaceStack = createNativeStackNavigator();
 
 
 const GameNavigator = ({ route, navigation }) => {
-
     const [state, dispatch] = useReducer((prevState, action) => {
         switch (action.type) {
             case 'GAME_STARTED':
@@ -31,19 +36,17 @@ const GameNavigator = ({ route, navigation }) => {
     }, {
         gameStarted: false,
         gameId: null
-    })
+    });
+
     const gameContext = useMemo(() => ({
         startGame: async (data) => {
-            // here will come the logic for starting the game
-            // for now we will just passby the gameId
             dispatch({ type: 'GAME_STARTED', gameId: 'dummy-game-id', gameStarted: true })
         },
         stopGame: async (data) => {
             dispatch({ type: 'GAME_STOPPED', gameId: null, gameStarted: false })
         },
-    }),
-        []
-    );
+    }), []);
+
     useEffect(() => {
         const backAction = () => {
             Alert.alert('Hold on!', 'Are you sure you want to leave the application?', [
@@ -64,61 +67,40 @@ const GameNavigator = ({ route, navigation }) => {
 
         return () => backHandler.remove();
     }, []);
+
     return (
         <GameContext.Provider value={gameContext}>
-            {state.gameStarted === false ? <GameBottomNavigator.Navigator
-                initialRouteName="GameStart"
-                backBehavior="history"
-                screenOptions={({ route }) => ({
-                    headerShown: false,
-                    tabBarIcon: ({ focused, color, size }) => {
-                        if (route.name === 'Profile') {
-                            return <View >
-                                <Image
-                                    source={require('../assets/BottomTabBarIcons/user.png')}
-                                    fadeDuration={0}
-                                    style={focused ? { width: 50, height: 50 } : { width: 40, height: 40 }}
-                                />
-                            </View>;
-                            const userIcon = '../assets/BottomTabBarIcons/user.png'
-                        } else if (route.name === 'GameStart') {
-                            return <View >
-                                <Image
-                                    source={require('../assets/BottomTabBarIcons/board-game.png')}
-                                    fadeDuration={0}
-                                    style={focused ? { width: 50, height: 50 } : { width: 40, height: 40 }}
-                                />
-                            </View>;
-                        } else {
-                            return <View >
-                                <Image
-                                    source={require('../assets/BottomTabBarIcons/friends.png')}
-                                    fadeDuration={0}
-                                    style={focused ? { width: 50, height: 50 } : { width: 40, height: 40 }}
-                                />
-                            </View>;
-                        }
-
-                        // You can return any component that you like here!
-
-                    },
-                    tabBarActiveTintColor: 'tomato',
-                    tabBarInactiveTintColor: 'white',
-                    tabBarShowLabel: false,
-                    tabBarStyle: {
-                        height: '10%'
-                    }
-                })}
-            >
-                <GameBottomNavigator.Screen name="Profile" component={Profile}>
-                </GameBottomNavigator.Screen>
-                <GameBottomNavigator.Screen name="GameStart" component={GameStart}>
-                </GameBottomNavigator.Screen>
-                <GameBottomNavigator.Screen name="ChatNavigator" component={ChatNavigator}>
-                </GameBottomNavigator.Screen>
-
-            </GameBottomNavigator.Navigator>
-                : <InGameNavigator />}
+            {state.gameStarted === false ? (
+                <GameDrawerNavigator.Navigator
+                    initialRouteName="CoreBusinessNavigator"
+                    screenOptions={{
+                        headerShown: true,
+                        headerLeft: () => <DrawerToggleButton />,
+                    }}
+                >
+                    <GameDrawerNavigator.Screen
+                        name="Profile"
+                        component={Profile}
+                    />
+                    <GameDrawerNavigator.Screen
+                        name="MySpace"
+                        component={MySpaceScreen}
+                        options={{ title: "My space" }}
+                    />
+                    <GameDrawerNavigator.Screen
+                        name="CoreBusinessNavigator"
+                        component={CoreBusinessNavigator}
+                        options={{ title: "Market place" }}
+                    />
+                    <GameDrawerNavigator.Screen
+                        name="ChatNavigator"
+                        component={ChatNavigator}
+                        options={{ title: "Chat" }}
+                    />
+                </GameDrawerNavigator.Navigator>
+            ) : (
+                <InGameNavigator />
+            )}
         </GameContext.Provider>
     );
 }

@@ -1,5 +1,5 @@
 import { createContext } from "react";
 
-const friendsContext = createContext(null);
+const contactsContext = createContext(null);
 
-export default friendsContext;
+export default contactsContext;
