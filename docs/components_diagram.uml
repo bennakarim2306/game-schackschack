@@ -1,0 +1,43 @@
+@startuml
+!define RECTANGLE class
+
+RECTANGLE App
+RECTANGLE Navigation
+RECTANGLE AddItemScreen
+RECTANGLE ContactsList
+RECTANGLE MyOffersScreen
+RECTANGLE AuthContext
+RECTANGLE SecureStore
+RECTANGLE BackendAPI
+RECTANGLE Configs
+RECTANGLE GoogleMapsAPI
+RECTANGLE ImagePicker
+RECTANGLE MapView
+
+App --> Navigation
+Navigation --> AddItemScreen
+Navigation --> ContactsList
+Navigation --> MyOffersScreen
+
+AddItemScreen --> AuthContext : useAuth
+AddItemScreen --> SecureStore : get token
+AddItemScreen --> BackendAPI : fetch/save item, address
+AddItemScreen --> Configs : API endpoints, keys
+AddItemScreen --> GoogleMapsAPI : validate address
+AddItemScreen --> ImagePicker : pick image
+AddItemScreen --> MapView : show address pin
+
+ContactsList --> AuthContext : useAuth
+ContactsList --> SecureStore : get token
+ContactsList --> BackendAPI : fetch contacts
+ContactsList --> Configs
+
+MyOffersScreen --> AuthContext
+MyOffersScreen --> SecureStore
+MyOffersScreen --> BackendAPI
+MyOffersScreen --> Configs
+
+BackendAPI --> Database : store/fetch data
+BackendAPI --> GoogleMapsAPI : address validation
+
+@enduml
