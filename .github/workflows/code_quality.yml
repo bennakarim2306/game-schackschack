@@ -34,9 +34,9 @@ jobs:
         flake8 . >> results.txt
         cat results.txt | mail -s "Code Quality Check Results" karim.benna@karimbenna-itconsult.com
       env:
-        MAIL_FROM: "your-email@example.com"
+        MAIL_FROM: "bennakarim2306@gmail.com"
         MAIL_TO: "karim.benna@karimbenna-itconsult.com"
-        SMTP_SERVER: "smtp.example.com"
+        SMTP_SERVER: "smtp.office365.com"
         SMTP_PORT: 587
-        SMTP_USERNAME: "your-email@example.com"
+        SMTP_USERNAME: "bennakarim@hotmail.de"
         SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
