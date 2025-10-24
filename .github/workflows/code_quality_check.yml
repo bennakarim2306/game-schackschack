@@ -6,11 +6,11 @@ on:
       - main
 
 jobs:
-  build:
+  code_quality:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
+    - name: Checkout repository
       uses: actions/checkout@v2
 
     - name: Set up Python
@@ -26,3 +26,7 @@ jobs:
     - name: Run code quality check
       run: |
         flake8 .
+
+    - name: Send email with results
+      run: |
+        echo "Code quality check completed" | mail -s "Code Quality Check Results" karim.benna@karimbenna-itconsult.com
