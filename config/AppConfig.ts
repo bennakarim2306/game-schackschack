@@ -1,10 +1,10 @@
 const configs = {
-    USER_AUTH_BASE_URL: 'http://10.0.2.2:8080',
+    USER_AUTH_BASE_URL: 'https://foodopia-backend.fly.dev',
     USER_AUTH_SIGN_IN_PATH: '/api/v1/auth/authenticate',
     USER_AUTH_SIGN_UP_PATH: '/api/v1/auth/register',
     USER_AUTH_CONTACTS_LIST_PATH: '/api/v1/account/contactsList',
     USER_AUTH_ADD_CONTACT_PATH: '/api/v1/account/addContact',
-    WEBSOCKER_BASE_URL: 'http://10.0.2.2:3000',
+    WEBSOCKER_BASE_URL: 'https://foodopia-socket.fly.dev',
     MAPS_API_KEY: 'AIzaSyDXb6dl90e3SsprhDQRxzuLm-oBRT2-khM',
 
     // Item API endpoints
