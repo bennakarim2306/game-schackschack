@@ -6,6 +6,8 @@ import Results from "../screens/Results";
 import { Ionicons } from "@expo/vector-icons";
 import ItemNavigator from "./ItemNavigator";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Logger from "../config/Logger";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -20,6 +22,10 @@ const QueryFoodStack = () => (
 );
 
 const CoreBusinessNavigator = () => {
+    const insets = useSafeAreaInsets();
+    
+    Logger.info('NAVIGATOR', `SafeAreaInsets - top: ${insets.top}, bottom: ${insets.bottom}, left: ${insets.left}, right: ${insets.right}`);
+    
     return (
         <Tab.Navigator
             initialRouteName="Find Food"
@@ -38,8 +44,8 @@ const CoreBusinessNavigator = () => {
                     display: "none"
                 },
                 tabBarStyle: {
-                    height: 64,
-                    paddingBottom: 8
+                    height: insets.bottom,
+                    paddingBottom: insets.bottom
                 }
             })}
         >

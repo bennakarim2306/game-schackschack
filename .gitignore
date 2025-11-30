@@ -34,7 +34,4 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
-# android
-android/
-
 %ProgramData%/

@@ -75,6 +75,7 @@ function Login({ route, navigation }) {
                         onChangeText={handleEmailChange}
                         value={email}
                         placeholder="type your email"
+                        placeholderTextColor="#999"
                         accessibilityLabel="Email input"
                         returnKeyType="next"
                         textContentType="emailAddress"
@@ -94,6 +95,7 @@ function Login({ route, navigation }) {
                             onChangeText={handlePasswordChange}
                             value={password}
                             placeholder="type your password"
+                            placeholderTextColor="#999"
                             accessibilityLabel="Password input"
                             returnKeyType="done"
                             textContentType="password"

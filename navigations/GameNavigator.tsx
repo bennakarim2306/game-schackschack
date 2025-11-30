@@ -76,6 +76,7 @@ const GameNavigator = ({ route, navigation }) => {
                     screenOptions={{
                         headerShown: true,
                         headerLeft: () => <DrawerToggleButton />,
+                        headerStatusBarHeight: 0,
                     }}
                 >
                     <GameDrawerNavigator.Screen

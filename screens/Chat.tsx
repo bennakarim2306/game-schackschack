@@ -10,11 +10,11 @@ import {
     Keyboard,
     TouchableWithoutFeedback
 } from "react-native";
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from "@expo/vector-icons";
 import { useChatDispatchContext } from "../Contexts/ChatDisptachContext";
 import { useChatContext } from "../Contexts/ChatContext";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Logger from "../config/Logger";
 
 const MessageBubble = ({ item, getTimeFromTimestamp }) => (
     <View style={{
@@ -54,6 +54,14 @@ const Chat = ({ navigation, route }) => {
     const chatState = useChatContext();
     const flatListRef = useRef(null);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
+    
+    useEffect(() => {
+        Logger.info('CHAT', `Chat screen opened with contact: ${route.params?.contact || 'unknown'}`);
+        Logger.debug('CHAT', `ChatState available: ${!!chatState}`);
+        return () => {
+            Logger.debug('CHAT', `Chat screen unmounted for: ${route.params?.contact || 'unknown'}`);
+        };
+    }, [route.params?.contact, chatState]);
 
     // Listen for keyboard height changes
     useEffect(() => {
@@ -84,13 +92,27 @@ const Chat = ({ navigation, route }) => {
     }, [keyboardHeight, insets.top]);
 
     const chatMessages = useMemo(() => {
-        if (!chatState?.chat) return [];
-        const entry = chatState.chat.find(e => e.contact === route.params.contact);
+        if (!chatState?.chat) {
+            Logger.debug('CHAT', 'No chat state or chat array available');
+            return [];
+        }
+        const entry = chatState.chat.find(e => e.contact === route.params?.contact);
+        if (!entry) {
+            Logger.debug('CHAT', `No messages found for contact: ${route.params?.contact}`);
+        }
         return entry ? entry.messages : [];
-    }, [chatState, route.params.contact]);
+    }, [chatState, route.params?.contact]);
 
     const submitMessage = () => {
-        if (!messageToSend.trim()) return;
+        if (!messageToSend.trim()) {
+            Logger.debug('CHAT', 'Empty message - not sending');
+            return;
+        }
+        if (!route.params?.contact) {
+            Logger.error('CHAT', 'No contact specified - cannot send message');
+            return;
+        }
+        Logger.info('CHAT', `Submitting message to ${route.params.contact}`);
         chatDispatch({
             type: "ADD_MESSAGE_TO_CHAT",
             message: messageToSend,
@@ -114,7 +136,7 @@ const Chat = ({ navigation, route }) => {
     }, [chatMessages.length]);
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: "#f7f7f7" }}>
+        <View style={{ flex: 1, backgroundColor: "#f7f7f7" }}>
             <KeyboardAvoidingView
                 style={{ flex: 1 }}
                 behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -170,17 +192,18 @@ const Chat = ({ navigation, route }) => {
                             <TextInput
                                 style={{
                                     flex: 1,
-                                    // height: 50,
-                                    backgroundColor: "#f2f2f2",
+                                    backgroundColor: "#fff",
                                     borderRadius: 22,
                                     paddingHorizontal: 16,
+                                    paddingVertical: 12,
                                     fontSize: 16,
                                     marginRight: 8,
                                     borderWidth: 1,
-                                    borderColor: "#e0e0e0"
+                                    borderColor: "#666"
                                 }}
                                 onChangeText={setMessageToSend}
                                 placeholder="Type your message..."
+                                placeholderTextColor="#999"
                                 value={messageToSend}
                                 returnKeyType="send"
                                 onSubmitEditing={submitMessage}
@@ -202,7 +225,7 @@ const Chat = ({ navigation, route }) => {
                     </View>
                 </TouchableWithoutFeedback>
             </KeyboardAvoidingView>
-        </SafeAreaView>
+        </View>
     );
 };
 

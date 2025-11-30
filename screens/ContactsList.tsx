@@ -268,7 +268,8 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
 
     return (
         <ContactsContext.Provider value={contactsContext}>
-            <View style={ContactsListStyles.container}>
+            <View style={{ flex: 1, backgroundColor: '#fff' }}>
+                <View style={ContactsListStyles.container}>
                 <Text style={ContactsListStyles.header}>
                     Your Contacts
                 </Text>
@@ -278,7 +279,9 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
                         <TouchableOpacity
                             key={item.email}
                             onPress={event => {
+                                Logger.info('CONTACTS', `Contact clicked: ${item.email}`);
                                 setMessagesToRead(item.email)
+                                Logger.debug('NAVIGATION', `Navigating to Chat with ${item.email}`);
                                 navigation.navigate("Chat", { title: `Chat with ${item.email}`, contact: item.email })
                             }}
                             style={ContactsListStyles.contactCard}>
@@ -361,6 +364,7 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
                         </View>
                     </View>
                 </Modal>
+            </View>
             </View>
         </ContactsContext.Provider>
 

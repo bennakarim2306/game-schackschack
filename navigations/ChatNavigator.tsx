@@ -8,6 +8,7 @@ import io, { Socket } from "socket.io-client";
 import * as SecureStore from 'expo-secure-store'
 import configs from "../config/AppConfig";
 import { useFocusEffect } from "@react-navigation/native";
+import Logger from "../config/Logger";
 
 const ChatStackNavigator = createNativeStackNavigator();
 
@@ -62,7 +63,8 @@ const ChatNavigator = () => {
                     });
                 }
                 if (action.isSent === true) {
-                    console.log(`Sending message to ${action.contact} with content: ${action.message}`);
+                    Logger.info('CHAT', `Sending message to ${action.contact}`);
+                    Logger.debug('CHAT', `Message content: ${action.message}`);
                     socket.current?.emit("private-message", { token: token, to: action.contact, message: action.message });
                 }
                 const currentChat = prevState.chat.filter(e => e.contact === action.contact)[0];
@@ -104,11 +106,32 @@ const ChatNavigator = () => {
         const initSocketConnection = async () => {
             const token = await SecureStore.getItemAsync("userToken");
             setToken(token ?? "")
+            
+            Logger.info('SOCKET', `Connecting to: ${configs.WEBSOCKER_BASE_URL}`);
             socket.current = io(configs.WEBSOCKER_BASE_URL)
-            socket.current?.on("response from server", (message: string) => console.log("Received socket message from backend " + message))
+            
+            socket.current?.on("connect", () => {
+                Logger.success('SOCKET', 'Connected to WebSocket server');
+            });
+            
+            socket.current?.on("disconnect", (reason) => {
+                Logger.warning('SOCKET', `Disconnected: ${reason}`);
+            });
+            
+            socket.current?.on("error", (error) => {
+                Logger.error('SOCKET', 'Socket error', error);
+            });
+            
+            socket.current?.on("response from server", (message: string) => {
+                Logger.info('SOCKET', "Received response: " + message);
+            });
+            
             socket.current?.on("private-message-from-server", (message: { from: { sub: string }, message: string }) => {
+                Logger.info('CHAT', `Message from ${message.from.sub}: ${message.message}`);
                 dispatch({ type: "ADD_MESSAGE_TO_CHAT", message: message.from.sub.split("@")[0] + ": " + message.message, contact: message.from.sub, isSent: false, timestamp: Date.now(), isRead: false})
-            })
+            });
+            
+            Logger.info('SOCKET', 'Registering client with token');
             socket.current?.emit("register-client", { token: token })
         }
         initSocketConnection()
@@ -135,7 +158,6 @@ const ChatNavigator = () => {
                 </ChatStackNavigator.Navigator>
             </ChatDispatchContext.Provider>
         </ChatContext.Provider>
-
     );
 }
 

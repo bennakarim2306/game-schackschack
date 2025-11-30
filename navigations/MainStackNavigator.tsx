@@ -11,6 +11,7 @@ import InGameNavigator from './InGameNavigator';
 import { Alert } from 'react-native';
 import configs from '../config/AppConfig';
 import Logger from '../config/Logger';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const Stack = createNativeStackNavigator();
 
@@ -118,7 +119,7 @@ const MainStackNavigator = () => {
           const url = configs.USER_AUTH_BASE_URL + configs.USER_AUTH_SIGN_UP_PATH;
           
           Logger.info('AUTH', `Attempting registration for: ${data.email}`);
-          Logger.request(url, 'POST', { email: data.email, firstName: data.firstName, lastName: data.lastName });
+          Logger.request(url, 'POST', { email: data.email });
           
           const response = await fetch(url, {
             method: 'POST',
@@ -127,8 +128,6 @@ const MainStackNavigator = () => {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              firstname: data.firstName,
-              lastname: data.lastName,
               email: data.email,
               password: data.password,
             }),
@@ -166,19 +165,21 @@ const MainStackNavigator = () => {
 
 
   return (
-    <NavigationContainer>
-      <AuthContext.Provider value={authContext}>
-        <Stack.Navigator
-          initialRouteName={state.userToken != null ? "GameNavigator" : "LoginStackNavigator"}
-          screenOptions={{
-            headerShown: false
-          }}>
-          {state.userToken != null ?
-            <Stack.Screen name="GameNavigator" component={GameNavigator} /> :
-            <Stack.Screen name="LoginStackNavigator" component={LoginStackNavigator} />}
-        </Stack.Navigator>
-      </AuthContext.Provider>
-    </NavigationContainer>
+    <SafeAreaView style={{ flex: 1}}>
+      <NavigationContainer>
+        <AuthContext.Provider value={authContext}>
+          <Stack.Navigator
+            initialRouteName={state.userToken != null ? "GameNavigator" : "LoginStackNavigator"}
+            screenOptions={{
+              headerShown: false
+            }}>
+            {state.userToken != null ?
+              <Stack.Screen name="GameNavigator" component={GameNavigator} /> :
+              <Stack.Screen name="LoginStackNavigator" component={LoginStackNavigator} />}
+          </Stack.Navigator>
+        </AuthContext.Provider>
+      </NavigationContainer>
+    </SafeAreaView>
   );
 }
 

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, Alert, Platform } from "react-native";
+import { View, Text, TextInput, Button, Alert, Platform, ScrollView } from "react-native";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { Picker } from "@react-native-picker/picker";
 import Slider from "@react-native-community/slider";
@@ -112,32 +112,45 @@ const QueryFoodScreen = () => {
     };
 
     return (
-        <View style={{ flex: 1, padding: 24, marginTop: 0 }}>
+        <View style={{ flex: 1, backgroundColor: '#fff' }}>
+            <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
             <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 16 }}>
                 Query for food in the area
             </Text>
             <TextInput
                 style={{
                     borderWidth: 1,
-                    borderColor: "#ccc",
+                    borderColor: "#666",
                     borderRadius: 6,
-                    padding: 8,
-                    marginBottom: 16
+                    padding: 12,
+                    marginBottom: 16,
+                    backgroundColor: "#fff",
+                    fontSize: 16
                 }}
                 placeholder="Search for food items..."
+                placeholderTextColor="#7a7878ff"
                 value={searchTerm}
                 onChangeText={setSearchTerm}
             />
             <Text style={{ marginBottom: 8 }}>Type of food:</Text>
-            <Picker
-                selectedValue={selectedType}
-                style={{ height: 50, marginBottom: 16 }}
-                onValueChange={(itemValue) => setSelectedType(itemValue)}
-            >
-                {foodTypes.map(type => (
-                    <Picker.Item key={type} label={type} value={type} />
-                ))}
-            </Picker>
+            <View style={{
+                borderWidth: 1,
+                borderColor: "#666",
+                borderRadius: 6,
+                backgroundColor: "#fff",
+                marginBottom: 16
+            }}>
+                <Picker
+                    selectedValue={selectedType}
+                    style={{ height: 50 }}
+                    onValueChange={(itemValue) => setSelectedType(itemValue)}
+                    itemStyle={{ fontSize: 16, color: "#000" }}
+                >
+                    {foodTypes.map(type => (
+                        <Picker.Item key={type} label={type} value={type} color="#000" />
+                    ))}
+                </Picker>
+            </View>
             <Text style={{ marginBottom: 8 }}>Select search area:</Text>
             {Platform.OS !== 'web' ? (
                 <MapView
@@ -199,6 +212,7 @@ const QueryFoodScreen = () => {
                 style={{ marginBottom: 24 }}
             />
             <Button title="Search" onPress={handleSearch} />
+            </ScrollView>
         </View>
     );
 };

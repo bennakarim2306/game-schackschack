@@ -6,7 +6,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import * as SecureStore from "expo-secure-store";
 import configs from "../config/AppConfig";
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { KeyboardAvoidingView, Platform } from 'react-native';
 import Logger from "../config/Logger";
 
@@ -362,7 +361,7 @@ const AddItemScreen = () => {
     };
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: "#f7f7f7" }}>
+        <View style={{ flex: 1, backgroundColor: "#f7f7f7" }}>
             <KeyboardAvoidingView
                 style={{ flex: 1 }}
                 behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -380,11 +379,13 @@ const AddItemScreen = () => {
                                     onChangeText={setLabelInput}
                                     style={{
                                         borderWidth: 1,
-                                        borderColor: "#ccc",
+                                        borderColor: "#666",
                                         borderRadius: 6,
-                                        padding: 8,
+                                        padding: 12,
                                         flex: 1,
                                         marginRight: 8,
+                                        backgroundColor: "#fff",
+                                        fontSize: 16
                                     }}
                                     onSubmitEditing={handleAddLabel}
                                     returnKeyType="done"
@@ -464,6 +465,7 @@ const AddItemScreen = () => {
                         selectedValue={unit}
                         style={{ height: 50, width: "100%", marginBottom: 12 }}
                         onValueChange={setUnit}
+                        itemStyle={{ fontSize: 16, color: "#000" }}
                     >
                         {units.map(u => (
                             <Picker.Item key={u} label={u} value={u} />
@@ -488,12 +490,14 @@ const AddItemScreen = () => {
                             />
                             <TextInput
                                 placeholder="City"
+                                placeholderTextColor="#999"
                                 value={city}
                                 onChangeText={setCity}
                                 style={{ borderWidth: 1, borderColor: "#ccc", borderRadius: 6, padding: 8, marginBottom: 12, width: "100%" }}
                             />
                             <TextInput
                                 placeholder="ZIP"
+                                placeholderTextColor="#999"
                                 value={zip}
                                 onChangeText={setZip}
                                 style={{ borderWidth: 1, borderColor: "#ccc", borderRadius: 6, padding: 8, marginBottom: 12, width: "100%" }}
@@ -502,6 +506,7 @@ const AddItemScreen = () => {
                     )}
                     <TextInput
                         placeholder="Description (optional)"
+                        placeholderTextColor="#999"
                         value={description}
                         onChangeText={setDescription}
                         style={{ borderWidth: 1, borderColor: "#ccc", borderRadius: 6, padding: 8, marginBottom: 12, width: "100%" }}
@@ -606,7 +611,7 @@ const AddItemScreen = () => {
                     </View>
                 </Modal>
             </KeyboardAvoidingView>
-        </SafeAreaView>
+        </View>
     );
 };
 

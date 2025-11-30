@@ -1,6 +1,5 @@
 import { Keyboard, Text, TouchableWithoutFeedback, View, TextInput, Button, Switch } from "react-native";
 import ProfileStyles from "../styles/ProfileStyles";
-import { SafeAreaView } from "react-native-safe-area-context";
 import React, { useState, useContext } from "react";
 import AuthContext from '../Contexts/AuthContext';
 
@@ -26,7 +25,7 @@ const Profile = () => {
 
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-            <SafeAreaView style={ProfileStyles.profileViewStyle}>
+            <View style={ProfileStyles.profileViewStyle}>
                 <Text style={ProfileStyles.profileHeaderStyle}>Profile Settings</Text>
 
                 <Text style={ProfileStyles.profileKeyStyle}>Username</Text>
@@ -71,7 +70,7 @@ const Profile = () => {
                 <View style={{ marginTop: 24 }}>
                     <Button title="Log Out" color="#d9534f" onPress={handleLogout} />
                 </View>
-            </SafeAreaView>
+            </View>
         </TouchableWithoutFeedback>
     );
 };
