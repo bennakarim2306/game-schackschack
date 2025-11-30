@@ -1,6 +1,13 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+import { StyleSheet, View, Text, Platform } from 'react-native';
+
+// Conditionally import MapView only on native platforms
+let MapView: any, Marker: any;
+if (Platform.OS !== 'web') {
+    const Maps = require('react-native-maps');
+    MapView = Maps.default;
+    Marker = Maps.Marker;
+}
 
 const Map = () => {
 
@@ -16,23 +23,30 @@ const Map = () => {
         },
        });
     return (
-        <View>
-            <MapView
-                style={styles.map}
-                initialRegion={{
-                    latitude: 48.1549958,
-                    longitude: 11.4594356,
-                    latitudeDelta: 0.2,
-                    longitudeDelta: 0.2,
-                }}
-            >
-                <Marker
-                    coordinate={{ latitude: 48.1549958, longitude: 11.4594356 }}
-                    title={"Marker Title"}
-                    description={"Marker Description"}
-                    icon={require('../assets/missions/rocket-lunch.png')}
-                />
-            </MapView>
+        <View style={styles.container}>
+            {Platform.OS !== 'web' ? (
+                <MapView
+                    style={styles.map}
+                    initialRegion={{
+                        latitude: 48.1549958,
+                        longitude: 11.4594356,
+                        latitudeDelta: 0.2,
+                        longitudeDelta: 0.2,
+                    }}
+                >
+                    <Marker
+                        coordinate={{ latitude: 48.1549958, longitude: 11.4594356 }}
+                        title={"Marker Title"}
+                        description={"Marker Description"}
+                        icon={require('../assets/missions/rocket-lunch.png')}
+                    />
+                </MapView>
+            ) : (
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#e0e0e0' }}>
+                    <Text>Map not available on web</Text>
+                    <Text style={{ fontSize: 12, marginTop: 8 }}>Location: 48.1550, 11.4594</Text>
+                </View>
+            )}
         </View>
 
     );

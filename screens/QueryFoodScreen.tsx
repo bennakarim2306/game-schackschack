@@ -1,11 +1,21 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, Alert } from "react-native";
+import { View, Text, TextInput, Button, Alert, Platform } from "react-native";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { Picker } from "@react-native-picker/picker";
 import Slider from "@react-native-community/slider";
-import MapView, { Marker, Circle, MapPressEvent } from "react-native-maps";
 import * as SecureStore from "expo-secure-store";
 import configs from "../config/AppConfig";
+
+// Conditionally import MapView only on native platforms
+let MapView: any, Marker: any, Circle: any;
+if (Platform.OS !== 'web') {
+    const Maps = require('react-native-maps');
+    MapView = Maps.default;
+    Marker = Maps.Marker;
+    Circle = Maps.Circle;
+}
+
+type MapPressEvent = any;
 
 const foodTypes = [
     "All",
@@ -122,39 +132,56 @@ const QueryFoodScreen = () => {
                 ))}
             </Picker>
             <Text style={{ marginBottom: 8 }}>Select search area:</Text>
-            <MapView
-                style={{ width: "100%", height: 220, marginBottom: 16, borderRadius: 12 }}
-                initialRegion={{
-                    latitude: searchCenter.lat,
-                    longitude: searchCenter.lng,
-                    latitudeDelta: 0.09,
-                    longitudeDelta: 0.09,
-                }}
-                region={{
-                    latitude: searchCenter.lat,
-                    longitude: searchCenter.lng,
-                    latitudeDelta: 0.09,
-                    longitudeDelta: 0.09,
-                }}
-                onPress={handleMapPress}
-            >
-                <Marker
-                    coordinate={{ latitude: searchCenter.lat, longitude: searchCenter.lng }}
-                    draggable
-                    onDragEnd={e =>
-                        setSearchCenter({
-                            lat: e.nativeEvent.coordinate.latitude,
-                            lng: e.nativeEvent.coordinate.longitude
-                        })
-                    }
-                />
-                <Circle
-                    center={{ latitude: searchCenter.lat, longitude: searchCenter.lng }}
-                    radius={distance * 1000}
-                    strokeColor="#009966"
-                    fillColor="rgba(0,153,102,0.2)"
-                />
-            </MapView>
+            {Platform.OS !== 'web' ? (
+                <MapView
+                    style={{ width: "100%", height: 220, marginBottom: 16, borderRadius: 12 }}
+                    initialRegion={{
+                        latitude: searchCenter.lat,
+                        longitude: searchCenter.lng,
+                        latitudeDelta: 0.09,
+                        longitudeDelta: 0.09,
+                    }}
+                    region={{
+                        latitude: searchCenter.lat,
+                        longitude: searchCenter.lng,
+                        latitudeDelta: 0.09,
+                        longitudeDelta: 0.09,
+                    }}
+                    onPress={handleMapPress}
+                >
+                    <Marker
+                        coordinate={{ latitude: searchCenter.lat, longitude: searchCenter.lng }}
+                        draggable
+                        onDragEnd={e =>
+                            setSearchCenter({
+                                lat: e.nativeEvent.coordinate.latitude,
+                                lng: e.nativeEvent.coordinate.longitude
+                            })
+                        }
+                    />
+                    <Circle
+                        center={{ latitude: searchCenter.lat, longitude: searchCenter.lng }}
+                        radius={distance * 1000}
+                        strokeColor="#009966"
+                        fillColor="rgba(0,153,102,0.2)"
+                    />
+                </MapView>
+            ) : (
+                <View style={{ 
+                    width: "100%", 
+                    height: 220, 
+                    marginBottom: 16, 
+                    borderRadius: 12,
+                    backgroundColor: '#e0e0e0',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                }}>
+                    <Text>Map not available on web</Text>
+                    <Text style={{ fontSize: 12, marginTop: 8 }}>
+                        Location: {searchCenter.lat.toFixed(4)}, {searchCenter.lng.toFixed(4)}
+                    </Text>
+                </View>
+            )}
             <Text style={{ marginBottom: 8 }}>Maximum distance (km): {distance}</Text>
             <Slider
                 minimumValue={1}

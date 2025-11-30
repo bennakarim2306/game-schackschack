@@ -22,6 +22,9 @@
       },
       "runtimeVersion": {
         "policy": "appVersion"
+      },
+      "config": {
+        "googleMapsApiKey": "AIzaSyDXb6dl90e3SsprhDQRxzuLm-oBRT2-khM"
       }
     },
     "android": {
@@ -30,7 +33,12 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.bennakarim.Game",
-      "runtimeVersion": "1.0.0"
+      "runtimeVersion": "1.0.0",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDXb6dl90e3SsprhDQRxzuLm-oBRT2-khM"
+        }
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -42,6 +50,7 @@
     },
     "updates": {
       "url": "https://u.expo.dev/5dcea42a-d98a-48ba-a91c-11c91ee5bef9"
-    }
+    },
+    "owner": "bennakarim"
   }
 }

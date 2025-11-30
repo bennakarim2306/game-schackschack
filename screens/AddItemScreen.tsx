@@ -8,7 +8,14 @@ import * as SecureStore from "expo-secure-store";
 import configs from "../config/AppConfig";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { KeyboardAvoidingView, Platform } from 'react-native';
-import MapView, { Marker } from "react-native-maps";
+
+// Conditionally import MapView only on native platforms
+let MapView: any, Marker: any;
+if (Platform.OS !== 'web') {
+    const Maps = require('react-native-maps');
+    MapView = Maps.default;
+    Marker = Maps.Marker;
+}
 
 const foodTypes = [
     "Vegetables", "Fruits", "Dairy", "Meat", "Bakery", "Other"
@@ -515,7 +522,7 @@ const AddItemScreen = () => {
                             {addressValid === true && (
                                 <>
                                     <Text style={{ color: "green", marginBottom: 8 }}>Address is valid!</Text>
-                                    {addressCoords && (
+                                    {addressCoords && Platform.OS !== 'web' && (
                                         <MapView
                                             style={{ width: 220, height: 120, marginBottom: 12, borderRadius: 8 }}
                                             initialRegion={{
@@ -534,6 +541,12 @@ const AddItemScreen = () => {
                                         >
                                             <Marker coordinate={{ latitude: addressCoords.lat, longitude: addressCoords.lng }} />
                                         </MapView>
+                                    )}
+                                    {addressCoords && Platform.OS === 'web' && (
+                                        <View style={{ width: 220, height: 120, marginBottom: 12, borderRadius: 8, backgroundColor: '#e0e0e0', justifyContent: 'center', alignItems: 'center' }}>
+                                            <Text style={{ fontSize: 12 }}>Map preview</Text>
+                                            <Text style={{ fontSize: 10, marginTop: 4 }}>{addressCoords.lat.toFixed(4)}, {addressCoords.lng.toFixed(4)}</Text>
+                                        </View>
                                     )}
                                     <Button
                                         title={savingAddress ? "Saving..." : "Save"}
