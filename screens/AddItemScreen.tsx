@@ -8,6 +8,7 @@ import * as SecureStore from "expo-secure-store";
 import configs from "../config/AppConfig";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { KeyboardAvoidingView, Platform } from 'react-native';
+import Logger from "../config/Logger";
 
 // Conditionally import MapView only on native platforms
 let MapView: any, Marker: any;
@@ -71,33 +72,44 @@ const AddItemScreen = () => {
             try {
                 token = await SecureStore.getItemAsync("userToken");
             } catch (e) {
-                console.log("Failed to read token from SecureStore:", e);
+                Logger.error('ADDRESS', 'Failed to read token from SecureStore', e);
             }
             try {
-                const response = await fetch(configs.USER_AUTH_BASE_URL + configs.ACCOUNT_GET_ADDRESS_BY_EMAIL_PATH, {
+                const url = configs.USER_AUTH_BASE_URL + configs.ACCOUNT_GET_ADDRESS_BY_EMAIL_PATH;
+                Logger.info('ADDRESS', 'Fetching saved address for autofill');
+                Logger.request(url, 'GET');
+                
+                const response = await fetch(url, {
                     method: "GET",
                     headers: {
                         ...(token ? { Authorization: `Bearer ${token}` } : {}),
                         Accept: "application/json"
                     }
                 });
-                console.log("Fetch address response status:", response.status);
+                
+                Logger.response(url, response.status);
+                
                 if (response.status === 204) {
+                    Logger.info('ADDRESS', 'No saved address found - prompting user');
                     // No address found, prompt user to enter and save
                     setShowAddressModal(true);
                 } else if (!response.ok) {
+                    Logger.error('ADDRESS', 'Failed to fetch address');
                     throw new Error("Could not fetch address");
                 } else {
                     const data = await response.json();
                     if (data && (data.street || data.city || data.zip)) {
+                        Logger.success('ADDRESS', `Address autofilled: ${data.street}, ${data.city} ${data.zip}`);
                         setStreet(data.street || "");
                         setCity(data.city || "");
                         setZip(data.zip || "");
                     } else {
+                        Logger.info('ADDRESS', 'Empty address data - showing modal');
                         setShowAddressModal(true);
                     }
                 }
             } catch (e) {
+                Logger.error('ADDRESS', 'Exception fetching address', e);
                 Alert.alert("Error", "Could not fetch your address from the backend.");
                 setAutofillAddressSwitch(false);
             } finally {
@@ -117,29 +129,44 @@ const AddItemScreen = () => {
         try {
             token = await SecureStore.getItemAsync("userToken");
         } catch (e) {
-            console.log("Failed to read token from SecureStore:", e);
+            Logger.error('ADDRESS', 'Failed to read token from SecureStore', e);
         }
         try {
-            const response = await fetch(configs.USER_AUTH_BASE_URL + configs.ACCOUNT_SET_ADDRESS_BY_EMAIL_PATH, {
+            const url = configs.USER_AUTH_BASE_URL + configs.ACCOUNT_SET_ADDRESS_BY_EMAIL_PATH;
+            const addressData = {
+                street: modalStreet,
+                city: modalCity,
+                zip: modalZip
+            };
+            
+            Logger.info('ADDRESS', `Saving address: ${modalStreet}, ${modalCity} ${modalZip}`);
+            Logger.request(url, 'POST', addressData);
+            
+            const response = await fetch(url, {
                 method: "POST",
                 headers: {
                     ...(token ? { Authorization: `Bearer ${token}` } : {}),
                     "Content-Type": "application/json",
                     Accept: "application/json"
                 },
-                body: JSON.stringify({
-                    street: modalStreet,
-                    city: modalCity,
-                    zip: modalZip
-                })
+                body: JSON.stringify(addressData)
             });
-            if (!response.ok) throw new Error("Could not save address");
+            
+            Logger.response(url, response.status);
+            
+            if (!response.ok) {
+                Logger.error('ADDRESS', 'Failed to save address');
+                throw new Error("Could not save address");
+            }
+            
+            Logger.success('ADDRESS', 'Address saved successfully');
             setStreet(modalStreet);
             setCity(modalCity);
             setZip(modalZip);
             setShowAddressModal(false);
             Alert.alert("Success", "Address saved and autofilled.");
         } catch (e) {
+            Logger.error('ADDRESS', 'Exception saving address', e);
             Alert.alert("Error", "Could not save your address to the backend.");
         } finally {
             setSavingAddress(false);
@@ -157,7 +184,7 @@ const AddItemScreen = () => {
         try {
             token = await SecureStore.getItemAsync("userToken");
         } catch (e) {
-            console.log("Failed to read token from SecureStore:", e);
+            Logger.error('OFFER', 'Failed to read token from SecureStore', e);
         }
 
         const itemData = {
@@ -181,7 +208,11 @@ const AddItemScreen = () => {
         } as any);
 
         try {
-            const response = await fetch('YOUR_API_ENDPOINT_HERE', {
+            const url = 'YOUR_API_ENDPOINT_HERE';
+            Logger.info('OFFER', `Adding offer: ${name} (${type})`);
+            Logger.request(url, 'POST', { item: itemData });
+            
+            const response = await fetch(url, {
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -189,15 +220,19 @@ const AddItemScreen = () => {
                 },
             });
 
+            Logger.response(url, response.status);
+            
             if (!response.ok) {
+                Logger.error('OFFER', 'Failed to add offer');
                 throw new Error('Network response was not ok');
             }
 
             const result = await response.json();
+            Logger.success('OFFER', `Offer added successfully: ${name}`);
             Alert.alert("Offer Added", `Your offer for ${name} has been added!`, [{ text: "OK" }]);
             resetForm();
         } catch (error) {
-            console.error(error);
+            Logger.error('OFFER', 'Exception adding offer', error);
             Alert.alert("Error", "There was an error adding your offer. Please try again.");
         }
     };
@@ -289,17 +324,26 @@ const AddItemScreen = () => {
         try {
             const addressString = encodeURIComponent(`${modalStreet}, ${modalZip} ${modalCity}`);
             const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${addressString}&key=${configs.MAPS_API_KEY}`;
+            
+            Logger.info('GEOCODING', `Validating address: ${modalStreet}, ${modalZip} ${modalCity}`);
+            Logger.request(url, 'GET');
+            
             const res = await fetch(url);
             const data = await res.json();
+            
+            Logger.response(url, res.status, `Status: ${data.status}`);
+            
             if (
                 data.status === "OK" &&
                 Array.isArray(data.results) &&
                 data.results.length > 0
             ) {
-                setAddressValid(true);
                 const location = data.results[0].geometry.location;
+                Logger.success('GEOCODING', `Address validated - Coords: (${location.lat}, ${location.lng})`);
+                setAddressValid(true);
                 setAddressCoords({ lat: location.lat, lng: location.lng });
             } else {
+                Logger.warning('GEOCODING', `Address validation failed - Status: ${data.status}`);
                 setAddressValid(false);
                 setAddressCoords(null);
             }
@@ -308,7 +352,8 @@ const AddItemScreen = () => {
                 city: modalCity,
                 zip: modalZip,
             };
-        } catch {
+        } catch (error) {
+            Logger.error('GEOCODING', 'Exception validating address', error);
             setAddressValid(false);
             setAddressCoords(null);
         } finally {

@@ -6,6 +6,7 @@ import ContactsListStyles from "../styles/ContactsListStyles";
 import configs from "../config/AppConfig";
 import { useChatContext } from "../Contexts/ChatContext";
 import { useChatDispatchContext } from "../Contexts/ChatDisptachContext";
+import Logger from "../config/Logger";
 
 import type { StackNavigationProp } from '@react-navigation/stack';
 import { useFocusEffect, type RouteProp } from '@react-navigation/native';
@@ -97,11 +98,14 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
     useFocusEffect(
         useCallback(() => {
             const getContactsList = async () => {
-                console.log(`ContactsList getContactsList called`)
                 const token = await SecureStore.getItemAsync("userToken");
                 setToken(token)
-                console.log(`Sending request to get ContactsList with token ${JSON.stringify(token)}`)
-                await fetch(configs.USER_AUTH_BASE_URL + configs.USER_AUTH_CONTACTS_LIST_PATH, {
+                
+                const url = configs.USER_AUTH_BASE_URL + configs.USER_AUTH_CONTACTS_LIST_PATH;
+                Logger.info('CONTACTS', 'Fetching contacts list');
+                Logger.request(url, 'GET');
+                
+                await fetch(url, {
                     method: 'GET',
                     headers: {
                         Accept: 'application/json',
@@ -112,26 +116,27 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
                 })
                     .then(async response => {
                         const jsonResponse = await response.json();
-                        console.log(`received response from server ${JSON.stringify(jsonResponse)}`)
+                        Logger.response(url, response.status, `Contacts: ${jsonResponse.friends?.length || 0}`);
+                        
                         if (response.status !== 200) {
+                            Logger.error('CONTACTS', 'Failed to get contacts list', jsonResponse);
                             Alert.alert(
                                 'issue with the friends list',
                                 'We are sorry but something went wrong with \n the friends list call to backend.. please try it later!',
-                                [{ text: 'Ok', onPress: () => console.log('Cancel Pressed'), style: 'cancel' }])
+                                [{ text: 'Ok', onPress: () => Logger.debug('CONTACTS', 'Alert dismissed'), style: 'cancel' }])
                         }
                         else {
-                            console.log("received data from server for friends list: " + JSON.stringify(jsonResponse))
+                            Logger.success('CONTACTS', `Contacts list loaded - ${jsonResponse.friends?.length || 0} friends`);
                             dispatch({ type: 'FRIENDS_LIST_GATHERED', ContactsList: jsonResponse.friends });
                         }
-                        console.log(`Calling socket IO`)
 
                     })
                     .catch(e => {
+                        Logger.error('CONTACTS', 'Exception getting contacts list', e);
                         Alert.alert(
                             'Registration issue',
                             'We are sorry but something went wrong with \n the registration.. please try it later!',
-                            [{ text: 'Ok', onPress: () => console.log('Cancel Pressed'), style: 'cancel' }])
-                        console.log(`some error occured while calling ContactsList request${e}`)
+                            [{ text: 'Ok', onPress: () => Logger.debug('CONTACTS', 'Alert dismissed'), style: 'cancel' }])
                     })
             }
             getContactsList()
@@ -173,25 +178,32 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
         setIsSending(true);
         try {
             const token = await SecureStore.getItemAsync("userToken");
-            const response = await fetch(
-                `${configs.USER_AUTH_BASE_URL}${configs.USER_AUTH_ADD_CONTACT_PATH}?email=${encodeURIComponent(newContactEmail)}`,
-                {
-                    method: "POST",
-                    headers: {
-                        Accept: "application/json",
-                        "Content-Type": "application/json",
-                        Authorization: "Bearer " + token,
-                    },
-                    body: null,
-                }
-            );
+            const url = `${configs.USER_AUTH_BASE_URL}${configs.USER_AUTH_ADD_CONTACT_PATH}?email=${encodeURIComponent(newContactEmail)}`;
+            
+            Logger.info('CONTACTS', `Sending contact request to: ${newContactEmail}`);
+            Logger.request(url, 'POST');
+            
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + token,
+                },
+                body: null,
+            });
+            
+            Logger.response(url, response.status);
+            
             if (!response.ok) {
+                Logger.error('CONTACTS', 'Contact request failed');
                 Alert.alert(
                     "Contact request issue",
                     "Something went wrong with the contact request. Please try again later.",
                     [{ text: "Ok", style: "cancel" }]
                 );
             } else {
+                Logger.success('CONTACTS', `Contact request sent to ${newContactEmail}`);
                 Alert.alert(
                     "Contact request sent",
                     "Your contact request has been sent.",

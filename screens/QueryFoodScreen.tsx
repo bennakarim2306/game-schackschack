@@ -5,6 +5,7 @@ import { Picker } from "@react-native-picker/picker";
 import Slider from "@react-native-community/slider";
 import * as SecureStore from "expo-secure-store";
 import configs from "../config/AppConfig";
+import Logger from "../config/Logger";
 
 // Conditionally import MapView only on native platforms
 let MapView: any, Marker: any, Circle: any;
@@ -69,20 +70,23 @@ const QueryFoodScreen = () => {
             params.append("lat", String(searchCenter.lat));
             params.append("lng", String(searchCenter.lng));
             params.append("distanceKm", String(distance));
-            console.log(`Searching with params: ${params.toString()} and token: ${token}`);
-            const response = await fetch(
-                `${configs.USER_AUTH_BASE_URL}${configs.ITEM_FILTER_PATH}?${params.toString()}`,
-                {
-                    method: "GET",
-                    headers: {
-                        "Accept": "application/json",
-                        "Authorization": `Bearer ${token}`,
-                    },
-                }
-            );
+            
+            const url = `${configs.USER_AUTH_BASE_URL}${configs.ITEM_FILTER_PATH}?${params.toString()}`;
+            Logger.info('SEARCH', `Searching with params: type=${selectedType}, distance=${distance}km, center=(${searchCenter.lat}, ${searchCenter.lng})`);
+            Logger.request(url, 'GET', { params: params.toString() });
+            
+            const response = await fetch(url, {
+                method: "GET",
+                headers: {
+                    "Accept": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
+            });
 
             if (response.status === 200) {
                 const items = await response.json();
+                Logger.response(url, response.status, `Found ${items.length} items`);
+                Logger.success('SEARCH', `Query successful - ${items.length} items found`);
                 navigation.navigate("Results", {
                     searchTerm,
                     selectedType,
@@ -91,9 +95,12 @@ const QueryFoodScreen = () => {
                     searchCenter,
                 });
             } else {
+                Logger.response(url, response.status);
+                Logger.error('SEARCH', 'Search failed with non-200 status');
                 Alert.alert("Search Error", "Could not fetch items. Please try again.");
             }
         } catch (error) {
+            Logger.error('SEARCH', 'Search exception', error);
             Alert.alert("Search Error", "An error occurred while searching.");
         }
     };

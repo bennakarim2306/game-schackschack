@@ -3,7 +3,8 @@ import { Alert, BackHandler, FlatList, Image, Text, TouchableOpacity, View } fro
 import GameContext from "../Contexts/GameContext";
 import queryItemsStyles from "../styles/QueryItemsStyles";
 import configs from "../config/AppConfig";
-import * as SecureStore from 'expo-secure-store'
+import * as SecureStore from 'expo-secure-store';
+import Logger from "../config/Logger";
 
 
 const QueryItems = () => {
@@ -38,8 +39,11 @@ const QueryItems = () => {
           const token = await SecureStore.getItemAsync("userToken");
           setToken(token)
           try {
-            console.log("fetching item list from the file system")
-            const response = await fetch(configs.USER_AUTH_BASE_URL+configs.ITEMS_PATH, {
+            const url = configs.USER_AUTH_BASE_URL+configs.ITEMS_PATH;
+            Logger.info('GAME', 'Fetching item list for game');
+            Logger.request(url, 'GET');
+            
+            const response = await fetch(url, {
               method: 'GET',
               headers: {
                   Accept: 'application/json',
@@ -49,9 +53,11 @@ const QueryItems = () => {
               body: null,
           });
             const data = await response.json();
+            Logger.response(url, response.status, `Received ${data.length} items`);
+            Logger.success('GAME', `Items loaded successfully - ${data.length} items`);
             setItems(data);
           } catch (error) {
-            console.error('Error fetching items:', error);
+            Logger.error('GAME', 'Error fetching items', error);
           }
         };
 

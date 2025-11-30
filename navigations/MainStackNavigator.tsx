@@ -10,6 +10,7 @@ import GameContext from '../Contexts/GameContext';
 import InGameNavigator from './InGameNavigator';
 import { Alert } from 'react-native';
 import configs from '../config/AppConfig';
+import Logger from '../config/Logger';
 
 const Stack = createNativeStackNavigator();
 
@@ -72,7 +73,12 @@ const MainStackNavigator = () => {
       getUserToken: () => state.userToken,
       signIn: async (data) => {
         try {
-            const response = await fetch(configs.USER_AUTH_BASE_URL + configs.USER_AUTH_SIGN_IN_PATH, {
+            const url = configs.USER_AUTH_BASE_URL + configs.USER_AUTH_SIGN_IN_PATH;
+            
+            Logger.info('AUTH', `Attempting login for: ${data.email}`);
+            Logger.request(url, 'POST', { email: data.email, password: '***' });
+            
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
@@ -85,23 +91,36 @@ const MainStackNavigator = () => {
             });
 
             if (response.status !== 200) {
+                const errorText = await response.text();
+                Logger.response(url, response.status, errorText);
+                Logger.error('AUTH', 'Login failed', errorText);
                 throw new Error("Login failed");
             } else {
                 const jsonResponse = await response.json();
+                Logger.response(url, response.status);
+                Logger.success('AUTH', 'Login successful - Token received');
                 await SecureStore.setItemAsync('userToken', jsonResponse.token);
                 dispatch({ type: 'SIGN_IN', token: jsonResponse.token });
             }
         } catch (e) {
+            Logger.error('AUTH', 'Login exception', e);
             throw e;
         }
       },
       signOut: async () => {
+        Logger.info('AUTH', 'User signing out');
         await SecureStore.deleteItemAsync('userToken');
         dispatch({ type: 'SIGN_OUT' });
+        Logger.success('AUTH', 'User signed out successfully');
       },
       signUp: async (data) => {
         try {
-          const response = await fetch(configs.USER_AUTH_BASE_URL + configs.USER_AUTH_SIGN_UP_PATH, {
+          const url = configs.USER_AUTH_BASE_URL + configs.USER_AUTH_SIGN_UP_PATH;
+          
+          Logger.info('AUTH', `Attempting registration for: ${data.email}`);
+          Logger.request(url, 'POST', { email: data.email, firstName: data.firstName, lastName: data.lastName });
+          
+          const response = await fetch(url, {
             method: 'POST',
             headers: {
               Accept: 'application/json',
@@ -116,13 +135,18 @@ const MainStackNavigator = () => {
           });
 
           if (response.status !== 200) {
+            const errorText = await response.text();
+            Logger.response(url, response.status, errorText);
+            Logger.error('AUTH', 'Registration failed', errorText);
             Alert.alert(
               'Registration issue',
               'We are sorry but something went wrong with \n the registration.. please try it later!',
-              [{text: 'Ok', onPress: () => console.log('Cancel Pressed'), style: 'cancel'}]
+              [{text: 'Ok', onPress: () => Logger.debug('AUTH', 'Alert dismissed'), style: 'cancel'}]
             );
           } else {
             const jsonResponse = await response.json();
+            Logger.response(url, response.status);
+            Logger.success('AUTH', 'Registration successful - Token received');
             await SecureStore.setItemAsync('userToken', jsonResponse.token);
             dispatch({ type: 'SIGN_IN', token: jsonResponse.token });
           }
