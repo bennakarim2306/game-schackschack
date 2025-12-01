@@ -1,5 +1,7 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { MutableRefObject, useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { TouchableOpacity, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import ContactsList from "../screens/ContactsList"; // Renamed FriendsList to ContactsList
 import Chat from "../screens/Chat";
 import { ChatContext } from "../Contexts/ChatContext";
@@ -142,18 +144,17 @@ const ChatNavigator = () => {
             <ChatDispatchContext.Provider value={dispatch}>
                 <ChatStackNavigator.Navigator
                     initialRouteName="ContactsList"
+                    screenOptions={{
+                        headerShown: false
+                    }}
                 >
                     <ChatStackNavigator.Screen
                         name="ContactsList"
                         component={ContactsList}
-                        options={{
-                            headerShown: false // Hide the header for ContactsList
-                        }}
                     />
                     <ChatStackNavigator.Screen
                         name="Chat"
                         component={Chat}
-                        options={({ route }) => ({ title: route.params.title, headerShown: true })}
                     />
                 </ChatStackNavigator.Navigator>
             </ChatDispatchContext.Provider>

@@ -11,7 +11,6 @@ import InGameNavigator from './InGameNavigator';
 import { Alert } from 'react-native';
 import configs from '../config/AppConfig';
 import Logger from '../config/Logger';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 const Stack = createNativeStackNavigator();
 
@@ -165,21 +164,19 @@ const MainStackNavigator = () => {
 
 
   return (
-    <SafeAreaView style={{ flex: 1}}>
-      <NavigationContainer>
-        <AuthContext.Provider value={authContext}>
-          <Stack.Navigator
-            initialRouteName={state.userToken != null ? "GameNavigator" : "LoginStackNavigator"}
-            screenOptions={{
-              headerShown: false
-            }}>
-            {state.userToken != null ?
-              <Stack.Screen name="GameNavigator" component={GameNavigator} /> :
-              <Stack.Screen name="LoginStackNavigator" component={LoginStackNavigator} />}
-          </Stack.Navigator>
-        </AuthContext.Provider>
-      </NavigationContainer>
-    </SafeAreaView>
+    <NavigationContainer>
+      <AuthContext.Provider value={authContext}>
+        <Stack.Navigator
+          initialRouteName={state.userToken != null ? "GameNavigator" : "LoginStackNavigator"}
+          screenOptions={{
+            headerShown: false
+          }}>
+          {state.userToken != null ?
+            <Stack.Screen name="GameNavigator" component={GameNavigator} /> :
+            <Stack.Screen name="LoginStackNavigator" component={LoginStackNavigator} />}
+        </Stack.Navigator>
+      </AuthContext.Provider>
+    </NavigationContainer>
   );
 }
 

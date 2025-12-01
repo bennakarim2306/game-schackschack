@@ -1,11 +1,13 @@
 import React from 'react';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import MainStackNavigator from './navigations/MainStackNavigator';
 
 export default function App() {
   return (
     <SafeAreaProvider>
-      <MainStackNavigator />
+      <SafeAreaView style={{ flex: 1 }}>
+        <MainStackNavigator />
+      </SafeAreaView>
     </SafeAreaProvider>
   );
 }

@@ -53,6 +53,7 @@ const Chat = ({ navigation, route }) => {
     const [messageToSend, setMessageToSend] = useState("");
     const chatState = useChatContext();
     const flatListRef = useRef(null);
+    const contact = route.params?.contact || 'Chat';
     
     useEffect(() => {
         Logger.info('CHAT', `Chat screen opened with contact: ${route.params?.contact || 'unknown'}`);
@@ -108,6 +109,28 @@ const Chat = ({ navigation, route }) => {
 
     return (
         <View style={{ flex: 1, backgroundColor: "#f7f7f7" }}>
+            {/* Custom Header */}
+            <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingTop: insets.top,
+                paddingHorizontal: 12,
+                paddingBottom: 12,
+                backgroundColor: '#ffffffff',
+                borderBottomWidth: 1,
+                borderBottomColor: '#c5bebeff'
+            }}>
+                <TouchableOpacity
+                    onPress={() => navigation.goBack()}
+                    style={{ marginRight: 12, padding: 4 }}
+                >
+                    <Ionicons name="arrow-back" size={24} color="#d6b6b6ff" />
+                </TouchableOpacity>
+                <Text style={{ fontSize: 18, color: '#d6b6b6ff', fontWeight: '500' }}>
+                    {contact}
+                </Text>
+            </View>
+            
             <KeyboardAvoidingView
                 style={{ flex: 1 }}
                 behavior={Platform.OS === "ios" ? "padding" : "height"}

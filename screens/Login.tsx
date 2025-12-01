@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { View, Button, Text, TextInput, SafeAreaView, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Platform, Pressable, Alert, ActivityIndicator } from "react-native";
+import { View, Button, Text, TextInput, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Platform, Pressable, Alert, ActivityIndicator } from "react-native";
 import loginStyles from "../styles/LoginStyles";
 import AuthContext from "../Contexts/AuthContext";
 
@@ -71,7 +71,7 @@ function Login({ route, navigation }) {
             behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
             <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-                <SafeAreaView style={loginStyles.loginViewStyle}>
+                <View style={loginStyles.loginViewStyle}>
                     <Text style={loginStyles.textStyle}>
                         Email
                     </Text>
@@ -142,7 +142,7 @@ function Login({ route, navigation }) {
                             )}
                         </Pressable>
                     </View>
-                </SafeAreaView>
+                </View>
             </TouchableWithoutFeedback>
         </KeyboardAvoidingView>
     );
