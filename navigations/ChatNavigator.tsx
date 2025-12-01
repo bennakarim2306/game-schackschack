@@ -153,7 +153,7 @@ const ChatNavigator = () => {
                     <ChatStackNavigator.Screen
                         name="Chat"
                         component={Chat}
-                        options={({ route }) => ({ title: route.params.title })}
+                        options={({ route }) => ({ title: route.params.title, headerShown: true })}
                     />
                 </ChatStackNavigator.Navigator>
             </ChatDispatchContext.Provider>

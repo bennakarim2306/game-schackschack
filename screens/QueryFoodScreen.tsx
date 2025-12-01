@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, Alert, Platform, ScrollView } from "react-native";
+import { View, Text, TextInput, Button, Alert, Platform, ScrollView, Pressable, ActivityIndicator } from "react-native";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { Picker } from "@react-native-picker/picker";
 import Slider from "@react-native-community/slider";
@@ -47,6 +47,7 @@ const QueryFoodScreen = () => {
     const [selectedType, setSelectedType] = useState("All");
     const [distance, setDistance] = useState(10);
     const [searchCenter, setSearchCenter] = useState(DEFAULT_CENTER);
+    const [isSearching, setIsSearching] = useState(false);
 
     // Helper to calculate distance between two lat/lng points (Haversine formula)
     function getDistanceKm(lat1: number, lng1: number, lat2: number, lng2: number) {
@@ -62,6 +63,7 @@ const QueryFoodScreen = () => {
     }
 
     const handleSearch = async () => {
+        setIsSearching(true);
         try {
             const token = await SecureStore.getItemAsync("userToken");
             const params = new URLSearchParams();
@@ -102,6 +104,8 @@ const QueryFoodScreen = () => {
         } catch (error) {
             Logger.error('SEARCH', 'Search exception', error);
             Alert.alert("Search Error", "An error occurred while searching.");
+        } finally {
+            setIsSearching(false);
         }
     };
 
@@ -211,7 +215,25 @@ const QueryFoodScreen = () => {
                 onValueChange={setDistance}
                 style={{ marginBottom: 24 }}
             />
-            <Button title="Search" onPress={handleSearch} />
+            <Pressable
+                onPress={handleSearch}
+                disabled={isSearching}
+                style={({ pressed }) => ([
+                    {
+                        backgroundColor: isSearching ? '#ccc' : '#2196F3',
+                        padding: 16,
+                        borderRadius: 8,
+                        alignItems: 'center',
+                        opacity: pressed && !isSearching ? 0.7 : 1
+                    }
+                ])}
+            >
+                {isSearching ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                    <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>Search</Text>
+                )}
+            </Pressable>
             </ScrollView>
         </View>
     );

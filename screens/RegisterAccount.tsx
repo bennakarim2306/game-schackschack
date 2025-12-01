@@ -1,4 +1,4 @@
-import { Button, Keyboard, KeyboardAvoidingView, Platform, Pressable, Text, TextInput, TextInputProps, TouchableWithoutFeedback, View } from "react-native";
+import { Button, Keyboard, KeyboardAvoidingView, Platform, Pressable, Text, TextInput, TextInputProps, TouchableWithoutFeedback, View, ActivityIndicator } from "react-native";
 import registerAccountStyles from "../styles/RegisterAccountStyles";
 import { useContext, useState } from "react";
 import AuthContext from "../Contexts/AuthContext";
@@ -21,6 +21,7 @@ const RegisterAccount = () => {
     const [emailError, setEmailError] = useState("")
     const [passwordError, setPasswordError] = useState("")
     const [showPassword, setShowPassword] = useState(false);
+    const [isRegistering, setIsRegistering] = useState(false);
 
     function validateEmail(email: string) {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -40,7 +41,7 @@ const RegisterAccount = () => {
         setPasswordError(validatePassword(text) ? "" : "Password must be at least 6 characters");
     };
 
-    const handleRegister = () => {
+    const handleRegister = async () => {
         // Trim all input values before validation and submission
         const trimmedEmail = email.trim();
         const trimmedPassword = password; // Passwords usually shouldn't be trimmed
@@ -52,11 +53,16 @@ const RegisterAccount = () => {
         setPasswordError(passwordValid ? "" : "Password must be at least 6 characters");
 
         if (emailValid && passwordValid) {
-            // Use the RegisterData type for signUp
-            signUp({
-                email: trimmedEmail,
-                password: trimmedPassword
-            });
+            setIsRegistering(true);
+            try {
+                // Use the RegisterData type for signUp
+                await signUp({
+                    email: trimmedEmail,
+                    password: trimmedPassword
+                });
+            } finally {
+                setIsRegistering(false);
+            }
         }
     };
 
@@ -131,16 +137,31 @@ const RegisterAccount = () => {
                     ) : null}
 
                     <View style={registerAccountStyles.buttonStyle}>
-                        <Button
-                            title='Register new account'
+                        <Pressable
                             onPress={handleRegister}
                             disabled={
+                                isRegistering ||
                                 !email ||
                                 !password ||
                                 !!emailError ||
                                 !!passwordError
                             }
-                        />
+                            style={({ pressed }) => ([
+                                {
+                                    backgroundColor: (isRegistering || !email || !password || !!emailError || !!passwordError) ? '#ccc' : '#2196F3',
+                                    padding: 16,
+                                    borderRadius: 8,
+                                    alignItems: 'center',
+                                    opacity: pressed && !isRegistering ? 0.7 : 1
+                                }
+                            ])}
+                        >
+                            {isRegistering ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                            ) : (
+                                <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>Register new account</Text>
+                            )}
+                        </Pressable>
                     </View>
                 </View>
             </TouchableWithoutFeedback>

@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { View, Button, Text, TextInput, SafeAreaView, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Platform, Pressable, Alert } from "react-native";
+import { View, Button, Text, TextInput, SafeAreaView, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Platform, Pressable, Alert, ActivityIndicator } from "react-native";
 import loginStyles from "../styles/LoginStyles";
 import AuthContext from "../Contexts/AuthContext";
 
@@ -13,6 +13,7 @@ function Login({ route, navigation }) {
     const [emailError, setEmailError] = useState("");
     const [passwordError, setPasswordError] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+    const [isLoggingIn, setIsLoggingIn] = useState(false);
 
     function validateEmail(email) {
         // Simple email regex for demonstration
@@ -42,6 +43,7 @@ function Login({ route, navigation }) {
         setEmailError(emailValid ? "" : "Invalid email address");
         setPasswordError(passwordValid ? "" : "Password must be at least 6 characters");
         if (emailValid && passwordValid) {
+            setIsLoggingIn(true);
             try {
                 await signIn({ email: trimmedEmail, password: passwordValue });
             } catch (error) {
@@ -50,11 +52,14 @@ function Login({ route, navigation }) {
                     "We couldn't log you in. Please check your email and password and try again.",
                     [{ text: "OK" }]
                 );
+            } finally {
+                setIsLoggingIn(false);
             }
         }
     };
 
     const isDisabled =
+        isLoggingIn ||
         !email ||
         !password ||
         !!emailError ||
@@ -128,9 +133,13 @@ function Login({ route, navigation }) {
                                 pressed && !isDisabled && { opacity: 0.7 }
                             ]}
                         >
-                            <Text style={loginStyles.loginButtonText}>
-                                Login here
-                            </Text>
+                            {isLoggingIn ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                            ) : (
+                                <Text style={loginStyles.loginButtonText}>
+                                    Login here
+                                </Text>
+                            )}
                         </Pressable>
                     </View>
                 </SafeAreaView>

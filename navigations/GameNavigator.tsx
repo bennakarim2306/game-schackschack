@@ -71,34 +71,7 @@ const GameNavigator = ({ route, navigation }) => {
     return (
         <GameContext.Provider value={gameContext}>
             {state.gameStarted === false ? (
-                <GameDrawerNavigator.Navigator
-                    initialRouteName="CoreBusinessNavigator"
-                    screenOptions={{
-                        headerShown: true,
-                        headerLeft: () => <DrawerToggleButton />,
-                        headerStatusBarHeight: 0,
-                    }}
-                >
-                    <GameDrawerNavigator.Screen
-                        name="Profile"
-                        component={Profile}
-                    />
-                    <GameDrawerNavigator.Screen
-                        name="MySpace"
-                        component={MySpaceScreen}
-                        options={{ title: "My space" }}
-                    />
-                    <GameDrawerNavigator.Screen
-                        name="CoreBusinessNavigator"
-                        component={CoreBusinessNavigator}
-                        options={{ title: "Market place" }}
-                    />
-                    <GameDrawerNavigator.Screen
-                        name="ChatNavigator"
-                        component={ChatNavigator}
-                        options={{ title: "Chat" }}
-                    />
-                </GameDrawerNavigator.Navigator>
+                <CoreBusinessNavigator />
             ) : (
                 <InGameNavigator />
             )}

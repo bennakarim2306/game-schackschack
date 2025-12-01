@@ -61,6 +61,7 @@ const AddItemScreen = () => {
     const [verifyingAddress, setVerifyingAddress] = useState(false);
     const lastValidatedAddress = useRef({ street: "", city: "", zip: "" });
     const [addressCoords, setAddressCoords] = useState<{ lat: number; lng: number } | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Autofill address from backend when switch is turned on
     const handleAutofillSwitch = async (value: boolean) => {
@@ -179,6 +180,7 @@ const AddItemScreen = () => {
             return;
         }
 
+        setIsSubmitting(true);
         let token: string | null = null;
         try {
             token = await SecureStore.getItemAsync("userToken");
@@ -233,6 +235,8 @@ const AddItemScreen = () => {
         } catch (error) {
             Logger.error('OFFER', 'Exception adding offer', error);
             Alert.alert("Error", "There was an error adding your offer. Please try again.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 

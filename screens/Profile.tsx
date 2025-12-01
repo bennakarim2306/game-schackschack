@@ -1,4 +1,4 @@
-import { Keyboard, Text, TouchableWithoutFeedback, View, TextInput, Button, Switch } from "react-native";
+import { Keyboard, Text, TouchableWithoutFeedback, View, TextInput, Button, Switch, ActivityIndicator, Pressable } from "react-native";
 import ProfileStyles from "../styles/ProfileStyles";
 import React, { useState, useContext } from "react";
 import AuthContext from '../Contexts/AuthContext';
@@ -9,17 +9,31 @@ const Profile = () => {
     const [registrationDate] = useState("dd/mm/yyyy");
     const [password, setPassword] = useState("*******");
     const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     const authContext = useContext(AuthContext);
 
-    const handleSave = () => {
-        // Save logic here (API call, local storage, etc.)
-        alert("Profile updated!");
+    const handleSave = async () => {
+        setIsSaving(true);
+        try {
+            // Save logic here (API call, local storage, etc.)
+            // Simulate API call
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            alert("Profile updated!");
+        } finally {
+            setIsSaving(false);
+        }
     };
 
-    const handleLogout = () => {
-        if (authContext && authContext.signOut) {
-            authContext.signOut();
+    const handleLogout = async () => {
+        setIsLoggingOut(true);
+        try {
+            if (authContext && authContext.signOut) {
+                await authContext.signOut();
+            }
+        } finally {
+            setIsLoggingOut(false);
         }
     };
 
@@ -65,11 +79,47 @@ const Profile = () => {
                     />
                 </View>
 
-                <Button title="Save Changes" onPress={handleSave} />
+                <Pressable
+                    onPress={handleSave}
+                    disabled={isSaving}
+                    style={({ pressed }) => ([
+                        {
+                            backgroundColor: isSaving ? '#ccc' : '#2196F3',
+                            padding: 16,
+                            borderRadius: 8,
+                            alignItems: 'center',
+                            marginVertical: 12,
+                            opacity: pressed && !isSaving ? 0.7 : 1
+                        }
+                    ])}
+                >
+                    {isSaving ? (
+                        <ActivityIndicator size="small" color="#fff" />
+                    ) : (
+                        <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>Save Changes</Text>
+                    )}
+                </Pressable>
 
-                <View style={{ marginTop: 24 }}>
-                    <Button title="Log Out" color="#d9534f" onPress={handleLogout} />
-                </View>
+                <Pressable
+                    onPress={handleLogout}
+                    disabled={isLoggingOut}
+                    style={({ pressed }) => ([
+                        {
+                            backgroundColor: isLoggingOut ? '#ccc' : '#d9534f',
+                            padding: 16,
+                            borderRadius: 8,
+                            alignItems: 'center',
+                            marginTop: 12,
+                            opacity: pressed && !isLoggingOut ? 0.7 : 1
+                        }
+                    ])}
+                >
+                    {isLoggingOut ? (
+                        <ActivityIndicator size="small" color="#fff" />
+                    ) : (
+                        <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>Log Out</Text>
+                    )}
+                </Pressable>
             </View>
         </TouchableWithoutFeedback>
     );

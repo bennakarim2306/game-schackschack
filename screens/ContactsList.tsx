@@ -268,11 +268,8 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
 
     return (
         <ContactsContext.Provider value={contactsContext}>
-            <View style={{ flex: 1, backgroundColor: '#fff' }}>
+            <View style={{ flex: 1, backgroundColor: '#500c0cff' }}>
                 <View style={ContactsListStyles.container}>
-                <Text style={ContactsListStyles.header}>
-                    Your Contacts
-                </Text>
                 <FlatList
                     data={state.ContactsList}
                     renderItem={({ item }) => (

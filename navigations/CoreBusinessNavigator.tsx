@@ -3,8 +3,10 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import QueryFoodScreen from "../screens/QueryFoodScreen";
 import Results from "../screens/Results";
+import Profile from "../screens/Profile";
 import { Ionicons } from "@expo/vector-icons";
 import ItemNavigator from "./ItemNavigator";
+import ChatNavigator from "./ChatNavigator";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Logger from "../config/Logger";
@@ -32,11 +34,18 @@ const CoreBusinessNavigator = () => {
             screenOptions={({ route }) => ({
                 headerShown: false,
                 tabBarIcon: ({ color, size }) => {
+                    const iconSize = 32;
                     if (route.name === "Find Food") {
-                        return <Ionicons name="search" size={size} color={color} />;
+                        return <Ionicons name="search" size={iconSize} color={color} />;
                     }
                     if (route.name === "Create an offer") {
-                        return <Ionicons name="add-circle" size={size} color={color} />;
+                        return <Ionicons name="add-circle" size={iconSize} color={color} />;
+                    }
+                    if (route.name === "Profile") {
+                        return <Ionicons name="person" size={iconSize} color={color} />;
+                    }
+                    if (route.name === "Chat") {
+                        return <Ionicons name="chatbubbles" size={iconSize} color={color} />;
                     }
                     return null;
                 },
@@ -45,7 +54,8 @@ const CoreBusinessNavigator = () => {
                 },
                 tabBarStyle: {
                     height: insets.bottom,
-                    paddingBottom: insets.bottom
+                    paddingBottom: insets.bottom,
+                    paddingTop: 10
                 }
             })}
         >
@@ -57,7 +67,17 @@ const CoreBusinessNavigator = () => {
             <Tab.Screen
                 name="Create an offer"
                 component={ItemNavigator}
-                options={{ headerShown: false, tabBarLabel: "" }} // Hide parent header
+                options={{ headerShown: false, tabBarLabel: "" }}
+            />
+            <Tab.Screen
+                name="Profile"
+                component={Profile}
+                options={{ headerShown: false, tabBarLabel: "" }}
+            />
+            <Tab.Screen
+                name="Chat"
+                component={ChatNavigator}
+                options={{ headerShown: false, tabBarLabel: "" }}
             />
         </Tab.Navigator>
     );

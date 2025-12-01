@@ -53,7 +53,6 @@ const Chat = ({ navigation, route }) => {
     const [messageToSend, setMessageToSend] = useState("");
     const chatState = useChatContext();
     const flatListRef = useRef(null);
-    const [keyboardHeight, setKeyboardHeight] = useState(0);
     
     useEffect(() => {
         Logger.info('CHAT', `Chat screen opened with contact: ${route.params?.contact || 'unknown'}`);
@@ -62,34 +61,6 @@ const Chat = ({ navigation, route }) => {
             Logger.debug('CHAT', `Chat screen unmounted for: ${route.params?.contact || 'unknown'}`);
         };
     }, [route.params?.contact, chatState]);
-
-    // Listen for keyboard height changes
-    useEffect(() => {
-        const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', (e) => {
-            setKeyboardHeight(e.endCoordinates.height);
-        });
-        const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
-            setKeyboardHeight(0);
-        });
-
-        return () => {
-            keyboardDidShowListener?.remove();
-            keyboardDidHideListener?.remove();
-        };
-    }, []);
-
-    // Calculate keyboardVerticalOffset based on keyboard height and safe area
-    const keyboardVerticalOffset = useMemo(() => {
-        console.log("insets.top:", insets.top);
-        console.log("keyboardHeight:", keyboardHeight);
-        if (Platform.OS === 'ios') {
-            // For iOS, account for header height and safe area
-            return 64 + insets.top;
-        } else {
-            // For Android, use a portion of keyboard height if needed
-            return keyboardHeight > 0 ? keyboardHeight * 0.55 : 0;
-        }
-    }, [keyboardHeight, insets.top]);
 
     const chatMessages = useMemo(() => {
         if (!chatState?.chat) {
@@ -140,90 +111,85 @@ const Chat = ({ navigation, route }) => {
             <KeyboardAvoidingView
                 style={{ flex: 1 }}
                 behavior={Platform.OS === "ios" ? "padding" : "height"}
-                keyboardVerticalOffset={keyboardVerticalOffset}
+                keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
             >
-                <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-                    <View style={{
-                        flex: 1
-                    }}>
-                        <FlatList
-                            ref={flatListRef}
-                            style={{ flex: 1, paddingHorizontal: 0, paddingTop: 0 }}
-                            contentContainerStyle={{
-                                flexGrow: 1,
-                                justifyContent: "flex-end",
-                                paddingBottom: 12 + insets.bottom // Add safe area bottom
-                            }}
-                            data={chatMessages}
-                            renderItem={({ item }) => (
-                                <MessageBubble item={item} getTimeFromTimestamp={getTimeFromTimestamp} />
-                            )}
-                            keyExtractor={(item, idx) => `${item.timestamp}-${idx}`}
-                            ListEmptyComponent={
-                                <Text style={{
-                                    textAlign: "center",
-                                    color: "#aaa",
-                                    marginTop: 32,
-                                    fontSize: 16
-                                }}>
-                                    No messages yet. Start the conversation!
-                                </Text>
-                            }
-                            onContentSizeChange={() => {
-                                if (flatListRef.current) {
-                                    flatListRef.current.scrollToEnd({ animated: true });
-                            }
-                        }}
-                        />
-                        <View style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                            // padding: 10,
-                            height: 70,
-                            paddingHorizontal: 12,
-                            backgroundColor: "#fff",
-                            borderTopWidth: 1,
-                            borderTopColor: "#eee",
-                            shadowColor: "#000",
-                            shadowOpacity: 0.04,
-                            shadowRadius: 2,
-                            shadowOffset: { width: 0, height: -1 }
+                <FlatList
+                    ref={flatListRef}
+                    style={{ flex: 1, paddingHorizontal: 0, paddingTop: 0 }}
+                    contentContainerStyle={{
+                        flexGrow: 1,
+                        justifyContent: "flex-end",
+                        paddingBottom: 12 + insets.bottom
+                    }}
+                    data={chatMessages}
+                    renderItem={({ item }) => (
+                        <MessageBubble item={item} getTimeFromTimestamp={getTimeFromTimestamp} />
+                    )}
+                    keyExtractor={(item, idx) => `${item.timestamp}-${idx}`}
+                    ListEmptyComponent={
+                        <Text style={{
+                            textAlign: "center",
+                            color: "#aaa",
+                            marginTop: 32,
+                            fontSize: 16
                         }}>
-                            <TextInput
-                                style={{
-                                    flex: 1,
-                                    backgroundColor: "#fff",
-                                    borderRadius: 22,
-                                    paddingHorizontal: 16,
-                                    paddingVertical: 12,
-                                    fontSize: 16,
-                                    marginRight: 8,
-                                    borderWidth: 1,
-                                    borderColor: "#666"
-                                }}
-                                onChangeText={setMessageToSend}
-                                placeholder="Type your message..."
-                                placeholderTextColor="#999"
-                                value={messageToSend}
-                                returnKeyType="send"
-                                onSubmitEditing={submitMessage}
-                            />
-                            <TouchableOpacity
-                                onPress={submitMessage}
-                                disabled={!messageToSend.trim()}
-                                style={{
-                                    backgroundColor: !messageToSend.trim() ? "#b0c4de" : "#2196F3",
-                                    borderRadius: 22,
-                                    padding: 10,
-                                    justifyContent: "center",
-                                    alignItems: "center"
-                                }}
-                            >
-                                <Ionicons name="send" size={22} color="#fff" />
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </TouchableWithoutFeedback>
+                            No messages yet. Start the conversation!
+                        </Text>
+                    }
+                    onContentSizeChange={() => {
+                        if (flatListRef.current) {
+                            flatListRef.current.scrollToEnd({ animated: true });
+                        }
+                    }}
+                    keyboardShouldPersistTaps="handled"
+                    onScrollBeginDrag={Keyboard.dismiss}
+                />
+                <View style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    height: 70,
+                    paddingHorizontal: 12,
+                    backgroundColor: "#fff",
+                    borderTopWidth: 1,
+                    borderTopColor: "#eee",
+                    shadowColor: "#000",
+                    shadowOpacity: 0.04,
+                    shadowRadius: 2,
+                    shadowOffset: { width: 0, height: -1 }
+                }}>
+                    <TextInput
+                        style={{
+                            flex: 1,
+                            backgroundColor: "#fff",
+                            borderRadius: 22,
+                            paddingHorizontal: 16,
+                            paddingVertical: 12,
+                            fontSize: 16,
+                            marginRight: 8,
+                            borderWidth: 1,
+                            borderColor: "#666"
+                        }}
+                        onChangeText={setMessageToSend}
+                        placeholder="Type your message..."
+                        placeholderTextColor="#999"
+                        value={messageToSend}
+                        returnKeyType="send"
+                        onSubmitEditing={submitMessage}
+                    />
+                    <TouchableOpacity
+                        onPress={submitMessage}
+                        disabled={!messageToSend.trim()}
+                        style={{
+                            backgroundColor: !messageToSend.trim() ? "#b0c4de" : "#2196F3",
+                            borderRadius: 22,
+                            padding: 10,
+                            justifyContent: "center",
+                            alignItems: "center"
+                        }}
+                    >
+                        <Ionicons name="send" size={22} color="#fff" />
+                    </TouchableOpacity>
+                </View>
             </KeyboardAvoidingView>
         </View>
     );
