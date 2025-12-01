@@ -6,7 +6,7 @@ const Welcome = ({ navigation }) => {
         <View style={welcomeStyles.welcomeContainerStyle}>
             <View>
             <Text style={welcomeStyles.textStyle}>Welcome to</Text>
-            <Text style={welcomeStyles.textStyle}>SchackSchack</Text>
+            <Text style={welcomeStyles.textStyle}>Foodopia</Text>
             </View>
             <View style={welcomeStyles.buttonStyle}>
                 <Button

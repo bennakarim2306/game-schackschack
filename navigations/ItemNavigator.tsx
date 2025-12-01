@@ -10,7 +10,7 @@ const ItemNavigator = () => (
             initialRouteName="AddItemScreen"
             screenOptions={{
                 tabBarLabelStyle: { fontSize: 14, fontWeight: "bold" },
-                tabBarStyle: { backgroundColor: "#fff", height: 48 },
+                tabBarStyle: { backgroundColor: "#D9F2D9", height: 48 },
                 tabBarIndicatorStyle: { backgroundColor: "#2196F3", height: 3 },
             }}
         >

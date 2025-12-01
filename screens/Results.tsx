@@ -86,7 +86,7 @@ const Results = () => {
     };
 
     return (
-        <View style={{ flex: 1, backgroundColor: '#fff' }}>
+        <View style={{ flex: 1, backgroundColor: '#C4E8B4' }}>
             <View style={{ flex: 1, padding: 24 }}>
             <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 16 }}>
                 Results

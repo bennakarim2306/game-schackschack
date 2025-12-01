@@ -3,8 +3,8 @@ import { StyleSheet } from "react-native";
 const ContactsListStyles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#f8f9fa",
-        padding: 20
+        padding: 20,
+        backgroundColor: "#D9F2D9"
     },
     header: {
         fontSize: 22,

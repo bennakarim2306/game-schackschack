@@ -1,13 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, Text, Platform } from 'react-native';
-
-// Conditionally import MapView only on native platforms
-let MapView: any, Marker: any;
-if (Platform.OS !== 'web') {
-    const Maps = require('react-native-maps');
-    MapView = Maps.default;
-    Marker = Maps.Marker;
-}
+import { MapView, Marker } from '../utils/MapImports';
 
 const Map = () => {
 

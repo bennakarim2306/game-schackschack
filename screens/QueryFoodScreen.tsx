@@ -6,15 +6,7 @@ import Slider from "@react-native-community/slider";
 import * as SecureStore from "expo-secure-store";
 import configs from "../config/AppConfig";
 import Logger from "../config/Logger";
-
-// Conditionally import MapView only on native platforms
-let MapView: any, Marker: any, Circle: any;
-if (Platform.OS !== 'web') {
-    const Maps = require('react-native-maps');
-    MapView = Maps.default;
-    Marker = Maps.Marker;
-    Circle = Maps.Circle;
-}
+import { MapView, Marker, Circle } from "../utils/MapImports";
 
 type MapPressEvent = any;
 
@@ -116,7 +108,7 @@ const QueryFoodScreen = () => {
     };
 
     return (
-        <View style={{ flex: 1, backgroundColor: '#fff' }}>
+        <View style={{ flex: 1, backgroundColor: '#D9F2D9' }}>
             <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
             <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 16 }}>
                 Query for food in the area

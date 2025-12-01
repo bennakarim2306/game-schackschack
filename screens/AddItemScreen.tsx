@@ -8,14 +8,7 @@ import * as SecureStore from "expo-secure-store";
 import configs from "../config/AppConfig";
 import { KeyboardAvoidingView, Platform } from 'react-native';
 import Logger from "../config/Logger";
-
-// Conditionally import MapView only on native platforms
-let MapView: any, Marker: any;
-if (Platform.OS !== 'web') {
-    const Maps = require('react-native-maps');
-    MapView = Maps.default;
-    Marker = Maps.Marker;
-}
+import { MapView, Marker } from '../utils/MapImports';
 
 const foodTypes = [
     "Vegetables", "Fruits", "Dairy", "Meat", "Bakery", "Other"
@@ -365,7 +358,7 @@ const AddItemScreen = () => {
     };
 
     return (
-        <View style={{ flex: 1, backgroundColor: "#f7f7f7" }}>
+        <View style={{ flex: 1, backgroundColor: "#D9F2D9" }}>
             <KeyboardAvoidingView
                 style={{ flex: 1 }}
                 behavior={Platform.OS === "ios" ? "padding" : "height"}

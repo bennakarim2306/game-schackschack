@@ -17,7 +17,12 @@ const Stack = createNativeStackNavigator();
 const TopTab = createMaterialTopTabNavigator();
 
 const QueryFoodStack = () => (
-    <TopTab.Navigator initialRouteName="QueryFoodScreen">
+    <TopTab.Navigator
+        initialRouteName="QueryFoodScreen"
+        screenOptions={{
+            tabBarStyle: { backgroundColor: "#D9F2D9" }
+        }}
+    >
         <TopTab.Screen name="QueryFoodScreen" component={QueryFoodScreen} options={{ tabBarLabel: "Find Food" }} />
         <TopTab.Screen name="Results" component={Results} options={{ tabBarLabel: "Results" }} />
     </TopTab.Navigator>
@@ -53,8 +58,9 @@ const CoreBusinessNavigator = () => {
                     display: "none"
                 },
                 tabBarStyle: {
+                    backgroundColor: '#D9F2D9',
                     height: insets.bottom,
-                    paddingBottom: insets.bottom,
+                    paddingBottom: insets.bottom + 30,
                     paddingTop: 10
                 }
             })}

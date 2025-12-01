@@ -82,10 +82,7 @@ const RegisterAccount = () => {
                         Email
                     </Text>
                     <TextInput
-                        style={[
-                            registerAccountStyles.textInputStyle,
-                            { borderColor: '#666', backgroundColor: '#fff', padding: 12, borderRadius: 6 }
-                        ]}
+                        style={loginStyles.textInputStyle}
                         onChangeText={handleEmailChange}
                         value={email}
                         placeholder="type your email"
@@ -105,15 +102,10 @@ const RegisterAccount = () => {
                     <Text style={registerAccountStyles.textStyle}>
                         Password
                     </Text>
-                    <View style={[
-                        registerAccountStyles.rowInputContainer,
-                        {borderColor: '#666', backgroundColor: '#fff', borderRadius: 6 }
-                    ]}>
+                    <View style={loginStyles.rowInputContainer}>
                         <TextInput
-                            style={{ flex: 1, padding: 12, fontSize: 16 }}
                             onChangeText={handlePasswordChange}
                             value={password}
-                            secureTextEntry={!showPassword}
                             placeholder="type your password"
                             placeholderTextColor="#999"
                             accessibilityLabel="Password input"
@@ -121,13 +113,14 @@ const RegisterAccount = () => {
                             textContentType="password"
                             autoCapitalize="none"
                             autoComplete="password"
+                            secureTextEntry={!showPassword}
                         />
                         <Pressable
                             onPress={() => setShowPassword((prev) => !prev)}
                             accessibilityLabel={showPassword ? "Hide password" : "Show password"}
-                            style={registerAccountStyles.showPasswordButton}
+                            style={loginStyles.showPasswordButton}
                         >
-                            <Text style={registerAccountStyles.showPasswordText}>
+                            <Text style={loginStyles.showPasswordText}>
                                 {showPassword ? "Hide" : "Show"}
                             </Text>
                         </Pressable>

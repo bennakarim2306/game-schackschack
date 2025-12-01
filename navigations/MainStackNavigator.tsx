@@ -11,6 +11,7 @@ import InGameNavigator from './InGameNavigator';
 import { Alert } from 'react-native';
 import configs from '../config/AppConfig';
 import Logger from '../config/Logger';
+import CoreBusinessNavigator from './CoreBusinessNavigator';
 
 const Stack = createNativeStackNavigator();
 
@@ -167,12 +168,12 @@ const MainStackNavigator = () => {
     <NavigationContainer>
       <AuthContext.Provider value={authContext}>
         <Stack.Navigator
-          initialRouteName={state.userToken != null ? "GameNavigator" : "LoginStackNavigator"}
+          initialRouteName={state.userToken != null ? "CoreBusinessNavigator" : "LoginStackNavigator"}
           screenOptions={{
             headerShown: false
           }}>
           {state.userToken != null ?
-            <Stack.Screen name="GameNavigator" component={GameNavigator} /> :
+            <Stack.Screen name="CoreBusinessNavigator" component={CoreBusinessNavigator} /> :
             <Stack.Screen name="LoginStackNavigator" component={LoginStackNavigator} />}
         </Stack.Navigator>
       </AuthContext.Provider>

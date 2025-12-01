@@ -3,7 +3,7 @@ import { Platform, StatusBar, StyleSheet } from "react-native";
 
 const loginStyles = StyleSheet.create({
     loginViewStyle: {
-        backgroundColor: 'white',
+        backgroundColor: '#D9F2D9',
         width: "100%",
         height: "100%",
         paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,

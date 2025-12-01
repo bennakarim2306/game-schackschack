@@ -268,7 +268,7 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
 
     return (
         <ContactsContext.Provider value={contactsContext}>
-            <View style={{ flex: 1, backgroundColor: '#500c0cff' }}>
+            <View style={{ flex: 1}}>
                 <View style={ContactsListStyles.container}>
                 <FlatList
                     data={state.ContactsList}
