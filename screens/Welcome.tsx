@@ -4,13 +4,13 @@ import welcomeStyles from '../styles/WelcomeStyles'
 const Welcome = ({ navigation }) => {
     return (
         <ImageBackground 
-            source={require('../assets/backgroun_main.jpeg')}
+            source={require('../assets/20251202_1118_Grandmother\'s Food Basket_remix_01kbf8znwten2bffvqq35x1zdr.png')}
             style={welcomeStyles.welcomeContainerStyle}
             resizeMode="cover"
         >
             <View>
-            <Text style={welcomeStyles.textStyle}>Welcome to</Text>
-            <Text style={welcomeStyles.textStyle}>Foodopia</Text>
+            <Text style={welcomeStyles.textStyle}></Text>
+            <Text style={welcomeStyles.textStyle}></Text>
             </View>
             <View style={welcomeStyles.buttonStyle}>
                 <Button

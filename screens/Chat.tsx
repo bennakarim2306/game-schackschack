@@ -4,6 +4,7 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
+    ImageBackground,
     View,
     KeyboardAvoidingView,
     Platform,
@@ -108,17 +109,22 @@ const Chat = ({ navigation, route }) => {
     }, [chatMessages.length]);
 
     return (
-        <View style={{ flex: 1, backgroundColor: "#f7f7f7" }}>
-            {/* Custom Header */}
-            <View style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                paddingTop: insets.top,
-                paddingHorizontal: 12,
-                paddingBottom: 12,
-                backgroundColor: '#ffffffff',
-                borderBottomWidth: 1,
-                borderBottomColor: '#c5bebeff'
+        <ImageBackground
+            source={require('../assets/20251202_1542_Smiling Fruit Faces_remix_01kbfr2sr9enx805fare783vsa.png')}
+            style={{ flex: 1 }}
+            resizeMode="cover"
+        >
+            <View style={{ flex: 1, backgroundColor: 'rgba(247, 247, 247, 0.9)' }}>
+                {/* Custom Header */}
+                <View style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    paddingTop: insets.top,
+                    paddingHorizontal: 12,
+                    paddingBottom: 12,
+                    backgroundColor: '#ffffffff',
+                    borderBottomWidth: 1,
+                    borderBottomColor: '#c5bebeff'
             }}>
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
@@ -214,7 +220,8 @@ const Chat = ({ navigation, route }) => {
                     </TouchableOpacity>
                 </View>
             </KeyboardAvoidingView>
-        </View>
+            </View>
+        </ImageBackground>
     );
 };
 

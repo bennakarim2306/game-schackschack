@@ -1,5 +1,5 @@
 import React, { MutableRefObject, useContext, useEffect, useMemo, useReducer, useRef, useState, useCallback } from "react";
-import { Alert, Button, FlatList, GestureResponderEvent, Text, TextInput, TouchableOpacity, View, Modal } from "react-native";
+import { Alert, Button, FlatList, GestureResponderEvent, Text, TextInput, TouchableOpacity, View, Modal, ImageBackground } from "react-native";
 import ContactsContext from "../Contexts/ContactsContext";
 import * as SecureStore from 'expo-secure-store'
 import ContactsListStyles from "../styles/ContactsListStyles";
@@ -100,11 +100,11 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
             const getContactsList = async () => {
                 const token = await SecureStore.getItemAsync("userToken");
                 setToken(token)
-                
+
                 const url = configs.USER_AUTH_BASE_URL + configs.USER_AUTH_CONTACTS_LIST_PATH;
                 Logger.info('CONTACTS', 'Fetching contacts list');
                 Logger.request(url, 'GET');
-                
+
                 await fetch(url, {
                     method: 'GET',
                     headers: {
@@ -117,7 +117,7 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
                     .then(async response => {
                         const jsonResponse = await response.json();
                         Logger.response(url, response.status, `Contacts: ${jsonResponse.friends?.length || 0}`);
-                        
+
                         if (response.status !== 200) {
                             Logger.error('CONTACTS', 'Failed to get contacts list', jsonResponse);
                             Alert.alert(
@@ -179,10 +179,10 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
         try {
             const token = await SecureStore.getItemAsync("userToken");
             const url = `${configs.USER_AUTH_BASE_URL}${configs.USER_AUTH_ADD_CONTACT_PATH}?email=${encodeURIComponent(newContactEmail)}`;
-            
+
             Logger.info('CONTACTS', `Sending contact request to: ${newContactEmail}`);
             Logger.request(url, 'POST');
-            
+
             const response = await fetch(url, {
                 method: "POST",
                 headers: {
@@ -192,9 +192,9 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
                 },
                 body: null,
             });
-            
+
             Logger.response(url, response.status);
-            
+
             if (!response.ok) {
                 Logger.error('CONTACTS', 'Contact request failed');
                 Alert.alert(
@@ -262,107 +262,111 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
     const setMessagesToRead = (email: string): void => {
         console.debug("ContactsList -- setMessagesToRead -- " + email)
         if (chatDispatch) {
-            chatDispatch({type: 'SET_MESSAGES_TO_READ', email: email} as SetMessagesToReadAction)
+            chatDispatch({ type: 'SET_MESSAGES_TO_READ', email: email } as SetMessagesToReadAction)
         }
     }
 
     return (
         <ContactsContext.Provider value={contactsContext}>
-            <View style={{ flex: 1}}>
+            <ImageBackground
+                source={require('../assets/20251202_1542_Smiling Fruit Faces_remix_01kbfr2sr9enx805fare783vsa.png')}
+                style={{ flex: 1 }}
+                resizeMode="cover"
+            >
                 <View style={ContactsListStyles.container}>
-                <FlatList
-                    data={state.ContactsList}
-                    renderItem={({ item }) => (
-                        <TouchableOpacity
-                            key={item.email}
-                            onPress={event => {
-                                Logger.info('CONTACTS', `Contact clicked: ${item.email}`);
-                                setMessagesToRead(item.email)
-                                Logger.debug('NAVIGATION', `Navigating to Chat with ${item.email}`);
-                                navigation.navigate("Chat", { title: `Chat with ${item.email}`, contact: item.email })
-                            }}
-                            style={ContactsListStyles.contactCard}>
-                            <View style={ContactsListStyles.avatar}>
-                                <Text style={ContactsListStyles.avatarText}>
-                                    {item.email[0].toUpperCase()}
-                                </Text>
-                            </View>
-                            <View style={{ flex: 1 }}>
-                                <Text style={ContactsListStyles.contactEmail}>
-                                    {item.email}
-                                </Text>
-                                {item.userName && (
-                                    <Text style={ContactsListStyles.contactUserName}>
-                                        {item.userName}
-                                    </Text>
-                                )}
-                            </View>
-                            {chatState && getNumberOfUnreadMessagesByChat(chatState.chat.filter(e => e.contact == item.email)) > 0 && (
-                                <View style={ContactsListStyles.unreadBadge}>
-                                    <Text style={ContactsListStyles.unreadBadgeText}>
-                                        {getNumberOfUnreadMessagesByChat(chatState.chat.filter(e => e.contact == item.email))}
+                    <FlatList
+                        data={state.ContactsList}
+                        renderItem={({ item }) => (
+                            <TouchableOpacity
+                                key={item.email}
+                                onPress={event => {
+                                    Logger.info('CONTACTS', `Contact clicked: ${item.email}`);
+                                    setMessagesToRead(item.email)
+                                    Logger.debug('NAVIGATION', `Navigating to Chat with ${item.email}`);
+                                    navigation.navigate("Chat", { title: `Chat with ${item.email}`, contact: item.email })
+                                }}
+                                style={ContactsListStyles.contactCard}>
+                                <View style={ContactsListStyles.avatar}>
+                                    <Text style={ContactsListStyles.avatarText}>
+                                        {item.email[0].toUpperCase()}
                                     </Text>
                                 </View>
-                            )}
-                        </TouchableOpacity>
-                    )}
-                    ListEmptyComponent={
-                        <Text style={ContactsListStyles.emptyText}>
-                            No contacts found.
-                        </Text>
-                    }
-                />
-                <Button
-                    title="Add a friend"
-                    onPress={handleAddContact}
-                    disabled={false}
-                    color="#2196F3"
-                />
-
-                {/* Add Contact Modal */}
-                <Modal
-                    visible={showAddContactModal}
-                    transparent
-                    animationType="slide"
-                    onRequestClose={handleCancelAddContact}
-                >
-                    <View style={ContactsListStyles.modalOverlay}>
-                        <View style={ContactsListStyles.modalContainer}>
-                            <Text style={ContactsListStyles.modalHeader}>
-                                Add a contact
+                                <View style={{ flex: 1 }}>
+                                    <Text style={ContactsListStyles.contactEmail}>
+                                        {item.email}
+                                    </Text>
+                                    {item.userName && (
+                                        <Text style={ContactsListStyles.contactUserName}>
+                                            {item.userName}
+                                        </Text>
+                                    )}
+                                </View>
+                                {chatState && getNumberOfUnreadMessagesByChat(chatState.chat.filter(e => e.contact == item.email)) > 0 && (
+                                    <View style={ContactsListStyles.unreadBadge}>
+                                        <Text style={ContactsListStyles.unreadBadgeText}>
+                                            {getNumberOfUnreadMessagesByChat(chatState.chat.filter(e => e.contact == item.email))}
+                                        </Text>
+                                    </View>
+                                )}
+                            </TouchableOpacity>
+                        )}
+                        ListEmptyComponent={
+                            <Text style={ContactsListStyles.emptyText}>
+                                No contacts found.
                             </Text>
-                            <TextInput
-                                style={ContactsListStyles.modalInput}
-                                placeholder="Enter contact's email"
-                                value={newContactEmail}
-                                onChangeText={handleEmailInputChange}
-                                autoCapitalize="none"
-                                keyboardType="email-address"
-                                autoFocus
-                            />
-                            {!isEmailValid && newContactEmail.length > 0 && (
-                                <Text style={ContactsListStyles.modalError}>Invalid email address</Text>
-                            )}
-                            <View style={ContactsListStyles.modalButtonRow}>
-                                <Button
-                                    title="Cancel"
-                                    onPress={handleCancelAddContact}
-                                    color="#888"
-                                    disabled={isSending}
+                        }
+                    />
+                    <Button
+                        title="Add a friend"
+                        onPress={handleAddContact}
+                        disabled={false}
+                        color="#2196F3"
+                    />
+
+                    {/* Add Contact Modal */}
+                    <Modal
+                        visible={showAddContactModal}
+                        transparent
+                        animationType="slide"
+                        onRequestClose={handleCancelAddContact}
+                    >
+                        <View style={ContactsListStyles.modalOverlay}>
+                            <View style={ContactsListStyles.modalContainer}>
+                                <Text style={ContactsListStyles.modalHeader}>
+                                    Add a contact
+                                </Text>
+                                <TextInput
+                                    style={ContactsListStyles.modalInput}
+                                    placeholder="Enter contact's email"
+                                    value={newContactEmail}
+                                    onChangeText={handleEmailInputChange}
+                                    autoCapitalize="none"
+                                    keyboardType="email-address"
+                                    autoFocus
                                 />
-                                <View style={{ width: 16 }} />
-                                <Button
-                                    title={isSending ? "Sending..." : "Send"}
-                                    onPress={sendAContactRequest}
-                                    disabled={!isEmailValid || isSending}
-                                    color={isEmailValid ? "#2196F3" : "#ccc"}
-                                />
+                                {!isEmailValid && newContactEmail.length > 0 && (
+                                    <Text style={ContactsListStyles.modalError}>Invalid email address</Text>
+                                )}
+                                <View style={ContactsListStyles.modalButtonRow}>
+                                    <Button
+                                        title="Cancel"
+                                        onPress={handleCancelAddContact}
+                                        color="#888"
+                                        disabled={isSending}
+                                    />
+                                    <View style={{ width: 16 }} />
+                                    <Button
+                                        title={isSending ? "Sending..." : "Send"}
+                                        onPress={sendAContactRequest}
+                                        disabled={!isEmailValid || isSending}
+                                        color={isEmailValid ? "#2196F3" : "#ccc"}
+                                    />
+                                </View>
                             </View>
                         </View>
-                    </View>
-                </Modal>
-            </View>
-            </View>
+                    </Modal>
+                </View>
+            </ImageBackground>
         </ContactsContext.Provider>
 
     );

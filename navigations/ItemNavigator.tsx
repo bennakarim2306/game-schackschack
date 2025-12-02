@@ -17,12 +17,12 @@ const ItemNavigator = () => (
             <TopTab.Screen
                 name="AddItemScreen"
                 component={AddItemScreen}
-                options={{ tabBarLabel: "Create an offer" }}
+                options={{ tabBarLabel: "Create an offer", tabBarLabelStyle: { fontSize: 20, fontFamily: "Arial", fontWeight: "bold" } }}
             />
             <TopTab.Screen
                 name="MyOffersScreen"
                 component={MyOffersScreen}
-                options={{ tabBarLabel: "My Offers" }}
+                options={{ tabBarLabel: "My Offers", tabBarLabelStyle: { fontSize: 20, fontFamily: "Arial", fontWeight: "bold" } }}
             />
         </TopTab.Navigator>
 );

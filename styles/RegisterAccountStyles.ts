@@ -27,10 +27,15 @@ const registerAccountStyles = StyleSheet.create({
         margin: "10%"
     },
     titleStyle: {
+        paddingTop: 20,
         alignSelf: "center",
         fontSize: 50,
-        fontWeight: "600",
-        color: "#18B76C"
+        fontFamily: "sans‑serif‑medium",
+        fontWeight: "bold",
+        color: "#1c1d1cff",
+        textShadowColor: '#18B76C',
+        textShadowOffset: { width: 2, height: 2 },
+        textShadowRadius: 1,
     },
     validationErrorText: {
         alignSelf: "center",

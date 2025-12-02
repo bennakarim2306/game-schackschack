@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, Button, FlatList, TouchableOpacity, Image, Modal, TextInput } from "react-native";
+import { View, Text, Button, FlatList, TouchableOpacity, Image, Modal, TextInput, ImageBackground } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 
 // Helper to calculate distance between two lat/lng points (Haversine formula)
@@ -86,11 +86,16 @@ const Results = () => {
     };
 
     return (
-        <View style={{ flex: 1, backgroundColor: '#C4E8B4' }}>
-            <View style={{ flex: 1, padding: 24 }}>
-            <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 16 }}>
-                Results
-            </Text>
+        <ImageBackground
+            source={require('../assets/20251202_1542_Smiling Fruit Faces_remix_01kbfr2sr9enx805fare783vsa.png')}
+            style={{ flex: 1 }}
+            resizeMode="cover"
+        >
+            <View style={{ flex: 1, backgroundColor: 'rgba(255, 255, 255, 0.85)' }}>
+                <View style={{ flex: 1, padding: 24 }}>
+                <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 16 }}>
+                    Results
+                </Text>
             <FlatList
                 data={items}
                 keyExtractor={item => item.id}
@@ -224,7 +229,8 @@ const Results = () => {
                 </View>
             </Modal>
             </View>
-        </View>
+            </View>
+        </ImageBackground>
     );
 };
 

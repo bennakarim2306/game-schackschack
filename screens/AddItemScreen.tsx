@@ -1,5 +1,5 @@
 import React, { useState, useLayoutEffect, useRef } from "react";
-import { ScrollView, Text, TextInput, Button, Alert, Image, TouchableOpacity, View, ActivityIndicator, Switch, Modal } from "react-native";
+import { ScrollView, Text, TextInput, Button, Alert, Image, TouchableOpacity, View, ActivityIndicator, Switch, Modal, ImageBackground } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
@@ -358,41 +358,55 @@ const AddItemScreen = () => {
     };
 
     return (
-        <View style={{ flex: 1, backgroundColor: "#D9F2D9" }}>
-            <KeyboardAvoidingView
-                style={{ flex: 1 }}
-                behavior={Platform.OS === "ios" ? "padding" : "height"}
-                keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
-            >
-                <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: "flex-start", alignItems: "center", padding: 24, marginTop: 0 }}>
+        <ImageBackground
+            source={require('../assets/20251202_1542_Smiling Fruit Faces_remix_01kbfr2sr9enx805fare783vsa.png')}
+            style={{ flex: 1 }}
+            resizeMode="cover"
+        >
+            <View style={{ flex: 1, backgroundColor: 'rgba(217, 242, 217, 0.85)' }}>
+                <KeyboardAvoidingView
+                    style={{ flex: 1 }}
+                    behavior={Platform.OS === "ios" ? "padding" : "height"}
+                    keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+                >
+                <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: "flex-start", alignItems: "center", padding: 24, paddingBottom: 80, marginTop: 0 }}>
                     <View style={{ flexDirection: "row", alignItems: "flex-start", marginBottom: 16, width: "100%" }}>
                         {/* Labels input and list */}
                         <View style={{ flex: 1, marginRight: 12 }}>
                             <Text style={{ fontWeight: "bold", marginBottom: 6 }}>Labels (max 5):</Text>
                             <View style={{ flexDirection: "row", marginBottom: 8 }}>
-                                <TextInput
-                                    placeholder="Add label"
-                                    value={labelInput}
-                                    onChangeText={setLabelInput}
-                                    style={{
-                                        borderWidth: 1,
-                                        borderColor: "#666",
-                                        borderRadius: 6,
-                                        padding: 12,
-                                        flex: 1,
-                                        marginRight: 8,
-                                        backgroundColor: "#fff",
-                                        fontSize: 16
-                                    }}
-                                    onSubmitEditing={handleAddLabel}
-                                    returnKeyType="done"
-                                />
-                                <Button
-                                    title="Add"
-                                    onPress={handleAddLabel}
-                                    disabled={!labelInput.trim() || labels.length >= 5}
-                                />
-                            </View>
+                            <TextInput
+                                placeholder="Add label"
+                                value={labelInput}
+                                onChangeText={setLabelInput}
+                                style={{
+                                    borderWidth: 1,
+                                    borderColor: "#666",
+                                    borderRadius: 6,
+                                    padding: 12,
+                                    flex: 1,
+                                    marginRight: 8,
+                                    backgroundColor: "#fff",
+                                    fontSize: 16
+                                }}
+                                onSubmitEditing={handleAddLabel}
+                                returnKeyType="done"
+                            />
+                            <TouchableOpacity
+                                onPress={handleAddLabel}
+                                disabled={!labelInput.trim() || labels.length >= 5}
+                                style={{
+                                    backgroundColor: (!labelInput.trim() || labels.length >= 5) ? '#ccc' : '#2196F3',
+                                    borderRadius: 25,
+                                    width: 50,
+                                    height: 50,
+                                    justifyContent: 'center',
+                                    alignItems: 'center'
+                                }}
+                            >
+                                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 14 }}>Add</Text>
+                            </TouchableOpacity>
+                        </View>
                             <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
                                 {labels.map(label => (
                                     <View
@@ -508,8 +522,10 @@ const AddItemScreen = () => {
                         onChangeText={setDescription}
                         style={{ borderWidth: 1, borderColor: "#ccc", borderRadius: 6, padding: 8, marginBottom: 12, width: "100%" }}
                     />
-                    <Button title="Add Offer" onPress={handleAddOffer} />
                 </ScrollView>
+                <View style={{ padding: 16, paddingBottom: 16 }}>
+                    <Button title="Add Offer" onPress={handleAddOffer} disabled={isSubmitting} color="#2196F3" />
+                </View>
                 {/* Address Modal */}
                 <Modal
                     visible={showAddressModal}
@@ -608,7 +624,8 @@ const AddItemScreen = () => {
                     </View>
                 </Modal>
             </KeyboardAvoidingView>
-        </View>
+            </View>
+        </ImageBackground>
     );
 };
 

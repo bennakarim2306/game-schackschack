@@ -14,14 +14,18 @@ const loginStyles = StyleSheet.create({
     },
     titleStyle: {
         alignSelf: "center",
-        fontSize: 50,
-        fontWeight: "600",
-        color: "#18B76C"
+        fontSize: 70,
+        fontFamily: "sans‑serif‑medium",
+        fontWeight: "bold",
+        color: "#1c1d1cff",
+        textShadowColor: '#18B76C',
+        textShadowOffset: { width: 2, height: 2 },
+        textShadowRadius: 1,
     },
     textStyle: {
         alignSelf: "center",
         color: "#036839ff",
-        fontSize: 50,
+        fontSize: 30,
         fontFamily: "sans-serif-condensed",
         fontWeight: "bold"
     },
@@ -62,6 +66,17 @@ const loginStyles = StyleSheet.create({
         color: "#fff",
         fontWeight: "bold",
         fontSize: 16,
+    },
+    inputBox: {
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        borderRadius: 16,
+        padding: 24,
+        marginHorizontal: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 8,
     },
 })
 

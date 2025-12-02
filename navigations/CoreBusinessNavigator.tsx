@@ -23,8 +23,8 @@ const QueryFoodStack = () => (
             tabBarStyle: { backgroundColor: "#D9F2D9" }
         }}
     >
-        <TopTab.Screen name="QueryFoodScreen" component={QueryFoodScreen} options={{ tabBarLabel: "Find Food" }} />
-        <TopTab.Screen name="Results" component={Results} options={{ tabBarLabel: "Results" }} />
+        <TopTab.Screen name="QueryFoodScreen" component={QueryFoodScreen} options={{ tabBarLabel: "Search", tabBarLabelStyle: { fontSize: 20, fontFamily: "Arial", fontWeight: "bold" } }} />
+        <TopTab.Screen name="Results" component={Results} options={{ tabBarLabel: "Results", tabBarLabelStyle: { fontSize: 20, fontFamily: "Arial", fontWeight: "bold" }}} />
     </TopTab.Navigator>
 );
 
@@ -39,7 +39,7 @@ const CoreBusinessNavigator = () => {
             screenOptions={({ route }) => ({
                 headerShown: false,
                 tabBarIcon: ({ color, size }) => {
-                    const iconSize = 32;
+                    const iconSize = 30;
                     if (route.name === "Find Food") {
                         return <Ionicons name="search" size={iconSize} color={color} />;
                     }
@@ -60,7 +60,7 @@ const CoreBusinessNavigator = () => {
                 tabBarStyle: {
                     backgroundColor: '#D9F2D9',
                     height: insets.bottom,
-                    paddingBottom: insets.bottom + 30,
+                    paddingBottom: insets.bottom,
                     paddingTop: 10
                 }
             })}

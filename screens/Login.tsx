@@ -80,55 +80,57 @@ function Login({ route, navigation }) {
                         <View >
                             <Text style={loginStyles.titleStyle}>Login</Text>
                         </View>
-                        <Text style={loginStyles.textStyle}>
-                            Email
-                        </Text>
-                        <TextInput
-                            style={loginStyles.textInputStyle}
-                            onChangeText={handleEmailChange}
-                            value={email}
-                            placeholder="type your email"
-                            placeholderTextColor="#999"
-                            accessibilityLabel="Email input"
-                            returnKeyType="next"
-                            textContentType="emailAddress"
-                            autoCapitalize="none"
-                            autoComplete="email"
-                            inputMode="email"
-                            keyboardType="email-address"
-                        />
-                        {emailError ? (
-                            <Text style={loginStyles.validationErrorText} accessibilityLiveRegion="polite">{emailError}</Text>
-                        ) : null}
-                        <Text style={loginStyles.textStyle}>
-                            Password
-                        </Text>
-                        <View style={loginStyles.rowInputContainer}>
+                        <View style={loginStyles.inputBox}>
+                            <Text style={loginStyles.textStyle}>
+                                Email
+                            </Text>
                             <TextInput
-                                onChangeText={handlePasswordChange}
-                                value={password}
-                                placeholder="type your password"
+                                style={loginStyles.textInputStyle}
+                                onChangeText={handleEmailChange}
+                                value={email}
+                                placeholder="type your email"
                                 placeholderTextColor="#999"
-                                accessibilityLabel="Password input"
-                                returnKeyType="done"
-                                textContentType="password"
+                                accessibilityLabel="Email input"
+                                returnKeyType="next"
+                                textContentType="emailAddress"
                                 autoCapitalize="none"
-                                autoComplete="password"
-                                secureTextEntry={!showPassword}
+                                autoComplete="email"
+                                inputMode="email"
+                                keyboardType="email-address"
                             />
-                            <Pressable
-                                onPress={() => setShowPassword((prev) => !prev)}
-                                accessibilityLabel={showPassword ? "Hide password" : "Show password"}
-                                style={loginStyles.showPasswordButton}
-                            >
-                                <Text style={loginStyles.showPasswordText}>
-                                    {showPassword ? "Hide" : "Show"}
-                                </Text>
-                            </Pressable>
+                            {emailError ? (
+                                <Text style={loginStyles.validationErrorText} accessibilityLiveRegion="polite">{emailError}</Text>
+                            ) : null}
+                            <Text style={loginStyles.textStyle}>
+                                Password
+                            </Text>
+                            <View style={loginStyles.rowInputContainer}>
+                                <TextInput
+                                    onChangeText={handlePasswordChange}
+                                    value={password}
+                                    placeholder="type your password"
+                                    placeholderTextColor="#999"
+                                    accessibilityLabel="Password input"
+                                    returnKeyType="done"
+                                    textContentType="password"
+                                    autoCapitalize="none"
+                                    autoComplete="password"
+                                    secureTextEntry={!showPassword}
+                                />
+                                <Pressable
+                                    onPress={() => setShowPassword((prev) => !prev)}
+                                    accessibilityLabel={showPassword ? "Hide password" : "Show password"}
+                                    style={loginStyles.showPasswordButton}
+                                >
+                                    <Text style={loginStyles.showPasswordText}>
+                                        {showPassword ? "Hide" : "Show"}
+                                    </Text>
+                                </Pressable>
+                            </View>
+                            {passwordError ? (
+                                <Text style={loginStyles.validationErrorText} accessibilityLiveRegion="polite">{passwordError}</Text>
+                            ) : null}
                         </View>
-                        {passwordError ? (
-                            <Text style={loginStyles.validationErrorText} accessibilityLiveRegion="polite">{passwordError}</Text>
-                        ) : null}
                         <View style={loginStyles.buttonStyle}>
                             <Pressable
                                 onPress={handleLogin}

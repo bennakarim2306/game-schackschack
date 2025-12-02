@@ -1,4 +1,4 @@
-import { Keyboard, Text, TouchableWithoutFeedback, View, TextInput, Button, Switch, ActivityIndicator, Pressable } from "react-native";
+import { Keyboard, Text, TouchableWithoutFeedback, View, TextInput, Button, Switch, ActivityIndicator, Pressable, ImageBackground } from "react-native";
 import ProfileStyles from "../styles/ProfileStyles";
 import React, { useState, useContext } from "react";
 import AuthContext from '../Contexts/AuthContext';
@@ -38,8 +38,13 @@ const Profile = () => {
     };
 
     return (
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-            <View style={ProfileStyles.profileViewStyle}>
+        <ImageBackground
+            source={require('../assets/20251202_1542_Smiling Fruit Faces_remix_01kbfr2sr9enx805fare783vsa.png')}
+            style={{ flex: 1 }}
+            resizeMode="cover"
+        >
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+                <View style={[ProfileStyles.profileViewStyle, { backgroundColor: 'rgba(217, 242, 217, 0.85)' }]}>
                 <Text style={ProfileStyles.profileHeaderStyle}>Profile Settings</Text>
 
                 <Text style={ProfileStyles.profileKeyStyle}>Username</Text>
@@ -121,7 +126,8 @@ const Profile = () => {
                     )}
                 </Pressable>
             </View>
-        </TouchableWithoutFeedback>
+            </TouchableWithoutFeedback>
+        </ImageBackground>
     );
 };
 

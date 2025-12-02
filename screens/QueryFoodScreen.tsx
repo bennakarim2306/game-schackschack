@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, Alert, Platform, ScrollView, Pressable, ActivityIndicator } from "react-native";
+import { View, Text, TextInput, Button, Alert, Platform, ScrollView, Pressable, ActivityIndicator, ImageBackground } from "react-native";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { Picker } from "@react-native-picker/picker";
 import Slider from "@react-native-community/slider";
@@ -108,8 +108,13 @@ const QueryFoodScreen = () => {
     };
 
     return (
-        <View style={{ flex: 1, backgroundColor: '#D9F2D9' }}>
-            <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
+        <ImageBackground
+            source={require('../assets/20251202_1542_Smiling Fruit Faces_remix_01kbfr2sr9enx805fare783vsa.png')}
+            style={{ flex: 1 }}
+            resizeMode="cover"
+        >
+            <View style={{ flex: 1, backgroundColor: 'rgba(217, 242, 217, 0.85)' }}>
+                <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
             <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 16 }}>
                 Query for food in the area
             </Text>
@@ -205,29 +210,19 @@ const QueryFoodScreen = () => {
                 step={1}
                 value={distance}
                 onValueChange={setDistance}
-                style={{ marginBottom: 24 }}
+                style={{ marginBottom: 80 }}
             />
-            <Pressable
-                onPress={handleSearch}
-                disabled={isSearching}
-                style={({ pressed }) => ([
-                    {
-                        backgroundColor: isSearching ? '#ccc' : '#2196F3',
-                        padding: 16,
-                        borderRadius: 8,
-                        alignItems: 'center',
-                        opacity: pressed && !isSearching ? 0.7 : 1
-                    }
-                ])}
-            >
-                {isSearching ? (
-                    <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                    <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>Search</Text>
-                )}
-            </Pressable>
             </ScrollView>
-        </View>
+            <View style={{ padding: 16, paddingBottom: 16 }}>
+                <Button
+                    title="Search"
+                    onPress={handleSearch}
+                    disabled={isSearching}
+                    color="#2196F3"
+                />
+            </View>
+            </View>
+        </ImageBackground>
     );
 };
 

@@ -4,7 +4,7 @@ const ContactsListStyles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
-        backgroundColor: "#D9F2D9"
+        backgroundColor: 'rgba(217, 242, 217, 0.85)'
     },
     header: {
         fontSize: 22,
