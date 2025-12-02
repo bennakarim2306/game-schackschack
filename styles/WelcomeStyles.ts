@@ -8,7 +8,7 @@ const welcomeStyles = StyleSheet.create({
         paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
         justifyContent: "space-around",
         alignItems: "center",
-        paddingBottom: "50%"
+        // paddingBottom: "50%"
     },
     buttonStyle: {
         width: "65%",

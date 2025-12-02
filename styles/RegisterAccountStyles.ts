@@ -2,7 +2,7 @@ import { Platform, StatusBar, StyleSheet } from "react-native";
 
 const registerAccountStyles = StyleSheet.create({
     registerViewStyle: {
-        backgroundColor: '#D9F2D9',
+        // backgroundColor: '#D9F2D9',
         width: "100%",
         height: "100%",
         paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
@@ -19,7 +19,7 @@ const registerAccountStyles = StyleSheet.create({
     textStyle: {
         alignSelf: "center",
         color: "#18B76C",
-        fontSize: 26,
+        fontSize: 35,
         fontFamily: "sans-serif-condensed",
         fontWeight: "bold"
     },

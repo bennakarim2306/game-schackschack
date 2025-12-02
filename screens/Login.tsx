@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { View, Button, Text, TextInput, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Platform, Pressable, Alert, ActivityIndicator } from "react-native";
+import { View, Button, Text, TextInput, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Platform, Pressable, Alert, ActivityIndicator, ImageBackground } from "react-native";
 import loginStyles from "../styles/LoginStyles";
 import AuthContext from "../Contexts/AuthContext";
 
@@ -66,86 +66,93 @@ function Login({ route, navigation }) {
         !!passwordError;
 
     return (
-        <KeyboardAvoidingView
+        <ImageBackground
+            source={require('../assets/smiling_borders.jpeg')}
             style={{ flex: 1 }}
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            resizeMode="cover"
         >
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-                <View style={loginStyles.loginViewStyle}>
-                    <Text style={loginStyles.textStyle}>
-                        Email
-                    </Text>
-                    <TextInput
-                        style={loginStyles.textInputStyle}
-                        onChangeText={handleEmailChange}
-                        value={email}
-                        placeholder="type your email"
-                        placeholderTextColor="#999"
-                        accessibilityLabel="Email input"
-                        returnKeyType="next"
-                        textContentType="emailAddress"
-                        autoCapitalize="none"
-                        autoComplete="email"
-                        inputMode="email"
-                        keyboardType="email-address"
-                    />
-                    {emailError ? (
-                        <Text style={loginStyles.validationErrorText} accessibilityLiveRegion="polite">{emailError}</Text>
-                    ) : null}
-                    <Text style={loginStyles.textStyle}>
-                        Password
-                    </Text>
-                    <View style={loginStyles.rowInputContainer}>
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+            >
+                <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+                    <View style={loginStyles.loginViewStyle}>
+                        <View >
+                            <Text style={loginStyles.titleStyle}>Login</Text>
+                        </View>
+                        <Text style={loginStyles.textStyle}>
+                            Email
+                        </Text>
                         <TextInput
-                            onChangeText={handlePasswordChange}
-                            value={password}
-                            placeholder="type your password"
+                            style={loginStyles.textInputStyle}
+                            onChangeText={handleEmailChange}
+                            value={email}
+                            placeholder="type your email"
                             placeholderTextColor="#999"
-                            accessibilityLabel="Password input"
-                            returnKeyType="done"
-                            textContentType="password"
+                            accessibilityLabel="Email input"
+                            returnKeyType="next"
+                            textContentType="emailAddress"
                             autoCapitalize="none"
-                            autoComplete="password"
-                            secureTextEntry={!showPassword}
+                            autoComplete="email"
+                            inputMode="email"
+                            keyboardType="email-address"
                         />
-                        <Pressable
-                            onPress={() => setShowPassword((prev) => !prev)}
-                            accessibilityLabel={showPassword ? "Hide password" : "Show password"}
-                            style={loginStyles.showPasswordButton}
-                        >
-                            <Text style={loginStyles.showPasswordText}>
-                                {showPassword ? "Hide" : "Show"}
-                            </Text>
-                        </Pressable>
-                    </View>
-                    {passwordError ? (
-                        <Text style={loginStyles.validationErrorText} accessibilityLiveRegion="polite">{passwordError}</Text>
-                    ) : null}
-                    <View style={loginStyles.buttonStyle}>
-                        <Pressable
-                            onPress={handleLogin}
-                            disabled={isDisabled}
-                            style={({ pressed }) => [
-                                loginStyles.loginButton,
-                                isDisabled
-                                    ? loginStyles.loginButtonDisabled
-                                    : loginStyles.loginButtonEnabled,
-                                pressed && !isDisabled && { opacity: 0.7 }
-                            ]}
-                        >
-                            {isLoggingIn ? (
-                                <ActivityIndicator size="small" color="#fff" />
-                            ) : (
-                                <Text style={loginStyles.loginButtonText}>
-                                    Login here
+                        {emailError ? (
+                            <Text style={loginStyles.validationErrorText} accessibilityLiveRegion="polite">{emailError}</Text>
+                        ) : null}
+                        <Text style={loginStyles.textStyle}>
+                            Password
+                        </Text>
+                        <View style={loginStyles.rowInputContainer}>
+                            <TextInput
+                                onChangeText={handlePasswordChange}
+                                value={password}
+                                placeholder="type your password"
+                                placeholderTextColor="#999"
+                                accessibilityLabel="Password input"
+                                returnKeyType="done"
+                                textContentType="password"
+                                autoCapitalize="none"
+                                autoComplete="password"
+                                secureTextEntry={!showPassword}
+                            />
+                            <Pressable
+                                onPress={() => setShowPassword((prev) => !prev)}
+                                accessibilityLabel={showPassword ? "Hide password" : "Show password"}
+                                style={loginStyles.showPasswordButton}
+                            >
+                                <Text style={loginStyles.showPasswordText}>
+                                    {showPassword ? "Hide" : "Show"}
                                 </Text>
-                            )}
-                        </Pressable>
+                            </Pressable>
+                        </View>
+                        {passwordError ? (
+                            <Text style={loginStyles.validationErrorText} accessibilityLiveRegion="polite">{passwordError}</Text>
+                        ) : null}
+                        <View style={loginStyles.buttonStyle}>
+                            <Pressable
+                                onPress={handleLogin}
+                                disabled={isDisabled}
+                                style={({ pressed }) => [
+                                    loginStyles.loginButton,
+                                    isDisabled
+                                        ? loginStyles.loginButtonDisabled
+                                        : loginStyles.loginButtonEnabled,
+                                    pressed && !isDisabled && { opacity: 0.7 }
+                                ]}
+                            >
+                                {isLoggingIn ? (
+                                    <ActivityIndicator size="small" color="#fff" />
+                                ) : (
+                                    <Text style={loginStyles.loginButtonText}>
+                                        Login here
+                                    </Text>
+                                )}
+                            </Pressable>
+                        </View>
                     </View>
-                </View>
-            </TouchableWithoutFeedback>
-        </KeyboardAvoidingView>
+                </TouchableWithoutFeedback>
+            </KeyboardAvoidingView>
+        </ImageBackground>
     );
-}
-
-export default Login;
+} export default Login;

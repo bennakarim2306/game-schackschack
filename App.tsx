@@ -5,7 +5,7 @@ import MainStackNavigator from './navigations/MainStackNavigator';
 export default function App() {
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#D9F2D9' }}>
+      <SafeAreaView style={{ flex: 1 }}>
         <MainStackNavigator />
       </SafeAreaView>
     </SafeAreaProvider>

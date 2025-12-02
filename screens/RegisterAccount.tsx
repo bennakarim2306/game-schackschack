@@ -1,4 +1,4 @@
-import { Button, Keyboard, KeyboardAvoidingView, Platform, Pressable, Text, TextInput, TextInputProps, TouchableWithoutFeedback, View, ActivityIndicator } from "react-native";
+import { Button, Keyboard, KeyboardAvoidingView, Platform, Pressable, Text, TextInput, TextInputProps, TouchableWithoutFeedback, View, ActivityIndicator, ImageBackground } from "react-native";
 import registerAccountStyles from "../styles/RegisterAccountStyles";
 import { useContext, useState } from "react";
 import AuthContext from "../Contexts/AuthContext";
@@ -67,15 +67,20 @@ const RegisterAccount = () => {
     };
 
     return (
-        <KeyboardAvoidingView
+        <ImageBackground
+            source={require('../assets/smiling_borders.jpeg')}
             style={{ flex: 1 }}
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            resizeMode="cover"
         >
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-                <View style={registerAccountStyles.registerViewStyle}>
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+            >
+                <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+                    <View style={registerAccountStyles.registerViewStyle}>
                     <View >
-                        <Text style={registerAccountStyles.titleStyle}>Account</Text>
-                        <Text style={registerAccountStyles.titleStyle}> registration</Text>
+                        <Text style={registerAccountStyles.titleStyle}>New</Text>
+                        <Text style={registerAccountStyles.titleStyle}> Account</Text>
                     </View>
 
                     <Text style={registerAccountStyles.textStyle}>
@@ -159,6 +164,7 @@ const RegisterAccount = () => {
                 </View>
             </TouchableWithoutFeedback>
         </KeyboardAvoidingView>
+        </ImageBackground>
     );
 }
 

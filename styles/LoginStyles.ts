@@ -3,7 +3,7 @@ import { Platform, StatusBar, StyleSheet } from "react-native";
 
 const loginStyles = StyleSheet.create({
     loginViewStyle: {
-        backgroundColor: '#D9F2D9',
+        // backgroundColor: '#D9F2D9',
         width: "100%",
         height: "100%",
         paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
@@ -12,10 +12,16 @@ const loginStyles = StyleSheet.create({
     textInputStyle: {
         alignSelf: "center"
     },
+    titleStyle: {
+        alignSelf: "center",
+        fontSize: 50,
+        fontWeight: "600",
+        color: "#18B76C"
+    },
     textStyle: {
         alignSelf: "center",
-        color: "#18B76C",
-        fontSize: 26,
+        color: "#036839ff",
+        fontSize: 50,
         fontFamily: "sans-serif-condensed",
         fontWeight: "bold"
     },
@@ -27,7 +33,7 @@ const loginStyles = StyleSheet.create({
         marginBottom: 8,
         color: "red"
     },
-        showPasswordButton: {
+    showPasswordButton: {
         marginLeft: 8,
         padding: 4
     },
@@ -35,7 +41,7 @@ const loginStyles = StyleSheet.create({
         color: "#007AFF",
         flex: 3
     },
-        rowInputContainer: {
+    rowInputContainer: {
         flexDirection: "row",
         alignItems: "center",
         alignSelf: "center"

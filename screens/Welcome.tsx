@@ -1,9 +1,13 @@
-import { View, Button, Text } from "react-native";
+import { View, Button, Text, ImageBackground } from "react-native";
 import welcomeStyles from '../styles/WelcomeStyles'
 
 const Welcome = ({ navigation }) => {
     return (
-        <View style={welcomeStyles.welcomeContainerStyle}>
+        <ImageBackground 
+            source={require('../assets/backgroun_main.jpeg')}
+            style={welcomeStyles.welcomeContainerStyle}
+            resizeMode="cover"
+        >
             <View>
             <Text style={welcomeStyles.textStyle}>Welcome to</Text>
             <Text style={welcomeStyles.textStyle}>Foodopia</Text>
@@ -22,7 +26,7 @@ const Welcome = ({ navigation }) => {
                 >
                 </Button>
             </View>
-        </View>
+        </ImageBackground>
     );
 }
 
