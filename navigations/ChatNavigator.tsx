@@ -105,39 +105,77 @@ const ChatNavigator = () => {
     const [chat, dispatch] = useReducer(chatReducer,initialChat)
 
     useEffect(() => {
+        let isMounted = true;
+        
         const initSocketConnection = async () => {
-            const token = await SecureStore.getItemAsync("userToken");
-            setToken(token ?? "")
-            
-            Logger.info('SOCKET', `Connecting to: ${configs.WEBSOCKER_BASE_URL}`);
-            socket.current = io(configs.WEBSOCKER_BASE_URL)
-            
-            socket.current?.on("connect", () => {
-                Logger.success('SOCKET', 'Connected to WebSocket server');
-            });
-            
-            socket.current?.on("disconnect", (reason) => {
-                Logger.warning('SOCKET', `Disconnected: ${reason}`);
-            });
-            
-            socket.current?.on("error", (error) => {
-                Logger.error('SOCKET', 'Socket error', error);
-            });
-            
-            socket.current?.on("response from server", (message: string) => {
-                Logger.info('SOCKET', "Received response: " + message);
-            });
-            
-            socket.current?.on("private-message-from-server", (message: { from: { sub: string }, message: string }) => {
-                Logger.info('CHAT', `Message from ${message.from.sub}: ${message.message}`);
-                dispatch({ type: "ADD_MESSAGE_TO_CHAT", message: message.from.sub.split("@")[0] + ": " + message.message, contact: message.from.sub, isSent: false, timestamp: Date.now(), isRead: false})
-            });
-            
-            Logger.info('SOCKET', 'Registering client with token');
-            socket.current?.emit("register-client", { token: token })
-        }
-        initSocketConnection()
-    },[])
+            try {
+                const token = await SecureStore.getItemAsync("userToken");
+                if (!isMounted) return;
+                
+                setToken(token ?? "");
+                
+                Logger.info('SOCKET', `Connecting to: ${configs.WEBSOCKER_BASE_URL}`);
+                
+                const socketInstance = io(configs.WEBSOCKER_BASE_URL, {
+                    path: '/socket/io',
+                    transports: ['websocket', 'polling'],
+                    reconnection: true,
+                    reconnectionDelay: 1000,
+                    reconnectionAttempts: 5
+                });
+                
+                socket.current = socketInstance;
+                Logger.info('SOCKET', 'Socket instance created');
+                
+                socketInstance.on("connect", () => {
+                    Logger.success('SOCKET', 'Connected to WebSocket server');
+                    Logger.info('SOCKET', 'Registering client with token');
+                    socketInstance.emit("register-client", { token });
+                });
+                
+                socketInstance.on("disconnect", (reason) => {
+                    Logger.warning('SOCKET', `Disconnected: ${reason}`);
+                });
+                
+                socketInstance.on("connect_error", (error: unknown) => {
+                    Logger.error('SOCKET', 'Connection error:', error);
+                    if (error instanceof Error) {
+                        Logger.error('SOCKET', 'Error details:', error.message);
+                    }
+                });
+                
+                socketInstance.on("error", (error: unknown) => {
+                    Logger.error('SOCKET', 'Socket error:', error);
+                });
+                
+                socketInstance.on("private-message-from-server", (message: { from: { sub: string }, message: string }) => {
+                    Logger.info('CHAT', `Message from ${message.from.sub}: ${message.message}`);
+                    dispatch({ 
+                        type: "ADD_MESSAGE_TO_CHAT", 
+                        message: message.from.sub.split("@")[0] + ": " + message.message, 
+                        contact: message.from.sub, 
+                        isSent: false, 
+                        timestamp: Date.now(), 
+                        isRead: false
+                    });
+                });
+                
+                Logger.info('SOCKET', 'Socket initialization completed');
+            } catch (error) {
+                Logger.error('SOCKET', 'Failed to initialize socket:', error);
+            }
+        };
+        
+        initSocketConnection();
+        
+        return () => {
+            isMounted = false;
+            if (socket.current) {
+                Logger.info('SOCKET', 'Disconnecting socket');
+                socket.current.disconnect();
+            }
+        };
+    }, [])
 
     return (
         <ChatContext.Provider value={chat}>

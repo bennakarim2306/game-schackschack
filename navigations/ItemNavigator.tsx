@@ -22,7 +22,7 @@ const ItemNavigator = () => (
             <TopTab.Screen
                 name="MyOffersScreen"
                 component={MyOffersScreen}
-                options={{ tabBarLabel: "My Offers", tabBarLabelStyle: { fontSize: 20, fontFamily: "Arial", fontWeight: "bold" } }}
+                options={{ tabBarLabel: "My Offers", tabBarLabelStyle: { fontSize: 20, fontFamily: "Arial", fontWeight: "bold"}}}
             />
         </TopTab.Navigator>
 );
