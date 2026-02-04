@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Game",
-    "slug": "Game",
+    "slug": "foodopia",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -45,7 +45,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "5dcea42a-d98a-48ba-a91c-11c91ee5bef9"
+        "projectId": "85d9e475-11ee-428a-9402-4a21c9c214c5"
       }
     },
     "updates": {

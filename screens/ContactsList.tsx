@@ -6,6 +6,7 @@ import ContactsListStyles from "../styles/ContactsListStyles";
 import configs from "../config/AppConfig";
 import { useChatContext } from "../Contexts/ChatContext";
 import { useChatDispatchContext } from "../Contexts/ChatDisptachContext";
+import { useChatServiceContext } from "../Contexts/ChatServiceContext";
 import Logger from "../config/Logger";
 
 import type { StackNavigationProp } from '@react-navigation/stack';
@@ -28,6 +29,7 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
 
     const chatState = useChatContext() as unknown as ChatState;
     const chatDispatch = useChatDispatchContext();
+    const chatService = useChatServiceContext();
 
     if (!chatDispatch) {
         throw new Error("Chat dispatch context is not available");
@@ -128,6 +130,13 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
                         else {
                             Logger.success('CONTACTS', `Contacts list loaded - ${jsonResponse.friends?.length || 0} friends`);
                             dispatch({ type: 'FRIENDS_LIST_GATHERED', ContactsList: jsonResponse.friends });
+
+                            const emails = (jsonResponse.friends || [])
+                                .map((friend: Friend) => friend.email)
+                                .filter(Boolean);
+                            if (chatService && emails.length > 0) {
+                                chatService.checkOnlineStatus(emails);
+                            }
                         }
 
                     })
@@ -142,6 +151,15 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
             getContactsList()
         }, [])
     );
+
+    useEffect(() => {
+        const emails = state.ContactsList
+            .map((friend: Friend) => friend.email)
+            .filter(Boolean);
+        if (chatService && emails.length > 0) {
+            chatService.checkOnlineStatus(emails);
+        }
+    }, [state.ContactsList, chatService]);
 
     const friendsContext = useMemo(() => {
 
@@ -232,38 +250,37 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
         }
     };
 
-    interface Message {
-        read: boolean;
-        // add other message properties if needed
+    const getNumberOfUnreadMessagesByChat = (email: string): number => {
+        if (!chatState?.chat) return 0;
+        
+        const chatEntry = chatState.chat.find((e: any) => e.contact === email);
+        if (!chatEntry) return 0;
+        
+        return chatEntry.unreadCount || 0;
     }
 
-    interface ChatItem {
-        contact: string;
-        messages: Message[];
-        // add other chat item properties if needed
+    const getOnlineStatus = (email: string): boolean => {
+        if (!chatState?.chat) return false;
+        
+        const chatEntry = chatState.chat.find((e: any) => e.contact === email);
+        if (!chatEntry) return false;
+        
+        return chatEntry.isOnline || false;
     }
 
-    const getNumberOfUnreadMessagesByChat = (chat: ChatItem[]): number => {
-        console.debug("ContactsList -- getNumberOfUnreadMessagesByChat -- for: " + JSON.stringify(chat))
-        if (chat == null || chat.length == 0) {
-            return 0
-        }
-        else {
-            const unreadMessages = chat[0].messages.filter((e: Message) => e.read == false)
-            return unreadMessages.length
-        }
-    }
-
-    interface SetMessagesToReadAction {
-        type: 'SET_MESSAGES_TO_READ';
-        email: string;
-    }
-
-    const setMessagesToRead = (email: string): void => {
-        console.debug("ContactsList -- setMessagesToRead -- " + email)
+    const handleContactPress = (contactEmail: string) => {
+        Logger.info('CONTACTS', `Contact clicked: ${contactEmail}`);
+        
+        // Clear unread count when opening chat
         if (chatDispatch) {
-            chatDispatch({ type: 'SET_MESSAGES_TO_READ', email: email } as SetMessagesToReadAction)
+            chatDispatch({
+                type: 'CLEAR_UNREAD_COUNT',
+                contact: contactEmail
+            });
         }
+        
+        Logger.debug('NAVIGATION', `Navigating to Chat with ${contactEmail}`);
+        navigation.navigate("Chat", { title: `Chat with ${contactEmail}`, contact: contactEmail });
     }
 
     return (
@@ -276,40 +293,67 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
                 <View style={ContactsListStyles.container}>
                     <FlatList
                         data={state.ContactsList}
-                        renderItem={({ item }) => (
-                            <TouchableOpacity
-                                key={item.email}
-                                onPress={event => {
-                                    Logger.info('CONTACTS', `Contact clicked: ${item.email}`);
-                                    setMessagesToRead(item.email)
-                                    Logger.debug('NAVIGATION', `Navigating to Chat with ${item.email}`);
-                                    navigation.navigate("Chat", { title: `Chat with ${item.email}`, contact: item.email })
-                                }}
-                                style={ContactsListStyles.contactCard}>
-                                <View style={ContactsListStyles.avatar}>
-                                    <Text style={ContactsListStyles.avatarText}>
-                                        {item.email[0].toUpperCase()}
-                                    </Text>
-                                </View>
-                                <View style={{ flex: 1 }}>
-                                    <Text style={ContactsListStyles.contactEmail}>
-                                        {item.email}
-                                    </Text>
-                                    {item.userName && (
-                                        <Text style={ContactsListStyles.contactUserName}>
-                                            {item.userName}
+                        extraData={chatState}
+                        renderItem={({ item }) => {
+                            const unreadCount = getNumberOfUnreadMessagesByChat(item.email);
+                            const isOnline = getOnlineStatus(item.email);
+                            
+                            return (
+                                <TouchableOpacity
+                                    key={item.email}
+                                    onPress={() => handleContactPress(item.email)}
+                                    style={ContactsListStyles.contactCard}>
+                                    <View style={ContactsListStyles.avatar}>
+                                        <Text style={ContactsListStyles.avatarText}>
+                                            {item.email[0].toUpperCase()}
                                         </Text>
-                                    )}
-                                </View>
-                                {chatState && getNumberOfUnreadMessagesByChat(chatState.chat.filter(e => e.contact == item.email)) > 0 && (
-                                    <View style={ContactsListStyles.unreadBadge}>
-                                        <Text style={ContactsListStyles.unreadBadgeText}>
-                                            {getNumberOfUnreadMessagesByChat(chatState.chat.filter(e => e.contact == item.email))}
-                                        </Text>
+                                        {/* Online indicator */}
+                                        <View style={{
+                                            position: 'absolute',
+                                            bottom: 0,
+                                            right: 0,
+                                            width: 12,
+                                            height: 12,
+                                            borderRadius: 6,
+                                            backgroundColor: isOnline ? '#4caf50' : '#ccc',
+                                            borderWidth: 2,
+                                            borderColor: 'white'
+                                        }} />
                                     </View>
-                                )}
-                            </TouchableOpacity>
-                        )}
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={ContactsListStyles.contactEmail}>
+                                            {item.email}
+                                        </Text>
+                                        {item.userName && (
+                                            <Text style={ContactsListStyles.contactUserName}>
+                                                {item.userName}
+                                            </Text>
+                                        )}
+                                    </View>
+                                    {/* Unread badge */}
+                                    {unreadCount > 0 && (
+                                        <View style={{
+                                            backgroundColor: '#ff5722',
+                                            borderRadius: 12,
+                                            minWidth: 24,
+                                            height: 24,
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            marginLeft: 8
+                                        }}>
+                                            <Text style={{
+                                                color: 'white',
+                                                fontSize: 12,
+                                                fontWeight: 'bold',
+                                                paddingHorizontal: 6
+                                            }}>
+                                                {unreadCount > 99 ? '99+' : unreadCount}
+                                            </Text>
+                                        </View>
+                                    )}
+                                </TouchableOpacity>
+                            );
+                        }}
                         ListEmptyComponent={
                             <Text style={ContactsListStyles.emptyText}>
                                 No contacts found.

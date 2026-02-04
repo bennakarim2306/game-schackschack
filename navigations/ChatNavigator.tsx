@@ -1,202 +1,495 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { MutableRefObject, useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { TouchableOpacity, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import ContactsList from "../screens/ContactsList"; // Renamed FriendsList to ContactsList
+import ContactsList from "../screens/ContactsList";
 import Chat from "../screens/Chat";
 import { ChatContext } from "../Contexts/ChatContext";
 import { ChatDispatchContext } from "../Contexts/ChatDisptachContext";
-import io, { Socket } from "socket.io-client";
 import * as SecureStore from 'expo-secure-store'
 import configs from "../config/AppConfig";
 import { useFocusEffect } from "@react-navigation/native";
 import Logger from "../config/Logger";
+import { ChatService, ChatServiceCallbacks } from "../services/ChatService";
+import { ChatServiceContext } from "../Contexts/ChatServiceContext";
 
 const ChatStackNavigator = createNativeStackNavigator();
 
-const ChatNavigator = () => {
+interface ChatMessage {
+    messageId: string;
+    from: string;
+    to: string;
+    content: string;
+    timestamp: number;
+    type: string;
+    status: {
+        sent?: number;
+        delivered?: number;
+        read?: number;
+    };
+}
 
-    const socket: MutableRefObject<Socket<any> | undefined> = useRef();
-    const [token, setToken] = useState("");
-    
-    interface ChatMessage {
-        isSent: boolean;
-        message: string;
-        timestamp: number;
-        read: boolean;
-    }
+interface ChatEntry {
+    contact: string;
+    messages: ChatMessage[];
+    unreadCount: number;
+    isTyping: boolean;
+    isOnline: boolean;
+}
 
-    interface ChatEntry {
-        contact: string;
-        messages: ChatMessage[];
-    }
+interface ChatState {
+    chat: ChatEntry[];
+    totalUnread: number;
+}
 
-    interface ChatState {
-        chat: ChatEntry[];
-    }
+type ChatAction = 
+    | { type: 'ADD_MESSAGE_TO_CHAT'; message: string; contact: string; isSent: boolean; timestamp: number; messageId: string }
+    | { type: 'UPDATE_MESSAGE_STATUS'; messageId: string; status: 'sent' | 'delivered' | 'read'; timestamp: number }
+    | { type: 'SET_CONVERSATION_HISTORY'; contact: string; messages: ChatMessage[]; unreadCount: number }
+    | { type: 'SET_TYPING_STATUS'; contact: string; isTyping: boolean }
+    | { type: 'SET_ONLINE_STATUS'; contact: string; isOnline: boolean }
+    | { type: 'UPDATE_UNREAD_COUNTS'; counts: { [contact: string]: number }; total: number }
+    | { type: 'CLEAR_UNREAD_COUNT'; contact: string }
+    | { type: 'INITIALIZE_CONTACT'; contact: string }
+    | { type: 'LOAD_CONVERSATION_HISTORY'; contact: string; messages: ChatMessage[] }
 
-    interface AddMessageToChatAction {
-        type: 'ADD_MESSAGE_TO_CHAT';
-        message: string;
-        contact: string;
-        isSent: boolean;
-        timestamp: number;
-        isRead: boolean;
-    }
-
-    interface SetMessagesToReadAction {
-        type: 'SET_MESSAGES_TO_READ';
-        email: string;
-    }
-
-    type ChatAction = AddMessageToChatAction | SetMessagesToReadAction;
-
-    const chatReducer = (prevState: ChatState, action: ChatAction): ChatState => {
-        switch (action.type) {
-            case 'ADD_MESSAGE_TO_CHAT': {
-                if (
-                    prevState.chat.length == 0 &&
-                    prevState.chat.filter(e => e.contact === action.contact).length == 0
-                ) {
-                    console.log(`Adding a chat with contact: ${action.contact} to the state`);
-                    prevState.chat.push({
-                        contact: action.contact,
-                        messages: new Array<ChatMessage>()
-                    });
-                }
-                if (action.isSent === true) {
-                    Logger.info('CHAT', `Sending message to ${action.contact}`);
-                    Logger.debug('CHAT', `Message content: ${action.message}`);
-                    socket.current?.emit("private-message", { token: token, to: action.contact, message: action.message });
-                }
-                const currentChat = prevState.chat.filter(e => e.contact === action.contact)[0];
-                currentChat.messages.push({
-                    isSent: action.isSent,
-                    message: action.message,
-                    timestamp: action.timestamp,
-                    read: action.isRead
+const chatReducer = (prevState: ChatState, action: ChatAction): ChatState => {
+    switch (action.type) {
+        case 'INITIALIZE_CONTACT': {
+            const exists = prevState.chat.find(e => e.contact === action.contact);
+            if (!exists) {
+                prevState.chat.push({
+                    contact: action.contact,
+                    messages: [],
+                    unreadCount: 0,
+                    isTyping: false,
+                    isOnline: false
                 });
-                console.log(`Returning state ${JSON.stringify(prevState.chat)}`);
+            }
+            return { ...prevState };
+        }
+
+        case 'ADD_MESSAGE_TO_CHAT': {
+            const entryIndex = prevState.chat.findIndex(e => e.contact === action.contact);
+            
+            if (entryIndex === -1) {
+                // Create new entry if it doesn't exist
                 return {
-                    ...prevState
+                    ...prevState,
+                    chat: [
+                        ...prevState.chat,
+                        {
+                            contact: action.contact,
+                            messages: [{
+                                messageId: action.messageId,
+                                from: action.isSent ? '' : action.contact,
+                                to: action.isSent ? action.contact : '',
+                                content: action.message,
+                                type: 'text',
+                                timestamp: action.timestamp,
+                                status: { sent: action.isSent ? action.timestamp : undefined }
+                            }],
+                            unreadCount: action.isSent ? 0 : 1,
+                            isTyping: false,
+                            isOnline: false
+                        }
+                    ]
                 };
             }
-            case 'SET_MESSAGES_TO_READ': {
-                if (
-                    prevState.chat.length == 0 ||
-                    prevState.chat.filter(e => e.contact == action.email).length == 0
-                ) {
-                    return {
-                        ...prevState
-                    };
+            
+            // Add message to existing entry
+            return {
+                ...prevState,
+                chat: prevState.chat.map((entry, idx) => {
+                    if (idx === entryIndex) {
+                        return {
+                            ...entry,
+                            messages: [
+                                ...entry.messages,
+                                {
+                                    messageId: action.messageId,
+                                    from: action.isSent ? '' : action.contact,
+                                    to: action.isSent ? action.contact : '',
+                                    content: action.message,
+                                    type: 'text',
+                                    timestamp: action.timestamp,
+                                    status: { sent: action.isSent ? action.timestamp : undefined }
+                                }
+                            ],
+                            unreadCount: action.isSent ? entry.unreadCount : entry.unreadCount + 1
+                        };
+                    }
+                    return entry;
+                }),
+                totalUnread: prevState.totalUnread + (action.isSent ? 0 : 1)
+            };
+        }
+
+        case 'UPDATE_MESSAGE_STATUS': {
+            for (let i = 0; i < prevState.chat.length; i++) {
+                const chatEntry = prevState.chat[i];
+                const messageIndex = chatEntry.messages.findIndex(m => m.messageId === action.messageId);
+                if (messageIndex !== -1) {
+                    const message = chatEntry.messages[messageIndex];
+                    let statusChanged = false;
+                    
+                    if (action.status === 'delivered' && !message.status.delivered) {
+                        message.status.delivered = action.timestamp;
+                        statusChanged = true;
+                    } else if (action.status === 'read' && !message.status.read) {
+                        message.status.read = action.timestamp;
+                        statusChanged = true;
+                    }
+                    
+                    if (statusChanged) {
+                        // Return new state with new messages array reference
+                        return {
+                            ...prevState,
+                            chat: prevState.chat.map((entry, idx) => 
+                                idx === i 
+                                    ? { ...entry, messages: [...entry.messages] }
+                                    : entry
+                            )
+                        };
+                    }
+                    return prevState;
                 }
-                const messages = prevState.chat.filter(e => e.contact == action.email)[0].messages;
-                messages.forEach(m => m.read = true);
+            }
+            return prevState;
+        }
+
+        case 'SET_CONVERSATION_HISTORY': {
+            // Normalize messages from backend to ensure consistent format
+            const normalizedMessages = (action.messages || []).map((msg: any) => ({
+                messageId: msg.messageId,
+                from: typeof msg.from === 'string' ? msg.from : (msg.from?.sub || ''),
+                to: typeof msg.to === 'string' ? msg.to : (msg.to?.sub || ''),
+                content: msg.content || msg.message || '',
+                timestamp: msg.timestamp,
+                type: msg.type || 'text',
+                status: msg.status || { sent: msg.timestamp }
+            }));
+            
+            const entryIndex = prevState.chat.findIndex(e => e.contact === action.contact);
+            if (entryIndex !== -1) {
+                // Create new entry object instead of mutating
+                const updatedEntry = {
+                    ...prevState.chat[entryIndex],
+                    messages: normalizedMessages,
+                    unreadCount: action.unreadCount
+                };
                 return {
-                    ...prevState
+                    ...prevState,
+                    chat: prevState.chat.map((entry, idx) => idx === entryIndex ? updatedEntry : entry)
+                };
+            } else {
+                // Create new entry if contact doesn't exist
+                return {
+                    ...prevState,
+                    chat: [
+                        ...prevState.chat,
+                        {
+                            contact: action.contact,
+                            messages: normalizedMessages,
+                            unreadCount: action.unreadCount,
+                            isTyping: false,
+                            isOnline: false
+                        }
+                    ]
                 };
             }
         }
+
+        case 'SET_TYPING_STATUS': {
+            const entryIndex = prevState.chat.findIndex(e => e.contact === action.contact);
+            if (entryIndex !== -1) {
+                return {
+                    ...prevState,
+                    chat: prevState.chat.map((entry, idx) => 
+                        idx === entryIndex
+                            ? { ...entry, isTyping: action.isTyping }
+                            : entry
+                    )
+                };
+            } else {
+                // Create entry if it doesn't exist
+                return {
+                    ...prevState,
+                    chat: [
+                        ...prevState.chat,
+                        {
+                            contact: action.contact,
+                            messages: [],
+                            unreadCount: 0,
+                            isTyping: action.isTyping,
+                            isOnline: false
+                        }
+                    ]
+                };
+            }
+        }
+
+        case 'SET_ONLINE_STATUS': {
+            const entryIndex = prevState.chat.findIndex(e => e.contact === action.contact);
+            if (entryIndex !== -1) {
+                return {
+                    ...prevState,
+                    chat: prevState.chat.map((entry, idx) => 
+                        idx === entryIndex
+                            ? { ...entry, isOnline: action.isOnline }
+                            : entry
+                    )
+                };
+            } else {
+                // Create entry if it doesn't exist
+                return {
+                    ...prevState,
+                    chat: [
+                        ...prevState.chat,
+                        {
+                            contact: action.contact,
+                            messages: [],
+                            unreadCount: 0,
+                            isTyping: false,
+                            isOnline: action.isOnline
+                        }
+                    ]
+                };
+            }
+        }
+
+        case 'UPDATE_UNREAD_COUNTS': {
+            for (const [contact, count] of Object.entries(action.counts)) {
+                const entry = prevState.chat.find(e => e.contact === contact);
+                if (entry) {
+                    entry.unreadCount = count;
+                }
+            }
+            prevState.totalUnread = action.total;
+            return { ...prevState, chat: [...prevState.chat] };
+        }
+
+        case 'CLEAR_UNREAD_COUNT': {
+            const entry = prevState.chat.find(e => e.contact === action.contact);
+            if (entry) {
+                prevState.totalUnread -= entry.unreadCount;
+                entry.unreadCount = 0;
+            }
+            return { ...prevState, chat: [...prevState.chat] };
+        }
+
+        case 'LOAD_CONVERSATION_HISTORY':
+            return {
+                ...state,
+                chat: state.chat.map((entry: any) => 
+                    entry.contact === action.contact 
+                        ? { ...entry, messages: action.messages }
+                        : entry
+                )
+            };
+
+        default:
+            return prevState;
     }
-    // we need to gather the chats from backend when the app starts
-    const initialChat = {
-        chat: []
-    }
-    const [chat, dispatch] = useReducer(chatReducer,initialChat)
+};
+
+const ChatNavigator = () => {
+    const [chatService, setChatService] = useState<ChatService | null>(null);
+    const chatServiceRef = useRef<ChatService | null>(null);
+    const [token, setToken] = useState("");
+    
+    const initialChat: ChatState = {
+        chat: [],
+        totalUnread: 0
+    };
+    
+    const [chat, dispatch] = useReducer(chatReducer, initialChat);
 
     useEffect(() => {
         let isMounted = true;
         
-        const initSocketConnection = async () => {
+        const initChatService = async () => {
             try {
-                const token = await SecureStore.getItemAsync("userToken");
+                const userToken = await SecureStore.getItemAsync("userToken");
                 if (!isMounted) return;
                 
-                setToken(token ?? "");
-                
-                Logger.info('SOCKET', `Connecting to: ${configs.WEBSOCKER_BASE_URL}`);
-                
-                const socketInstance = io(configs.WEBSOCKER_BASE_URL, {
-                    path: '/socket/io',
-                    transports: ['websocket', 'polling'],
-                    reconnection: true,
-                    reconnectionDelay: 1000,
-                    reconnectionAttempts: 5
-                });
-                
-                socket.current = socketInstance;
-                Logger.info('SOCKET', 'Socket instance created');
-                
-                socketInstance.on("connect", () => {
-                    Logger.success('SOCKET', 'Connected to WebSocket server');
-                    Logger.info('SOCKET', 'Registering client with token');
-                    socketInstance.emit("register-client", { token });
-                });
-                
-                socketInstance.on("disconnect", (reason) => {
-                    Logger.warning('SOCKET', `Disconnected: ${reason}`);
-                });
-                
-                socketInstance.on("connect_error", (error: unknown) => {
-                    Logger.error('SOCKET', 'Connection error:', error);
-                    if (error instanceof Error) {
-                        Logger.error('SOCKET', 'Error details:', error.message);
+                setToken(userToken ?? "");
+
+                // Create ChatService instance
+                const service = new ChatService();
+                chatServiceRef.current = service;
+                setChatService(service);
+
+                // Define callbacks for all socket events
+                const callbacks: ChatServiceCallbacks = {
+                    onRegistrationSuccess: (response) => {
+                        if (isMounted) {
+                            Logger.success('CHAT', 'Successfully registered with chat server');
+                            // Load unread counts on registration
+                            // Note: Conversation history is loaded per-contact when opening the Chat screen
+                            service.getUnreadCounts();
+                        }
+                    },
+
+                    onMessageSentAck: (data) => {
+                        if (isMounted) {
+                            Logger.debug('CHAT', `Message ${data.messageId} sent to ${data.to}`);
+                            dispatch({
+                                type: 'UPDATE_MESSAGE_STATUS',
+                                messageId: data.messageId,
+                                status: 'sent',
+                                timestamp: data.timestamp
+                            });
+                        }
+                    },
+
+                    onMessageReceived: (data) => {
+                        if (isMounted) {
+                            const contactEmail = data.from.sub || data.from;
+                            Logger.info('CHAT', `Received message from ${contactEmail}: ${data.message}`);
+                            
+                            dispatch({
+                                type: 'ADD_MESSAGE_TO_CHAT',
+                                message: data.message,
+                                contact: contactEmail,
+                                isSent: false,
+                                timestamp: data.timestamp,
+                                messageId: data.messageId
+                            });
+
+                            // Auto-acknowledge delivery
+                            service.markMessageDelivered(data.messageId);
+                        }
+                    },
+
+                    onMessageDelivered: (data) => {
+                        if (isMounted) {
+                            Logger.debug('CHAT', `Message ${data.messageId} delivered`);
+                            dispatch({
+                                type: 'UPDATE_MESSAGE_STATUS',
+                                messageId: data.messageId,
+                                status: 'delivered',
+                                timestamp: data.deliveredAt || Date.now()
+                            });
+                        }
+                    },
+
+                    onMessageRead: (data) => {
+                        if (isMounted) {
+                            Logger.debug('CHAT', `Message ${data.messageId} read`);
+                            dispatch({
+                                type: 'UPDATE_MESSAGE_STATUS',
+                                messageId: data.messageId,
+                                status: 'read',
+                                timestamp: data.readAt || Date.now()
+                            });
+                        }
+                    },
+
+                    onConversationHistory: (data) => {
+                        if (isMounted) {
+                            Logger.debug('CHAT', `Loaded ${data.messages?.length || 0} messages from ${data.with}`);
+                            dispatch({
+                                type: 'SET_CONVERSATION_HISTORY',
+                                contact: data.with,
+                                messages: data.messages || [],
+                                unreadCount: 0
+                            });
+                        }
+                    },
+
+                    onUnreadCounts: (data) => {
+                        if (isMounted) {
+                            Logger.debug('CHAT', `Total unread messages: ${data.total}`);
+                            dispatch({
+                                type: 'UPDATE_UNREAD_COUNTS',
+                                counts: data.counts,
+                                total: data.total
+                            });
+                        }
+                    },
+
+                    onUserTyping: (data) => {
+                        if (isMounted) {
+                            Logger.debug('CHAT', `User typing: ${data.from} - ${data.isTyping}`);
+                            dispatch({
+                                type: 'SET_TYPING_STATUS',
+                                contact: data.from,
+                                isTyping: data.isTyping
+                            });
+                        }
+                    },
+
+                    onOnlineStatus: (data) => {
+                        if (isMounted) {
+                            Logger.debug('CHAT', 'Received online status update');
+                            for (const [email, isOnline] of Object.entries(data.status)) {
+                                dispatch({
+                                    type: 'SET_ONLINE_STATUS',
+                                    contact: email,
+                                    isOnline: isOnline as boolean
+                                });
+                            }
+                        }
+                    },
+
+                    onDisconnect: (reason) => {
+                        if (isMounted) {
+                            Logger.warning('CHAT', `Disconnected from chat: ${reason}`);
+                        }
+                    },
+
+                    onConnectionError: (error) => {
+                        if (isMounted) {
+                            Logger.error('CHAT', 'Chat connection error:', error);
+                        }
                     }
-                });
-                
-                socketInstance.on("error", (error: unknown) => {
-                    Logger.error('SOCKET', 'Socket error:', error);
-                });
-                
-                socketInstance.on("private-message-from-server", (message: { from: { sub: string }, message: string }) => {
-                    Logger.info('CHAT', `Message from ${message.from.sub}: ${message.message}`);
-                    dispatch({ 
-                        type: "ADD_MESSAGE_TO_CHAT", 
-                        message: message.from.sub.split("@")[0] + ": " + message.message, 
-                        contact: message.from.sub, 
-                        isSent: false, 
-                        timestamp: Date.now(), 
-                        isRead: false
-                    });
-                });
-                
-                Logger.info('SOCKET', 'Socket initialization completed');
+                };
+
+                // Initialize the ChatService with callbacks
+                await service.initialize(userToken ?? "", callbacks);
+
+                Logger.info('CHAT', 'ChatService initialized successfully');
             } catch (error) {
-                Logger.error('SOCKET', 'Failed to initialize socket:', error);
+                Logger.error('CHAT', 'Failed to initialize ChatService:', error);
             }
         };
         
-        initSocketConnection();
+        initChatService();
         
         return () => {
             isMounted = false;
-            if (socket.current) {
-                Logger.info('SOCKET', 'Disconnecting socket');
-                socket.current.disconnect();
+            if (chatServiceRef.current) {
+                Logger.info('CHAT', 'Disconnecting ChatService');
+                chatServiceRef.current.disconnect();
+                chatServiceRef.current = null;
+                setChatService(null);
             }
         };
-    }, [])
+    }, []);
 
     return (
-        <ChatContext.Provider value={chat}>
-            <ChatDispatchContext.Provider value={dispatch}>
-                <ChatStackNavigator.Navigator
-                    initialRouteName="ContactsList"
-                    screenOptions={{
-                        headerShown: false
-                    }}
-                >
-                    <ChatStackNavigator.Screen
-                        name="ContactsList"
-                        component={ContactsList}
-                    />
-                    <ChatStackNavigator.Screen
-                        name="Chat"
-                        component={Chat}
-                    />
-                </ChatStackNavigator.Navigator>
-            </ChatDispatchContext.Provider>
-        </ChatContext.Provider>
+        <ChatServiceContext.Provider value={chatService}>
+            <ChatContext.Provider value={chat}>
+                <ChatDispatchContext.Provider value={dispatch}>
+                    <ChatStackNavigator.Navigator
+                        initialRouteName="ContactsList"
+                        screenOptions={{
+                            headerShown: false
+                        }}
+                    >
+                        <ChatStackNavigator.Screen
+                            name="ContactsList"
+                            component={ContactsList}
+                        />
+                        <ChatStackNavigator.Screen
+                            name="Chat"
+                            component={Chat}
+                        />
+                    </ChatStackNavigator.Navigator>
+                </ChatDispatchContext.Provider>
+            </ChatContext.Provider>
+        </ChatServiceContext.Provider>
     );
 }
 
