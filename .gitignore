@@ -34,4 +34,7 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
+# IDE
+.vscode/
+
 %ProgramData%/
