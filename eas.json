@@ -13,10 +13,8 @@
       }
     },
     "preview": {
-      "distribution": "internal",
-      "channel": "preview",
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "apk"
       }
     },
     "production": {
