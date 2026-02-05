@@ -176,11 +176,11 @@ const Chat = ({ navigation, route }: any) => {
 
     const isContactTyping = useMemo(() => {
         return chatEntry?.isTyping || false;
-    }, [chatEntry]);
+    }, [chatEntry?.isTyping]);
 
     const isContactOnline = useMemo(() => {
         return chatEntry?.isOnline || false;
-    }, [chatEntry]);
+    }, [chatEntry?.isOnline]);
 
     const submitMessage = useCallback(() => {
         if (!messageToSend.trim()) {
@@ -343,14 +343,14 @@ const Chat = ({ navigation, route }: any) => {
             style={{ flex: 1 }}
             resizeMode="cover"
         >
-            <View style={{ flex: 1, backgroundColor: 'rgba(247, 247, 247, 0.95)' }}>
+            <View style={{ flex: 1, backgroundColor: 'rgba(217, 242, 217, 0.85)' }}>
                 {/* Custom Header with Online Status */}
                 <View style={{
                     flexDirection: 'row',
                     alignItems: 'center',
                     paddingHorizontal: 12,
                     paddingBottom: 12,
-                    backgroundColor: '#ffffffff',
+                    backgroundColor: 'rgba(217, 242, 217, 0.85)',
                     borderBottomWidth: 1,
                     borderBottomColor: '#c5bebeff'
                 }}>
@@ -449,7 +449,7 @@ const Chat = ({ navigation, route }: any) => {
                             paddingHorizontal: 12,
                             paddingBottom: 8,
                             paddingTop: 8,
-                            backgroundColor: "#ffffff",
+                            backgroundColor: "rgba(217, 242, 217, 0.85)",
                             borderTopWidth: 1,
                             borderTopColor: "#eee",
                             shadowColor: "#000",
