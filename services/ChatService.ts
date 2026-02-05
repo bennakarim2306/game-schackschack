@@ -28,8 +28,8 @@ export interface OnlineStatusData {
 export class ChatService {
     private socket: Socket | null = null;
     private token: string = '';
-    private heartbeatInterval: NodeJS.Timeout | null = null;
-    private typingTimeouts: Map<string, NodeJS.Timeout> = new Map();
+    private heartbeatInterval: ReturnType<typeof setInterval> | null = null;
+    private typingTimeouts: Map<string, ReturnType<typeof setTimeout>> = new Map();
 
     constructor() {
         Logger.info('CHATSERVICE', 'ChatService instantiated');

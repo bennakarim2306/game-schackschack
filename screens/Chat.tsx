@@ -96,8 +96,8 @@ const Chat = ({ navigation, route }: any) => {
     const chatState = useChatContext() as any;
     const chatService = useChatServiceContext();
     const flatListRef = useRef<FlatList>(null);
-    const typingTimeoutRef = useRef<NodeJS.Timeout>();
-    const typingIntervalRef = useRef<NodeJS.Timeout>();
+    const typingTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+    const typingIntervalRef = useRef<ReturnType<typeof setInterval>>();
     const lastLoadedMessagesRef = useRef<number>(0);
     const contact = route.params?.contact || 'Chat';
     

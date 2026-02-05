@@ -280,8 +280,8 @@ const chatReducer = (prevState: ChatState, action: ChatAction): ChatState => {
 
         case 'LOAD_CONVERSATION_HISTORY':
             return {
-                ...state,
-                chat: state.chat.map((entry: any) => 
+                ...prevState,
+                chat: prevState.chat.map((entry: any) => 
                     entry.contact === action.contact 
                         ? { ...entry, messages: action.messages }
                         : entry

@@ -9,12 +9,12 @@ import { useChatDispatchContext } from "../Contexts/ChatDisptachContext";
 import { useChatServiceContext } from "../Contexts/ChatServiceContext";
 import Logger from "../config/Logger";
 
-import type { StackNavigationProp } from '@react-navigation/stack';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useFocusEffect, type RouteProp } from '@react-navigation/native';
 import contactsContext from "../Contexts/ContactsContext";
 
 type ContactsListProps = {
-    navigation: StackNavigationProp<any>;
+    navigation: NativeStackNavigationProp<any>;
     route: RouteProp<any>;
 };
 
@@ -22,9 +22,18 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
     // TODO implement a better typings
     const [contactToAdd, setContactToAdd] = useState("");
     const [token, setToken] = useState<string | null>("")
+    
+    interface ChatItem {
+        contact: string;
+        messages: any[];
+        unreadCount: number;
+        isTyping: boolean;
+        isOnline: boolean;
+    }
+    
     interface ChatState {
         chat: ChatItem[];
-        // add other properties if needed
+        totalUnread: number;
     }
 
     const chatState = useChatContext() as unknown as ChatState;

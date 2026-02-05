@@ -51,6 +51,9 @@
     "updates": {
       "url": "https://u.expo.dev/5dcea42a-d98a-48ba-a91c-11c91ee5bef9"
     },
-    "owner": "bennakarim"
+    "owner": "bennakarim",
+    "plugins": [
+      "expo-secure-store"
+    ]
   }
 }
