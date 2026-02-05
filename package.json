@@ -20,7 +20,6 @@
     "baseline-browser-mapping": "^2.9.19",
     "expo": "~54.0.33",
     "expo-dev-client": "~6.0.20",
-    "expo-modules-core": "^3.0.29",
     "expo-secure-store": "~15.0.8",
     "expo-splash-screen": "~31.0.13",
     "expo-status-bar": "~3.0.9",
