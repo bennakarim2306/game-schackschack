@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, Button, FlatList, TouchableOpacity, Image, Modal, TextInput, ImageBackground } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import Logger from "../config/Logger";
 
 // Helper to calculate distance between two lat/lng points (Haversine formula)
 function getDistanceKm(lat1: number, lng1: number, lat2: number, lng2: number) {
@@ -59,6 +60,7 @@ const Results = () => {
     const [orderError, setOrderError] = useState("");
 
     const handleItemPress = (item: FoodOffer) => {
+        Logger.debug('RESULTS', `Item selected: ${JSON.stringify(item)}`);
         setSelectedItem(item);
         setOrderQuantity("");
         setOrderError("");

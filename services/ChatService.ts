@@ -49,7 +49,10 @@ export class ChatService {
                 transports: ['websocket', 'polling'],
                 reconnection: true,
                 reconnectionDelay: 1000,
-                reconnectionAttempts: 5
+                reconnectionAttempts: 5,
+                auth: {
+                    token: jwtToken
+                }
             });
 
             // Connection handlers
@@ -68,7 +71,14 @@ export class ChatService {
             });
 
             this.socket.on('connect_error', (error: any) => {
-                Logger.error('CHATSERVICE', 'Connection error:', error);
+                const errorMessage = error?.message || error?.toString() || 'Unknown connection error';
+                Logger.error('CHATSERVICE', 'Connection error:', errorMessage);
+                
+                // Check if it's an authentication error
+                if (errorMessage.includes('Authentication')) {
+                    Logger.error('CHATSERVICE', 'Socket authentication failed - token may be invalid or expired');
+                }
+                
                 if (callbacks.onConnectionError) {
                     callbacks.onConnectionError(error);
                 }
@@ -160,7 +170,7 @@ export class ChatService {
         if (!this.socket) return;
 
         Logger.info('CHATSERVICE', 'Registering client');
-        this.socket.emit('register-client', { token: this.token });
+        this.socket.emit('register-client');
     }
 
     /**
@@ -174,7 +184,6 @@ export class ChatService {
 
         Logger.info('CHATSERVICE', `Sending message to ${recipientEmail}`);
         this.socket.emit('private-message', {
-            token: this.token,
             to: recipientEmail,
             message: messageText,
             messageId: messageId
@@ -196,7 +205,6 @@ export class ChatService {
 
         Logger.info('CHATSERVICE', `Loading conversation with ${otherUserEmail}, limit: ${limit}, offset: ${offset}`);
         this.socket.emit('get-conversation-history', {
-            token: this.token,
             with: otherUserEmail,
             limit,
             offset
@@ -252,7 +260,7 @@ export class ChatService {
         }
 
         Logger.debug('CHATSERVICE', 'Requesting unread counts');
-        this.socket.emit('get-unread-counts', { token: this.token });
+        this.socket.emit('get-unread-counts');
     }
 
     /**
@@ -266,7 +274,6 @@ export class ChatService {
 
         Logger.debug('CHATSERVICE', `Sending typing indicator to ${recipientEmail}`);
         this.socket.emit('typing', {
-            token: this.token,
             to: recipientEmail
         });
 
@@ -296,7 +303,6 @@ export class ChatService {
 
         Logger.debug('CHATSERVICE', `Stopping typing indicator for ${recipientEmail}`);
         this.socket.emit('stop-typing', {
-            token: this.token,
             to: recipientEmail
         });
 
@@ -332,7 +338,7 @@ export class ChatService {
         Logger.debug('CHATSERVICE', 'Starting heartbeat');
         this.heartbeatInterval = setInterval(() => {
             if (this.socket && this.socket.connected) {
-                this.socket.emit('heartbeat', { token: this.token });
+                this.socket.emit('heartbeat');
             }
         }, 20000); // 20 seconds
     }

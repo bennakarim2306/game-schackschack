@@ -5,6 +5,7 @@ import queryItemsStyles from "../styles/QueryItemsStyles";
 import configs from "../config/AppConfig";
 import * as SecureStore from 'expo-secure-store';
 import Logger from "../config/Logger";
+import { authenticatedFetch } from '../utils/AuthenticatedFetch';
 
 
 const QueryItems = () => {
@@ -36,21 +37,17 @@ const QueryItems = () => {
 
       useEffect(() => {
         const fetchItems = async () => {
-          const token = await SecureStore.getItemAsync("userToken");
-          setToken(token)
           try {
             const url = configs.USER_AUTH_BASE_URL+configs.ITEMS_PATH;
             Logger.info('GAME', 'Fetching item list for game');
             Logger.request(url, 'GET');
             
-            const response = await fetch(url, {
+            const response = await authenticatedFetch(url, {
               method: 'GET',
               headers: {
                   Accept: 'application/json',
                   'Content-Type': 'application/json',
-                  Authorization: 'Bearer ' + token
               },
-              body: null,
           });
             const data = await response.json();
             Logger.response(url, response.status, `Received ${data.length} items`);

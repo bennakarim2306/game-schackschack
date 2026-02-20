@@ -1,7 +1,8 @@
 import React, { useState, useLayoutEffect, useRef } from "react";
-import { ScrollView, Text, TextInput, Button, Alert, Image, TouchableOpacity, View, ActivityIndicator, Switch, Modal, ImageBackground } from "react-native";
+import { ScrollView, Text, TextInput, Button, Alert, Image, TouchableOpacity, View, ActivityIndicator, Switch, Modal, ImageBackground, FlatList } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import * as ImagePicker from "expo-image-picker";
+import * as Location from "expo-location";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import * as SecureStore from "expo-secure-store";
@@ -9,11 +10,20 @@ import configs from "../config/AppConfig";
 import { KeyboardAvoidingView, Platform } from 'react-native';
 import Logger from "../config/Logger";
 import { MapView, Marker } from '../utils/MapImports';
+import { authenticatedFetch, authenticatedFetchWithErrorHandling } from '../utils/AuthenticatedFetch';
+import { getFileExtensionFromUri, getMimeTypeFromExtension } from '../utils/FileUploadHelper';
 
 const foodTypes = [
     "Vegetables", "Fruits", "Dairy", "Meat", "Bakery", "Other"
 ];
 const units = ["kg", "g", "l", "pcs", "box"];
+
+// Generate unique filename using timestamp and random number (React Native compatible)
+const generateUniqueFilename = (extension: string): string => {
+    const timestamp = Date.now();
+    const random = Math.floor(Math.random() * 100000);
+    return `${timestamp}-${random}.${extension}`;
+};
 
 type RootStackParamList = {
     AddItemScreen: undefined;
@@ -32,7 +42,7 @@ const AddItemScreen = () => {
     const [city, setCity] = useState("");
     const [zip, setZip] = useState("");
     const [description, setDescription] = useState("");
-    const [imageUri, setImageUri] = useState<string | null>(null);
+    const [image, setImage] = useState<ImagePicker.ImagePickerAsset | null>(null);
 
     // Label state
     const [labelInput, setLabelInput] = useState("");
@@ -44,16 +54,16 @@ const AddItemScreen = () => {
 
     // Modal state for entering address if not found
     const [showAddressModal, setShowAddressModal] = useState(false);
-    const [modalStreet, setModalStreet] = useState("");
-    const [modalCity, setModalCity] = useState("");
-    const [modalZip, setModalZip] = useState("");
+    const [modalAddress, setModalAddress] = useState("");
+    const [addressSuggestions, setAddressSuggestions] = useState<any[]>([]);
+    const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+    const [selectedAddressCoords, setSelectedAddressCoords] = useState<{ lat: number; lng: number } | null>(null);
+    const [selectedAddressText, setSelectedAddressText] = useState("");
+    const [loadingPosition, setLoadingPosition] = useState(false);
+    const [lat, setLat] = useState(0);
+    const [lng, setLng] = useState(0);
     const [savingAddress, setSavingAddress] = useState(false);
 
-    // Address validation state
-    const [addressValid, setAddressValid] = useState<boolean | null>(null);
-    const [verifyingAddress, setVerifyingAddress] = useState(false);
-    const lastValidatedAddress = useRef({ street: "", city: "", zip: "" });
-    const [addressCoords, setAddressCoords] = useState<{ lat: number; lng: number } | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Autofill address from backend when switch is turned on
@@ -72,10 +82,9 @@ const AddItemScreen = () => {
                 Logger.info('ADDRESS', 'Fetching saved address for autofill');
                 Logger.request(url, 'GET');
                 
-                const response = await fetch(url, {
+                const response = await authenticatedFetchWithErrorHandling(url, {
                     method: "GET",
                     headers: {
-                        ...(token ? { Authorization: `Bearer ${token}` } : {}),
                         Accept: "application/json"
                     }
                 });
@@ -113,32 +122,25 @@ const AddItemScreen = () => {
 
     // Save address to backend from modal
     const handleSaveAddress = async () => {
-        if (!modalStreet || !modalCity || !modalZip) {
-            Alert.alert("Missing fields", "Please fill in all address fields.");
+        if (!selectedAddressCoords || !selectedAddressText) {
+            Alert.alert("Missing address", "Please select an address first.");
             return;
         }
         setSavingAddress(true);
-        let token: string | null = null;
-        try {
-            token = await SecureStore.getItemAsync("userToken");
-        } catch (e) {
-            Logger.error('ADDRESS', 'Failed to read token from SecureStore', e);
-        }
         try {
             const url = configs.USER_AUTH_BASE_URL + configs.ACCOUNT_SET_ADDRESS_BY_EMAIL_PATH;
             const addressData = {
-                street: modalStreet,
-                city: modalCity,
-                zip: modalZip
+                street: selectedAddressText,
+                city: "",
+                zip: ""
             };
             
-            Logger.info('ADDRESS', `Saving address: ${modalStreet}, ${modalCity} ${modalZip}`);
+            Logger.info('ADDRESS', `Saving address: ${selectedAddressText}`);
             Logger.request(url, 'POST', addressData);
             
-            const response = await fetch(url, {
+            const response = await authenticatedFetchWithErrorHandling(url, {
                 method: "POST",
                 headers: {
-                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
                     "Content-Type": "application/json",
                     Accept: "application/json"
                 },
@@ -153,10 +155,13 @@ const AddItemScreen = () => {
             }
             
             Logger.success('ADDRESS', 'Address saved successfully');
-            setStreet(modalStreet);
-            setCity(modalCity);
-            setZip(modalZip);
+            setStreet(selectedAddressText);
+            setCity("");
+            setZip("");
+            setLat(selectedAddressCoords.lat);
+            setLng(selectedAddressCoords.lng);
             setShowAddressModal(false);
+            resetAddressModal();
             Alert.alert("Success", "Address saved and autofilled.");
         } catch (e) {
             Logger.error('ADDRESS', 'Exception saving address', e);
@@ -166,69 +171,229 @@ const AddItemScreen = () => {
         }
     };
 
+    // Fetch autocomplete suggestions from Google Places API
+    const fetchAddressSuggestions = async (input: string) => {
+        if (input.length < 3) {
+            setAddressSuggestions([]);
+            return;
+        }
+        
+        setLoadingSuggestions(true);
+        try {
+            const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&key=${configs.MAPS_API_KEY}`;
+            
+            Logger.info('PLACES_API', `Fetching autocomplete suggestions for: ${input}`);
+            Logger.request(url, 'GET');
+            
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            Logger.response(url, response.status);
+            
+            if (data.predictions) {
+                Logger.info('PLACES_API', `Got ${data.predictions.length} suggestions`);
+                setAddressSuggestions(data.predictions);
+            } else {
+                setAddressSuggestions([]);
+            }
+        } catch (error) {
+            Logger.error('PLACES_API', 'Exception fetching suggestions', error);
+            setAddressSuggestions([]);
+        } finally {
+            setLoadingSuggestions(false);
+        }
+    };
+
+    // Get current device location
+    const handleUseCurrentPosition = async () => {
+        setLoadingPosition(true);
+        try {
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                Logger.error('LOCATION', 'Location permission denied');
+                Alert.alert("Permission Denied", "Location permission is required to use this feature.");
+                return;
+            }
+
+            Logger.info('LOCATION', 'Requesting current location');
+            const location = await Location.getCurrentPositionAsync({});
+            const { latitude, longitude } = location.coords;
+            
+            Logger.success('LOCATION', `Got location: (${latitude}, ${longitude})`);
+
+            // Reverse geocode to get address name
+            try {
+                const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${configs.MAPS_API_KEY}`;
+                Logger.request(url, 'GET');
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                Logger.response(url, response.status);
+                
+                if (data.results && data.results.length > 0) {
+                    const addressName = data.results[0].formatted_address;
+                    Logger.success('GEOCODING', `Reverse geocoded: ${addressName}`);
+                    setModalAddress(addressName);
+                    setSelectedAddressText(addressName);
+                    setSelectedAddressCoords({ lat: latitude, lng: longitude });
+                    setAddressSuggestions([]);
+                } else {
+                    Logger.warning('GEOCODING', 'No address found for coordinates');
+                    setSelectedAddressCoords({ lat: latitude, lng: longitude });
+                }
+            } catch (error) {
+                Logger.error('GEOCODING', 'Exception reverse geocoding', error);
+                setSelectedAddressCoords({ lat: latitude, lng: longitude });
+            }
+        } catch (error) {
+            Logger.error('LOCATION', 'Exception getting location', error);
+            Alert.alert("Error", "Could not get your current location.");
+        } finally {
+            setLoadingPosition(false);
+        }
+    };
+
+    // Handle address suggestion selection
+    const handleSelectSuggestion = async (suggestion: any) => {
+        const { place_id, description } = suggestion;
+        setModalAddress(description);
+        setAddressSuggestions([]);
+        
+        try {
+            const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place_id}&fields=geometry&key=${configs.MAPS_API_KEY}`;
+            
+            Logger.info('PLACES_API', `Getting details for place: ${place_id}`);
+            Logger.request(url, 'GET');
+            
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            Logger.response(url, response.status);
+            
+            if (data.result && data.result.geometry) {
+                const { lat, lng } = data.result.geometry.location;
+                Logger.success('PLACES_API', `Got coordinates: (${lat}, ${lng})`);
+                setSelectedAddressCoords({ lat, lng });
+                setSelectedAddressText(description);
+            }
+        } catch (error) {
+            Logger.error('PLACES_API', 'Exception getting place details', error);
+        }
+    };
+
+    // Reset address modal state
+    const resetAddressModal = () => {
+        setModalAddress("");
+        setAddressSuggestions([]);
+        setSelectedAddressCoords(null);
+        setSelectedAddressText("");
+    };
+
     const handleAddOffer = async () => {
-        if (!name || !price || !quantity || !description || !imageUri ||
-            (!autofillAddressSwitch && (!street || !city || !zip))) {
+        if (!name || !price || !quantity || !image ||
+            (!autofillAddressSwitch && (!street || !city || !zip || !lat || !lng))) {
+            Logger.debug('OFFER', `Validation failed - name: ${!!name}, price: ${!!price}, quantity: ${!!quantity}, image: ${!!image}, autofillAddressSwitch: ${autofillAddressSwitch}, street: ${!!street}, city: ${!!city}, zip: ${!!zip}, lat: ${!!lat}, lng: ${!!lng}`);
             Alert.alert("Missing fields", "Please fill in all required fields.");
             return;
         }
 
         setIsSubmitting(true);
-        let token: string | null = null;
-        try {
-            token = await SecureStore.getItemAsync("userToken");
-        } catch (e) {
-            Logger.error('OFFER', 'Failed to read token from SecureStore', e);
-        }
-
-        const itemData = {
-            name,
-            type,
-            price,
-            quantity,
-            unit,
-            street,
-            city,
-            zip,
-            description,
-        };
-
-        const formData = new FormData();
-        formData.append("item", JSON.stringify(itemData));
-        formData.append("image", {
-            uri: imageUri,
-            name: 'image.jpg',
-            type: 'image/jpeg',
-        } as any);
 
         try {
-            const url = 'YOUR_API_ENDPOINT_HERE';
-            Logger.info('OFFER', `Adding offer: ${name} (${type})`);
-            Logger.request(url, 'POST', { item: itemData });
-            
-            const response = await fetch(url, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                },
-            });
+            const itemData = {
+                name,
+                type,
+                price,
+                quantity,
+                unit,
+                street,
+                city,
+                zip,
+                lat,
+                lng,
+                description,
+            };
 
-            Logger.response(url, response.status);
-            
-            if (!response.ok) {
-                Logger.error('OFFER', 'Failed to add offer');
-                throw new Error('Network response was not ok');
+            const formData = new FormData();
+            formData.append("item", JSON.stringify(itemData));
+            Logger.debug('OFFER', `Item JSON appended: ${JSON.stringify(itemData)}`);
+
+            let fileName = '';
+            let mimeType = '';
+
+            // Append image file if present
+            if (image) {
+                const fileExtension = getFileExtensionFromUri(image.uri);
+                const inferredMimeType = getMimeTypeFromExtension(fileExtension);
+                mimeType = image.mimeType || inferredMimeType || 'image/jpeg';
+                fileName = image.fileName || generateUniqueFilename(fileExtension);
+
+                try {
+                    formData.append("image", {
+                        uri: image.uri,
+                        name: fileName,
+                        type: mimeType,
+                    });
+                    Logger.info('OFFER', `FormData ready - Item + Image (${mimeType})`);
+                } catch (fileError) {
+                    Logger.error('OFFER', 'Failed to append image to FormData', fileError);
+                    Alert.alert("Error", "Failed to process image file");
+                    return;
+                }
             }
 
-            const result = await response.json();
-            Logger.success('OFFER', `Offer added successfully: ${name}`);
-            Alert.alert("Offer Added", `Your offer for ${name} has been added!`, [{ text: "OK" }]);
-            resetForm();
-        } catch (error) {
-            Logger.error('OFFER', 'Exception adding offer', error);
+            const url = configs.USER_AUTH_BASE_URL + configs.ITEM_ADD_WITH_IMAGE_PATH;
+            Logger.info('OFFER', `Adding offer: ${name} (${type}), image: ${image ? 'yes' : 'no'}`);
+            Logger.debug('OFFER', `POST ${url}`);
+            Logger.debug('OFFER', `FormData parts: item=${name}, image=${fileName}`);
+            Logger.request(url, 'POST', { formData });
+
+            // DO NOT set Content-Type header for FormData - let the native fetch set it automatically
+            // React Native will automatically set Content-Type: multipart/form-data with boundary
+            // Add 5 second timeout using AbortController
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => {
+                Logger.warning('OFFER', 'Request timeout - aborting after 5 seconds');
+                controller.abort();
+            }, 10000);
+            
+            try {
+                Logger.info('OFFER', 'Starting fetch request');
+                const response = await authenticatedFetch(url, {
+                    method: 'POST',
+                    body: formData,
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+                Logger.response(url, response.status);
+                Logger.info('OFFER', `Got response with status: ${response.status}`);
+
+                if (!response.ok) {
+                    Logger.error('OFFER', 'Failed to add offer');
+                    throw new Error('Network response was not ok');
+                }
+
+                const result = await response.json();
+                Logger.success('OFFER', `Offer added successfully: ${name}`);
+                Alert.alert("Offer Added", `Your offer for ${name} has been added!`, [{ text: "OK" }]);
+                resetForm();
+            } catch (fetchError: any) {
+                clearTimeout(timeoutId);
+                Logger.error('OFFER', `Fetch error caught: ${fetchError.name} - ${fetchError.message}`, fetchError);
+                if (fetchError.name === 'AbortError') {
+                    Logger.error('OFFER', 'Request timeout - backend did not respond within 5 seconds');
+                    Alert.alert("Timeout", "The request took too long. Please check your connection and try again.");
+                } else {
+                    throw fetchError;
+                }
+            }
+        } catch (error: any) {
+            Logger.error('OFFER', `Exception adding offer: ${error.message}`, error);
             Alert.alert("Error", "There was an error adding your offer. Please try again.");
         } finally {
+            Logger.info('OFFER', 'Finally block - resetting isSubmitting');
             setIsSubmitting(false);
         }
     };
@@ -243,7 +408,7 @@ const AddItemScreen = () => {
         setCity("");
         setZip("");
         setDescription("");
-        setImageUri(null);
+        setImage(null);
         setLabels([]);
         setAutofillAddressSwitch(false);
     };
@@ -261,7 +426,7 @@ const AddItemScreen = () => {
             quality: 0.7,
         });
         if (!result.canceled && result.assets && result.assets.length > 0) {
-            setImageUri(result.assets[0].uri);
+            setImage(result.assets[0]);
         }
     };
 
@@ -297,64 +462,6 @@ const AddItemScreen = () => {
 
     const handleRemoveLabel = (labelToRemove: string) => {
         setLabels(labels.filter(label => label !== labelToRemove));
-    };
-
-    // Google Maps address validation
-    const validateAddress = async () => {
-        if (!modalStreet || !modalCity || !modalZip) {
-            setAddressValid(null);
-            setAddressCoords(null);
-            return;
-        }
-        // Prevent unnecessary validation if address hasn't changed
-        if (
-            lastValidatedAddress.current.street === modalStreet &&
-            lastValidatedAddress.current.city === modalCity &&
-            lastValidatedAddress.current.zip === modalZip
-        ) {
-            return;
-        }
-        setVerifyingAddress(true);
-        setAddressValid(null);
-        setAddressCoords(null);
-        try {
-            const addressString = encodeURIComponent(`${modalStreet}, ${modalZip} ${modalCity}`);
-            const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${addressString}&key=${configs.MAPS_API_KEY}`;
-            
-            Logger.info('GEOCODING', `Validating address: ${modalStreet}, ${modalZip} ${modalCity}`);
-            Logger.request(url, 'GET');
-            
-            const res = await fetch(url);
-            const data = await res.json();
-            
-            Logger.response(url, res.status, `Status: ${data.status}`);
-            
-            if (
-                data.status === "OK" &&
-                Array.isArray(data.results) &&
-                data.results.length > 0
-            ) {
-                const location = data.results[0].geometry.location;
-                Logger.success('GEOCODING', `Address validated - Coords: (${location.lat}, ${location.lng})`);
-                setAddressValid(true);
-                setAddressCoords({ lat: location.lat, lng: location.lng });
-            } else {
-                Logger.warning('GEOCODING', `Address validation failed - Status: ${data.status}`);
-                setAddressValid(false);
-                setAddressCoords(null);
-            }
-            lastValidatedAddress.current = {
-                street: modalStreet,
-                city: modalCity,
-                zip: modalZip,
-            };
-        } catch (error) {
-            Logger.error('GEOCODING', 'Exception validating address', error);
-            setAddressValid(false);
-            setAddressCoords(null);
-        } finally {
-            setVerifyingAddress(false);
-        }
     };
 
     return (
@@ -432,8 +539,8 @@ const AddItemScreen = () => {
                         </View>
                         {/* Image picker */}
                         <TouchableOpacity onPress={pickImage} style={{ marginBottom: 0 }}>
-                            {imageUri ? (
-                                <Image source={{ uri: imageUri }} style={{ width: 120, height: 90, borderRadius: 8 }} />
+                            {image ? (
+                                <Image source={{ uri: image.uri }} style={{ width: 120, height: 90, borderRadius: 8 }} />
                             ) : (
                                 <View style={{ width: 120, height: 90, borderRadius: 8, backgroundColor: "#eee", justifyContent: "center", alignItems: "center" }}>
                                     <Text style={{ color: "#888" }}>Tap to upload image</Text>
@@ -524,102 +631,198 @@ const AddItemScreen = () => {
                     />
                 </ScrollView>
                 <View style={{ padding: 16, paddingBottom: 16 }}>
-                    <Button title="Add Offer" onPress={handleAddOffer} disabled={isSubmitting} color="#2196F3" />
+                    <Button 
+                        title={isSubmitting ? "Adding..." : "Add Offer"} 
+                        onPress={handleAddOffer} 
+                        disabled={isSubmitting} 
+                        color="#2196F3" 
+                    />
+                    {isSubmitting && (
+                        <ActivityIndicator 
+                            size="small" 
+                            color="#2196F3" 
+                            style={{ marginTop: 8 }} 
+                        />
+                    )}
                 </View>
                 {/* Address Modal */}
                 <Modal
                     visible={showAddressModal}
                     transparent
                     animationType="slide"
-                    onRequestClose={() => setShowAddressModal(false)}
+                    onRequestClose={() => {
+                        setShowAddressModal(false);
+                        resetAddressModal();
+                    }}
                 >
                     <View style={{
                         flex: 1,
                         backgroundColor: "rgba(0,0,0,0.5)",
                         justifyContent: "center",
-                        alignItems: "center"
+                        alignItems: "center",
+                        paddingVertical: 20
                     }}>
                         <View style={{
                             backgroundColor: "#fff",
                             borderRadius: 12,
                             padding: 24,
-                            width: "85%",
+                            width: "90%",
+                            maxHeight: "90%",
                             alignItems: "center"
                         }}>
                             <Text style={{ fontWeight: "bold", fontSize: 18, marginBottom: 16 }}>Enter your address</Text>
-                            <TextInput
-                                placeholder="Street"
-                                value={modalStreet}
-                                onChangeText={text => {
-                                    setModalStreet(text);
-                                    setAddressValid(null);
-                                    setAddressCoords(null);
-                                }}
-                                onBlur={() => { setAddressValid(null); setAddressCoords(null); }}
-                                style={{ borderWidth: 1, borderColor: "#ccc", borderRadius: 6, padding: 8, marginBottom: 12, width: "100%" }}
-                            />
-                            <TextInput
-                                placeholder="City"
-                                value={modalCity}
-                                onChangeText={text => {
-                                    setModalCity(text);
-                                    setAddressValid(null);
-                                    setAddressCoords(null);
-                                }}
-                                onBlur={() => { setAddressValid(null); setAddressCoords(null); }}
-                                style={{ borderWidth: 1, borderColor: "#ccc", borderRadius: 6, padding: 8, marginBottom: 12, width: "100%" }}
-                            />
-                            <TextInput
-                                placeholder="ZIP"
-                                value={modalZip}
-                                onChangeText={text => {
-                                    setModalZip(text);
-                                    setAddressValid(null);
-                                    setAddressCoords(null);
-                                }}
-                                onBlur={() => { setAddressValid(null); setAddressCoords(null); }}
-                                style={{ borderWidth: 1, borderColor: "#ccc", borderRadius: 6, padding: 8, marginBottom: 12, width: "100%" }}
-                            />
-                            <Button title="Verify Address" onPress={validateAddress} disabled={verifyingAddress} />
-                            {verifyingAddress && <ActivityIndicator size="small" color="#2196F3" style={{ marginVertical: 8 }} />}
-                            {addressValid === true && (
+                            
+                            {/* Address Input with Current Position Button */}
+                            <View style={{ width: "100%", marginBottom: 12 }}>
+                                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                                    <TextInput
+                                        placeholder="Search address..."
+                                        value={modalAddress}
+                                        onChangeText={(text) => {
+                                            setModalAddress(text);
+                                            fetchAddressSuggestions(text);
+                                        }}
+                                        style={{
+                                            flex: 1,
+                                            borderWidth: 1,
+                                            borderColor: "#ccc",
+                                            borderRadius: 6,
+                                            padding: 12,
+                                            fontSize: 16,
+                                            marginRight: 8
+                                        }}
+                                        placeholderTextColor="#999"
+                                    />
+                                    <TouchableOpacity
+                                        onPress={handleUseCurrentPosition}
+                                        disabled={loadingPosition}
+                                        style={{
+                                            backgroundColor: loadingPosition ? "#ccc" : "#2196F3",
+                                            borderRadius: 6,
+                                            padding: 12,
+                                            justifyContent: "center",
+                                            alignItems: "center"
+                                        }}
+                                    >
+                                        {loadingPosition ? (
+                                            <ActivityIndicator color="#fff" size="small" />
+                                        ) : (
+                                            <Ionicons name="location" size={20} color="#fff" />
+                                        )}
+                                    </TouchableOpacity>
+                                </View>
+                                
+                                {/* Autocomplete Suggestions */}
+                                {addressSuggestions.length > 0 && (
+                                    <View style={{
+                                        borderWidth: 1,
+                                        borderColor: "#ccc",
+                                        borderTopWidth: 0,
+                                        borderBottomLeftRadius: 6,
+                                        borderBottomRightRadius: 6,
+                                        marginTop: -1,
+                                        backgroundColor: "#fff",
+                                        maxHeight: 200
+                                    }}>
+                                        <FlatList
+                                            data={addressSuggestions}
+                                            keyExtractor={(item) => item.place_id}
+                                            scrollEnabled={true}
+                                            renderItem={({ item }) => (
+                                                <TouchableOpacity
+                                                    onPress={() => handleSelectSuggestion(item)}
+                                                    style={{
+                                                        paddingHorizontal: 12,
+                                                        paddingVertical: 10,
+                                                        borderBottomWidth: 1,
+                                                        borderBottomColor: "#eee"
+                                                    }}
+                                                >
+                                                    <Text style={{ fontSize: 14, color: "#333" }}>
+                                                        {item.description}
+                                                    </Text>
+                                                </TouchableOpacity>
+                                            )}
+                                        />
+                                    </View>
+                                )}
+                                {loadingSuggestions && (
+                                    <ActivityIndicator size="small" color="#2196F3" style={{ marginTop: 8 }} />
+                                )}
+                            </View>
+
+                            {/* Map Display */}
+                            {selectedAddressCoords && (
                                 <>
-                                    <Text style={{ color: "green", marginBottom: 8 }}>Address is valid!</Text>
-                                    {addressCoords && Platform.OS !== 'web' && (
+                                    <Text style={{ color: "green", marginBottom: 8, fontWeight: "600" }}>Address confirmed!</Text>
+                                    {Platform.OS !== 'web' && (
                                         <MapView
-                                            style={{ width: 220, height: 120, marginBottom: 12, borderRadius: 8 }}
+                                            style={{ width: "100%", height: 200, marginBottom: 12, borderRadius: 8 }}
                                             initialRegion={{
-                                                latitude: addressCoords.lat,
-                                                longitude: addressCoords.lng,
-                                                latitudeDelta: 0.01,
-                                                longitudeDelta: 0.01,
+                                                latitude: selectedAddressCoords.lat,
+                                                longitude: selectedAddressCoords.lng,
+                                                latitudeDelta: 0.015,
+                                                longitudeDelta: 0.015,
                                             }}
                                             region={{
-                                                latitude: addressCoords.lat,
-                                                longitude: addressCoords.lng,
-                                                latitudeDelta: 0.01,
-                                                longitudeDelta: 0.01,
+                                                latitude: selectedAddressCoords.lat,
+                                                longitude: selectedAddressCoords.lng,
+                                                latitudeDelta: 0.015,
+                                                longitudeDelta: 0.015,
                                             }}
                                             pointerEvents="none"
                                         >
-                                            <Marker coordinate={{ latitude: addressCoords.lat, longitude: addressCoords.lng }} />
+                                            <Marker coordinate={{ 
+                                                latitude: selectedAddressCoords.lat, 
+                                                longitude: selectedAddressCoords.lng 
+                                            }} />
                                         </MapView>
                                     )}
-                                    {addressCoords && Platform.OS === 'web' && (
-                                        <View style={{ width: 220, height: 120, marginBottom: 12, borderRadius: 8, backgroundColor: '#e0e0e0', justifyContent: 'center', alignItems: 'center' }}>
+                                    {Platform.OS === 'web' && (
+                                        <View style={{ width: "100%", height: 200, marginBottom: 12, borderRadius: 8, backgroundColor: '#e0e0e0', justifyContent: 'center', alignItems: 'center' }}>
                                             <Text style={{ fontSize: 12 }}>Map preview</Text>
-                                            <Text style={{ fontSize: 10, marginTop: 4 }}>{addressCoords.lat.toFixed(4)}, {addressCoords.lng.toFixed(4)}</Text>
+                                            <Text style={{ fontSize: 10, marginTop: 4 }}>{selectedAddressCoords.lat.toFixed(4)}, {selectedAddressCoords.lng.toFixed(4)}</Text>
                                         </View>
                                     )}
-                                    <Button
-                                        title={savingAddress ? "Saving..." : "Save"}
-                                        onPress={handleSaveAddress}
-                                        disabled={savingAddress}
-                                    />
                                 </>
                             )}
-                            {addressValid === false && <Text style={{ color: "red", marginBottom: 8 }}>Address not found. Please check your input.</Text>}
-                            <Button title="Cancel" color="#888" onPress={() => setShowAddressModal(false)} />
+
+                            {/* Action Buttons */}
+                            <View style={{ flexDirection: "row", justifyContent: "space-around", width: "100%", marginTop: 12 }}>
+                                <TouchableOpacity
+                                    onPress={handleSaveAddress}
+                                    disabled={!selectedAddressCoords || savingAddress}
+                                    style={{
+                                        flex: 1,
+                                        backgroundColor: selectedAddressCoords && !savingAddress ? "#2196F3" : "#ccc",
+                                        borderRadius: 6,
+                                        padding: 12,
+                                        alignItems: "center",
+                                        marginRight: 8
+                                    }}
+                                >
+                                    {savingAddress ? (
+                                        <ActivityIndicator color="#fff" />
+                                    ) : (
+                                        <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>Save</Text>
+                                    )}
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        setShowAddressModal(false);
+                                        resetAddressModal();
+                                    }}
+                                    style={{
+                                        flex: 1,
+                                        backgroundColor: "#888",
+                                        borderRadius: 6,
+                                        padding: 12,
+                                        alignItems: "center"
+                                    }}
+                                >
+                                    <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>Cancel</Text>
+                                </TouchableOpacity>
+                            </View>
                         </View>
                     </View>
                 </Modal>

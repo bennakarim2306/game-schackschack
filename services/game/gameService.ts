@@ -1,4 +1,5 @@
 import Logger from "../../config/Logger";
+import { authenticatedFetch } from '../../utils/AuthenticatedFetch';
 
 interface UnitMove {
     moveTime: number,
@@ -39,7 +40,7 @@ const gameServie = {
         Logger.info('GAME', `Starting new game: ${data.userId} vs ${data.friendId}`);
         Logger.request(url, 'POST', gameData);
         
-        const response = await fetch(url, {
+        const response = await authenticatedFetch(url, {
           method: 'POST',
           headers: {
             Accept: 'application/json',

@@ -8,6 +8,7 @@ import { useChatContext } from "../Contexts/ChatContext";
 import { useChatDispatchContext } from "../Contexts/ChatDisptachContext";
 import { useChatServiceContext } from "../Contexts/ChatServiceContext";
 import Logger from "../config/Logger";
+import { authenticatedFetch } from '../utils/AuthenticatedFetch';
 
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useFocusEffect, type RouteProp } from '@react-navigation/native';
@@ -109,21 +110,16 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
     useFocusEffect(
         useCallback(() => {
             const getContactsList = async () => {
-                const token = await SecureStore.getItemAsync("userToken");
-                setToken(token)
-
                 const url = configs.USER_AUTH_BASE_URL + configs.USER_AUTH_CONTACTS_LIST_PATH;
                 Logger.info('CONTACTS', 'Fetching contacts list');
                 Logger.request(url, 'GET');
 
-                await fetch(url, {
+                await authenticatedFetch(url, {
                     method: 'GET',
                     headers: {
                         Accept: 'application/json',
                         'Content-Type': 'application/json',
-                        Authorization: 'Bearer ' + token
                     },
-                    body: null,
                 })
                     .then(async response => {
                         const jsonResponse = await response.json();
@@ -204,20 +200,17 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
     const sendAContactRequest = async () => {
         setIsSending(true);
         try {
-            const token = await SecureStore.getItemAsync("userToken");
             const url = `${configs.USER_AUTH_BASE_URL}${configs.USER_AUTH_ADD_CONTACT_PATH}?email=${encodeURIComponent(newContactEmail)}`;
 
             Logger.info('CONTACTS', `Sending contact request to: ${newContactEmail}`);
             Logger.request(url, 'POST');
 
-            const response = await fetch(url, {
+            const response = await authenticatedFetch(url, {
                 method: "POST",
                 headers: {
                     Accept: "application/json",
                     "Content-Type": "application/json",
-                    Authorization: "Bearer " + token,
                 },
-                body: null,
             });
 
             Logger.response(url, response.status);

@@ -101,6 +101,7 @@ const MainStackNavigator = () => {
                 Logger.response(url, response.status);
                 Logger.success('AUTH', 'Login successful - Token received');
                 await SecureStore.setItemAsync('userToken', jsonResponse.token);
+                await SecureStore.setItemAsync('refreshToken', jsonResponse.refreshToken);
                 dispatch({ type: 'SIGN_IN', token: jsonResponse.token });
             }
         } catch (e) {
@@ -111,6 +112,7 @@ const MainStackNavigator = () => {
       signOut: async () => {
         Logger.info('AUTH', 'User signing out');
         await SecureStore.deleteItemAsync('userToken');
+        await SecureStore.deleteItemAsync('refreshToken');
         dispatch({ type: 'SIGN_OUT' });
         Logger.success('AUTH', 'User signed out successfully');
       },
@@ -147,6 +149,7 @@ const MainStackNavigator = () => {
             Logger.response(url, response.status);
             Logger.success('AUTH', 'Registration successful - Token received');
             await SecureStore.setItemAsync('userToken', jsonResponse.token);
+            await SecureStore.setItemAsync('refreshToken', jsonResponse.refreshToken);
             dispatch({ type: 'SIGN_IN', token: jsonResponse.token });
           }
         } catch (e) {

@@ -7,6 +7,7 @@ import * as SecureStore from "expo-secure-store";
 import configs from "../config/AppConfig";
 import Logger from "../config/Logger";
 import { MapView, Marker, Circle } from "../utils/MapImports";
+import { authenticatedFetch } from '../utils/AuthenticatedFetch';
 
 type MapPressEvent = any;
 
@@ -57,7 +58,6 @@ const QueryFoodScreen = () => {
     const handleSearch = async () => {
         setIsSearching(true);
         try {
-            const token = await SecureStore.getItemAsync("userToken");
             const params = new URLSearchParams();
             if (searchTerm.trim()) params.append("name", searchTerm.trim());
             if (selectedType !== "All") params.append("type", selectedType);
@@ -69,11 +69,10 @@ const QueryFoodScreen = () => {
             Logger.info('SEARCH', `Searching with params: type=${selectedType}, distance=${distance}km, center=(${searchCenter.lat}, ${searchCenter.lng})`);
             Logger.request(url, 'GET', { params: params.toString() });
             
-            const response = await fetch(url, {
+            const response = await authenticatedFetch(url, {
                 method: "GET",
                 headers: {
                     "Accept": "application/json",
-                    "Authorization": `Bearer ${token}`,
                 },
             });
 
