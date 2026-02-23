@@ -1,5 +1,6 @@
 import React, { useState, useLayoutEffect, useRef } from "react";
-import { ScrollView, Text, TextInput, Button, Alert, Image, TouchableOpacity, View, ActivityIndicator, Switch, Modal, ImageBackground, FlatList } from "react-native";
+import { ScrollView, Text, TextInput, Button, Alert, Image, TouchableOpacity, View, ActivityIndicator, Switch, Modal, ImageBackground, FlatList, Platform, KeyboardAvoidingView } from "react-native";
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from "@react-native-picker/picker";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
@@ -7,7 +8,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import * as SecureStore from "expo-secure-store";
 import configs from "../config/AppConfig";
-import { KeyboardAvoidingView, Platform } from 'react-native';
 import Logger from "../config/Logger";
 import { MapView, Marker } from '../utils/MapImports';
 import { authenticatedFetch, authenticatedFetchWithErrorHandling } from '../utils/AuthenticatedFetch';
@@ -43,6 +43,8 @@ const AddItemScreen = () => {
     const [zip, setZip] = useState("");
     const [description, setDescription] = useState("");
     const [image, setImage] = useState<ImagePicker.ImagePickerAsset | null>(null);
+    const [availableTo, setAvailableTo] = useState<Date>(new Date(Date.now())); // Default to 7 days from now
+    const [showDatePicker, setShowDatePicker] = useState(false);
 
     // Label state
     const [labelInput, setLabelInput] = useState("");
@@ -52,17 +54,14 @@ const AddItemScreen = () => {
     const [autofillAddressSwitch, setAutofillAddressSwitch] = useState(false);
     const [loadingAddress, setLoadingAddress] = useState(false);
 
-    // Modal state for entering address if not found
-    const [showAddressModal, setShowAddressModal] = useState(false);
-    const [modalAddress, setModalAddress] = useState("");
+    // Address search state
+    const [addressInput, setAddressInput] = useState("");
     const [addressSuggestions, setAddressSuggestions] = useState<any[]>([]);
     const [loadingSuggestions, setLoadingSuggestions] = useState(false);
-    const [selectedAddressCoords, setSelectedAddressCoords] = useState<{ lat: number; lng: number } | null>(null);
-    const [selectedAddressText, setSelectedAddressText] = useState("");
     const [loadingPosition, setLoadingPosition] = useState(false);
     const [lat, setLat] = useState(0);
     const [lng, setLng] = useState(0);
-    const [savingAddress, setSavingAddress] = useState(false);
+    const [backendAddressAvailable, setBackendAddressAvailable] = useState(false);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -92,9 +91,8 @@ const AddItemScreen = () => {
                 Logger.response(url, response.status);
                 
                 if (response.status === 204) {
-                    Logger.info('ADDRESS', 'No saved address found - prompting user');
-                    // No address found, prompt user to enter and save
-                    setShowAddressModal(true);
+                    Logger.info('ADDRESS', 'No saved address found - showing search interface');
+                    setBackendAddressAvailable(false);
                 } else if (!response.ok) {
                     Logger.error('ADDRESS', 'Failed to fetch address');
                     throw new Error("Could not fetch address");
@@ -105,9 +103,35 @@ const AddItemScreen = () => {
                         setStreet(data.street || "");
                         setCity(data.city || "");
                         setZip(data.zip || "");
+                        
+                        // Geocode the address to get lat/lng coordinates
+                        const addressForGeocoding = `${data.street || ""}, ${data.city || ""}, ${data.zip || ""}`.trim();
+                        try {
+                            const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(addressForGeocoding)}&key=${configs.MAPS_API_KEY}`;
+                            Logger.info('GEOCODING', `Geocoding backend address: ${addressForGeocoding}`);
+                            Logger.request(geocodeUrl, 'GET');
+                            
+                            const geocodeResponse = await fetch(geocodeUrl);
+                            const geocodeData = await geocodeResponse.json();
+                            
+                            Logger.response(geocodeUrl, geocodeResponse.status);
+                            
+                            if (geocodeData.results && geocodeData.results.length > 0) {
+                                const { lat, lng } = geocodeData.results[0].geometry.location;
+                                Logger.success('GEOCODING', `Got coordinates from backend address: (${lat}, ${lng})`);
+                                setLat(lat);
+                                setLng(lng);
+                            } else {
+                                Logger.error('GEOCODING', 'No geocoding results for backend address');
+                            }
+                        } catch (geocodingError) {
+                            Logger.error('GEOCODING', 'Exception geocoding backend address', geocodingError);
+                        }
+                        
+                        setBackendAddressAvailable(true);
                     } else {
-                        Logger.info('ADDRESS', 'Empty address data - showing modal');
-                        setShowAddressModal(true);
+                        Logger.info('ADDRESS', 'Empty address data - showing search interface');
+                        setBackendAddressAvailable(false);
                     }
                 }
             } catch (e) {
@@ -120,22 +144,17 @@ const AddItemScreen = () => {
         }
     };
 
-    // Save address to backend from modal
-    const handleSaveAddress = async () => {
-        if (!selectedAddressCoords || !selectedAddressText) {
-            Alert.alert("Missing address", "Please select an address first.");
-            return;
-        }
-        setSavingAddress(true);
+    // Save address to backend
+    const saveAddressToBackend = async (addressText: string, coords: { lat: number; lng: number }) => {
         try {
             const url = configs.USER_AUTH_BASE_URL + configs.ACCOUNT_SET_ADDRESS_BY_EMAIL_PATH;
             const addressData = {
-                street: selectedAddressText,
+                street: addressText,
                 city: "",
                 zip: ""
             };
             
-            Logger.info('ADDRESS', `Saving address: ${selectedAddressText}`);
+            Logger.info('ADDRESS', `Saving address: ${addressText}`);
             Logger.request(url, 'POST', addressData);
             
             const response = await authenticatedFetchWithErrorHandling(url, {
@@ -155,19 +174,10 @@ const AddItemScreen = () => {
             }
             
             Logger.success('ADDRESS', 'Address saved successfully');
-            setStreet(selectedAddressText);
-            setCity("");
-            setZip("");
-            setLat(selectedAddressCoords.lat);
-            setLng(selectedAddressCoords.lng);
-            setShowAddressModal(false);
-            resetAddressModal();
-            Alert.alert("Success", "Address saved and autofilled.");
+            return true;
         } catch (e) {
             Logger.error('ADDRESS', 'Exception saving address', e);
-            Alert.alert("Error", "Could not save your address to the backend.");
-        } finally {
-            setSavingAddress(false);
+            return false;
         }
     };
 
@@ -220,6 +230,8 @@ const AddItemScreen = () => {
             const { latitude, longitude } = location.coords;
             
             Logger.success('LOCATION', `Got location: (${latitude}, ${longitude})`);
+            setLat(latitude);
+            setLng(longitude);
 
             // Reverse geocode to get address name
             try {
@@ -233,18 +245,48 @@ const AddItemScreen = () => {
                 
                 if (data.results && data.results.length > 0) {
                     const addressName = data.results[0].formatted_address;
+                    const cityName = data.results[0].address_components.find((comp: any) => comp.types.includes("locality"))?.long_name || "";
+                    const zipCode = data.results[0].address_components.find((comp: any) => comp.types.includes("postal_code"))?.long_name || "";
                     Logger.success('GEOCODING', `Reverse geocoded: ${addressName}`);
-                    setModalAddress(addressName);
-                    setSelectedAddressText(addressName);
-                    setSelectedAddressCoords({ lat: latitude, lng: longitude });
+                    setAddressInput(addressName);
+                    setStreet(addressName);
+                    setCity(cityName);
+                    setZip(zipCode);
                     setAddressSuggestions([]);
-                } else {
-                    Logger.warning('GEOCODING', 'No address found for coordinates');
-                    setSelectedAddressCoords({ lat: latitude, lng: longitude });
+                    
+                    // If autofill is on, ask user if they want to save this address
+                    if (autofillAddressSwitch) {
+                        Alert.alert(
+                            "Save Address",
+                            "Do you want to save this address as your user address?",
+                            [
+                                {
+                                    text: "No",
+                                    onPress: () => {
+                                        Logger.info('ADDRESS', 'User chose not to save current location');
+                                    },
+                                    style: "cancel"
+                                },
+                                {
+                                    text: "Yes",
+                                    onPress: async () => {
+                                        Logger.info('ADDRESS', 'User chose to save current location');
+                                        const saved = await saveAddressToBackend(addressName, { lat: latitude, lng: longitude });
+                                        if (saved) {
+                                            setBackendAddressAvailable(true);
+                                            Logger.success('ADDRESS', 'Location saved successfully as user address');
+                                        } else {
+                                            Logger.error('ADDRESS', 'Failed to save location as user address');
+                                            Alert.alert("Error", "Could not save your location to the backend.");
+                                        }
+                                    }
+                                }
+                            ]
+                        );
+                    }
                 }
             } catch (error) {
                 Logger.error('GEOCODING', 'Exception reverse geocoding', error);
-                setSelectedAddressCoords({ lat: latitude, lng: longitude });
             }
         } catch (error) {
             Logger.error('LOCATION', 'Exception getting location', error);
@@ -257,11 +299,11 @@ const AddItemScreen = () => {
     // Handle address suggestion selection
     const handleSelectSuggestion = async (suggestion: any) => {
         const { place_id, description } = suggestion;
-        setModalAddress(description);
+        setAddressInput(description);
         setAddressSuggestions([]);
         
         try {
-            const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place_id}&fields=geometry&key=${configs.MAPS_API_KEY}`;
+            const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place_id}&fields=geometry,formatted_address,address_components&key=${configs.MAPS_API_KEY}`;
             
             Logger.info('PLACES_API', `Getting details for place: ${place_id}`);
             Logger.request(url, 'GET');
@@ -273,28 +315,151 @@ const AddItemScreen = () => {
             
             if (data.result && data.result.geometry) {
                 const { lat, lng } = data.result.geometry.location;
+                const addressName = data.result.formatted_address || description;
+                const cityName = data.result.address_components?.find((comp: any) => comp.types.includes("locality"))?.long_name || "";
+                const zipCode = data.result.address_components?.find((comp: any) => comp.types.includes("postal_code"))?.long_name || "";
                 Logger.success('PLACES_API', `Got coordinates: (${lat}, ${lng})`);
-                setSelectedAddressCoords({ lat, lng });
-                setSelectedAddressText(description);
+                setLat(lat);
+                setLng(lng);
+                setCity(cityName);
+                setZip(zipCode);
+                setStreet(addressName);
+                
+                // If autofill is on, ask user if they want to save this address
+                if (autofillAddressSwitch) {
+                    Alert.alert(
+                        "Save Address",
+                        "Do you want to save this address as your user address?",
+                        [
+                            {
+                                text: "No",
+                                onPress: () => {
+                                    Logger.info('ADDRESS', 'User chose not to save address');
+                                },
+                                style: "cancel"
+                            },
+                            {
+                                text: "Yes",
+                                onPress: async () => {
+                                    Logger.info('ADDRESS', 'User chose to save address');
+                                    const saved = await saveAddressToBackend(description, { lat, lng });
+                                    if (saved) {
+                                        setBackendAddressAvailable(true);
+                                        Logger.success('ADDRESS', 'Address saved successfully from search');
+                                    } else {
+                                        Logger.error('ADDRESS', 'Failed to save address from search');
+                                        Alert.alert("Error", "Could not save your address to the backend.");
+                                    }
+                                }
+                            }
+                        ]
+                    );
+                }
             }
         } catch (error) {
             Logger.error('PLACES_API', 'Exception getting place details', error);
         }
     };
 
-    // Reset address modal state
-    const resetAddressModal = () => {
-        setModalAddress("");
-        setAddressSuggestions([]);
-        setSelectedAddressCoords(null);
-        setSelectedAddressText("");
+    // Handle map press to set marker and reverse geocode
+    const handleMapPress = async (event: any) => {
+        const { latitude, longitude } = event.nativeEvent.coordinate;
+        
+        Logger.info('MAP', `Map pressed at: (${latitude}, ${longitude})`);
+        setLat(latitude);
+        setLng(longitude);
+        
+        // Reverse geocode to get address
+        try {
+            const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${configs.MAPS_API_KEY}`;
+            Logger.request(url, 'GET');
+            
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            Logger.response(url, response.status);
+            
+            if (data.results && data.results.length > 0) {
+                const addressName = data.results[0].formatted_address;
+                const cityName = data.results[0].address_components?.find((comp: any) => comp.types.includes("locality"))?.long_name || "";
+                const zipCode = data.results[0].address_components?.find((comp: any) => comp.types.includes("postal_code"))?.long_name || "";
+                Logger.success('MAP', `Reverse geocoded: ${addressName}`);
+                setAddressInput(addressName);
+                setStreet(addressName);
+                setCity(cityName);
+                setZip(zipCode);
+                
+                // If autofill is on, ask user if they want to save this address
+                if (autofillAddressSwitch) {
+                    Alert.alert(
+                        "Save Address",
+                        "Do you want to save this address as your user address?",
+                        [
+                            {
+                                text: "No",
+                                onPress: () => {
+                                    Logger.info('ADDRESS', 'User chose not to save map location');
+                                },
+                                style: "cancel"
+                            },
+                            {
+                                text: "Yes",
+                                onPress: async () => {
+                                    Logger.info('ADDRESS', 'User chose to save map location');
+                                    const saved = await saveAddressToBackend(addressName, { lat: latitude, lng: longitude });
+                                    if (saved) {
+                                        setBackendAddressAvailable(true);
+                                        Logger.success('ADDRESS', 'Map location saved successfully');
+                                    } else {
+                                        Logger.error('ADDRESS', 'Failed to save map location');
+                                        Alert.alert("Error", "Could not save your location to the backend.");
+                                    }
+                                }
+                            }
+                        ]
+                    );
+                }
+            }
+        } catch (error) {
+            Logger.error('MAP', 'Exception reverse geocoding map location', error);
+        }
+    };
+
+    const handleDatePicker = () => {
+        setShowDatePicker(true);
+        Logger.info('DATE', 'Date picker opened');
+    };
+
+    const handleDateChange = (event: any, selectedDate: Date | undefined) => {
+        if (selectedDate) {
+            setAvailableTo(selectedDate);
+            Logger.info('DATE', `Date changed: ${selectedDate.toISOString().split('T')[0]}`);
+        }
+        setShowDatePicker(false);
     };
 
     const handleAddOffer = async () => {
-        if (!name || !price || !quantity || !image ||
-            (!autofillAddressSwitch && (!street || !city || !zip || !lat || !lng))) {
-            Logger.debug('OFFER', `Validation failed - name: ${!!name}, price: ${!!price}, quantity: ${!!quantity}, image: ${!!image}, autofillAddressSwitch: ${autofillAddressSwitch}, street: ${!!street}, city: ${!!city}, zip: ${!!zip}, lat: ${!!lat}, lng: ${!!lng}`);
-            Alert.alert("Missing fields", "Please fill in all required fields.");
+        // Collect missing field details
+        const missingFields: string[] = [];
+        if (!name) missingFields.push("• Item name");
+        if (!type) missingFields.push("• Type of food");
+        if (!price) missingFields.push("• Price");
+        if (!quantity) missingFields.push("• Quantity");
+        if (!unit) missingFields.push("• Unit");
+        if (!image) missingFields.push("• Image");
+        if (!availableTo) missingFields.push("• Available until date");
+        if (!autofillAddressSwitch && (!street || !city || !zip || !lat || !lng)) {
+            if (!lat || !lng) missingFields.push("• Location on map (press 'Use Current Position' or click the map)");
+        }
+
+        if (missingFields.length > 0) {
+            const missingMessage = missingFields.join("\n");
+            Logger.debug('OFFER', `Validation failed - Missing fields: ${JSON.stringify(missingFields)}`);
+            Alert.alert(
+                "Missing Required Fields",
+                `Please complete the following before submitting:\n\n${missingMessage}`,
+                [{ text: "OK" }]
+            );
             return;
         }
 
@@ -313,6 +478,7 @@ const AddItemScreen = () => {
                 lat,
                 lng,
                 description,
+                availableTo: availableTo.toISOString().split('T')[0], // Format as yyyy-MM-dd
             };
 
             const formData = new FormData();
@@ -410,6 +576,7 @@ const AddItemScreen = () => {
         setDescription("");
         setImage(null);
         setLabels([]);
+        setAvailableTo(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
         setAutofillAddressSwitch(false);
     };
 
@@ -589,6 +756,32 @@ const AddItemScreen = () => {
                             <Picker.Item key={u} label={u} value={u} />
                         ))}
                     </Picker>
+                    <Text style={{ alignSelf: "flex-start", marginBottom: 8 }}>Item available until:</Text>
+                    <TouchableOpacity
+                        onPress={handleDatePicker}
+                        style={{
+                            borderWidth: 1,
+                            borderColor: "#ccc",
+                            borderRadius: 6,
+                            padding: 12,
+                            marginBottom: 12,
+                            width: "100%",
+                            backgroundColor: "#fff",
+                            justifyContent: "center"
+                        }}
+                    >
+                        <Text style={{ fontSize: 16, color: "#333" }}>
+                            {availableTo.toISOString().split('T')[0]}
+                        </Text>
+                    </TouchableOpacity>
+                    {showDatePicker && (
+                        <DateTimePicker
+                            value={availableTo}
+                            mode="date"
+                            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                            onChange={handleDateChange}
+                        />
+                    )}
                     <View style={{ flexDirection: "row", alignItems: "center", width: "100%", marginBottom: 12 }}>
                         <Text style={{ marginRight: 8 }}>Use my address</Text>
                         <Switch
@@ -598,88 +791,18 @@ const AddItemScreen = () => {
                         />
                         {loadingAddress && <ActivityIndicator size="small" color="#2196F3" style={{ marginLeft: 8 }} />}
                     </View>
-                    {!autofillAddressSwitch && (
+                    {(!autofillAddressSwitch || (autofillAddressSwitch && !backendAddressAvailable)) && (
                         <>
-                            <TextInput
-                                placeholder="Street"
-                                value={street}
-                                onChangeText={setStreet}
-                                style={{ borderWidth: 1, borderColor: "#ccc", borderRadius: 6, padding: 8, marginBottom: 12, width: "100%" }}
-                            />
-                            <TextInput
-                                placeholder="City"
-                                placeholderTextColor="#999"
-                                value={city}
-                                onChangeText={setCity}
-                                style={{ borderWidth: 1, borderColor: "#ccc", borderRadius: 6, padding: 8, marginBottom: 12, width: "100%" }}
-                            />
-                            <TextInput
-                                placeholder="ZIP"
-                                placeholderTextColor="#999"
-                                value={zip}
-                                onChangeText={setZip}
-                                style={{ borderWidth: 1, borderColor: "#ccc", borderRadius: 6, padding: 8, marginBottom: 12, width: "100%" }}
-                            />
-                        </>
-                    )}
-                    <TextInput
-                        placeholder="Description (optional)"
-                        placeholderTextColor="#999"
-                        value={description}
-                        onChangeText={setDescription}
-                        style={{ borderWidth: 1, borderColor: "#ccc", borderRadius: 6, padding: 8, marginBottom: 12, width: "100%" }}
-                    />
-                </ScrollView>
-                <View style={{ padding: 16, paddingBottom: 16 }}>
-                    <Button 
-                        title={isSubmitting ? "Adding..." : "Add Offer"} 
-                        onPress={handleAddOffer} 
-                        disabled={isSubmitting} 
-                        color="#2196F3" 
-                    />
-                    {isSubmitting && (
-                        <ActivityIndicator 
-                            size="small" 
-                            color="#2196F3" 
-                            style={{ marginTop: 8 }} 
-                        />
-                    )}
-                </View>
-                {/* Address Modal */}
-                <Modal
-                    visible={showAddressModal}
-                    transparent
-                    animationType="slide"
-                    onRequestClose={() => {
-                        setShowAddressModal(false);
-                        resetAddressModal();
-                    }}
-                >
-                    <View style={{
-                        flex: 1,
-                        backgroundColor: "rgba(0,0,0,0.5)",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        paddingVertical: 20
-                    }}>
-                        <View style={{
-                            backgroundColor: "#fff",
-                            borderRadius: 12,
-                            padding: 24,
-                            width: "90%",
-                            maxHeight: "90%",
-                            alignItems: "center"
-                        }}>
-                            <Text style={{ fontWeight: "bold", fontSize: 18, marginBottom: 16 }}>Enter your address</Text>
+                            <Text style={{ alignSelf: "flex-start", fontWeight: "bold", marginBottom: 8 }}>Address:</Text>
                             
-                            {/* Address Input with Current Position Button */}
+                            {/* Address Search Input */}
                             <View style={{ width: "100%", marginBottom: 12 }}>
-                                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                                <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
                                     <TextInput
-                                        placeholder="Search address..."
-                                        value={modalAddress}
+                                        placeholder="Search address or location..."
+                                        value={addressInput}
                                         onChangeText={(text) => {
-                                            setModalAddress(text);
+                                            setAddressInput(text);
                                             fetchAddressSuggestions(text);
                                         }}
                                         style={{
@@ -689,7 +812,8 @@ const AddItemScreen = () => {
                                             borderRadius: 6,
                                             padding: 12,
                                             fontSize: 16,
-                                            marginRight: 8
+                                            marginRight: 8,
+                                            backgroundColor: "#fff"
                                         }}
                                         placeholderTextColor="#999"
                                     />
@@ -720,112 +844,86 @@ const AddItemScreen = () => {
                                         borderTopWidth: 0,
                                         borderBottomLeftRadius: 6,
                                         borderBottomRightRadius: 6,
-                                        marginTop: -1,
                                         backgroundColor: "#fff",
                                         maxHeight: 200
                                     }}>
-                                        <FlatList
-                                            data={addressSuggestions}
-                                            keyExtractor={(item) => item.place_id}
-                                            scrollEnabled={true}
-                                            renderItem={({ item }) => (
-                                                <TouchableOpacity
-                                                    onPress={() => handleSelectSuggestion(item)}
-                                                    style={{
-                                                        paddingHorizontal: 12,
-                                                        paddingVertical: 10,
-                                                        borderBottomWidth: 1,
-                                                        borderBottomColor: "#eee"
-                                                    }}
-                                                >
-                                                    <Text style={{ fontSize: 14, color: "#333" }}>
-                                                        {item.description}
-                                                    </Text>
-                                                </TouchableOpacity>
-                                            )}
-                                        />
+                                        {addressSuggestions.map((item) => (
+                                            <TouchableOpacity
+                                                key={item.place_id}
+                                                onPress={() => handleSelectSuggestion(item)}
+                                                style={{
+                                                    paddingHorizontal: 12,
+                                                    paddingVertical: 10,
+                                                    borderBottomWidth: 1,
+                                                    borderBottomColor: "#eee"
+                                                }}
+                                            >
+                                                <Text style={{ fontSize: 14, color: "#333" }}>
+                                                    {item.description}
+                                                </Text>
+                                            </TouchableOpacity>
+                                        ))}
                                     </View>
                                 )}
                                 {loadingSuggestions && (
                                     <ActivityIndicator size="small" color="#2196F3" style={{ marginTop: 8 }} />
                                 )}
                             </View>
-
-                            {/* Map Display */}
-                            {selectedAddressCoords && (
-                                <>
-                                    <Text style={{ color: "green", marginBottom: 8, fontWeight: "600" }}>Address confirmed!</Text>
-                                    {Platform.OS !== 'web' && (
-                                        <MapView
-                                            style={{ width: "100%", height: 200, marginBottom: 12, borderRadius: 8 }}
-                                            initialRegion={{
-                                                latitude: selectedAddressCoords.lat,
-                                                longitude: selectedAddressCoords.lng,
-                                                latitudeDelta: 0.015,
-                                                longitudeDelta: 0.015,
-                                            }}
-                                            region={{
-                                                latitude: selectedAddressCoords.lat,
-                                                longitude: selectedAddressCoords.lng,
-                                                latitudeDelta: 0.015,
-                                                longitudeDelta: 0.015,
-                                            }}
-                                            pointerEvents="none"
-                                        >
-                                            <Marker coordinate={{ 
-                                                latitude: selectedAddressCoords.lat, 
-                                                longitude: selectedAddressCoords.lng 
-                                            }} />
-                                        </MapView>
-                                    )}
-                                    {Platform.OS === 'web' && (
-                                        <View style={{ width: "100%", height: 200, marginBottom: 12, borderRadius: 8, backgroundColor: '#e0e0e0', justifyContent: 'center', alignItems: 'center' }}>
-                                            <Text style={{ fontSize: 12 }}>Map preview</Text>
-                                            <Text style={{ fontSize: 10, marginTop: 4 }}>{selectedAddressCoords.lat.toFixed(4)}, {selectedAddressCoords.lng.toFixed(4)}</Text>
-                                        </View>
-                                    )}
-                                </>
-                            )}
-
-                            {/* Action Buttons */}
-                            <View style={{ flexDirection: "row", justifyContent: "space-around", width: "100%", marginTop: 12 }}>
-                                <TouchableOpacity
-                                    onPress={handleSaveAddress}
-                                    disabled={!selectedAddressCoords || savingAddress}
-                                    style={{
-                                        flex: 1,
-                                        backgroundColor: selectedAddressCoords && !savingAddress ? "#2196F3" : "#ccc",
-                                        borderRadius: 6,
-                                        padding: 12,
-                                        alignItems: "center",
-                                        marginRight: 8
+                            
+                            {/* Interactive Map */}
+                            <View style={{ width: "100%", height: 300, marginBottom: 12, borderRadius: 8, overflow: "hidden" }}>
+                                <MapView
+                                    style={{ flex: 1 }}
+                                    region={{
+                                        latitude: lat || 37.78825,
+                                        longitude: lng || -122.4324,
+                                        latitudeDelta: 0.0922,
+                                        longitudeDelta: 0.0421,
                                     }}
+                                    onPress={handleMapPress}
                                 >
-                                    {savingAddress ? (
-                                        <ActivityIndicator color="#fff" />
-                                    ) : (
-                                        <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>Save</Text>
+                                    {lat !== 0 && lng !== 0 && (
+                                        <Marker
+                                            coordinate={{ latitude: lat, longitude: lng }}
+                                            title="Selected Location"
+                                            description={street || "Tap on map to set location"}
+                                        />
                                     )}
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    onPress={() => {
-                                        setShowAddressModal(false);
-                                        resetAddressModal();
-                                    }}
-                                    style={{
-                                        flex: 1,
-                                        backgroundColor: "#888",
-                                        borderRadius: 6,
-                                        padding: 12,
-                                        alignItems: "center"
-                                    }}
-                                >
-                                    <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>Cancel</Text>
-                                </TouchableOpacity>
+                                </MapView>
                             </View>
-                        </View>
-                    </View>
-                </Modal>
+                        </>
+                    )}
+                    <TextInput
+                        placeholder="Description (optional)"
+                        placeholderTextColor="#999"
+                        value={description}
+                        onChangeText={setDescription}
+                        style={{ borderWidth: 1, borderColor: "#ccc", borderRadius: 6, padding: 8, marginBottom: 12, width: "100%" }}
+                    />
+                </ScrollView>
+                <View style={{ padding: 16, paddingBottom: 16 }}>
+                    <TouchableOpacity
+                        onPress={handleAddOffer}
+                        disabled={isSubmitting}
+                        style={{
+                            backgroundColor: isSubmitting ? "#b0c4de" : "#2196F3",
+                            borderRadius: 6,
+                            paddingVertical: 12,
+                            paddingHorizontal: 24,
+                            justifyContent: "center",
+                            alignItems: "center",
+                            minHeight: 48
+                        }}
+                    >
+                        {isSubmitting ? (
+                            <ActivityIndicator size="small" color="#fff" />
+                        ) : (
+                            <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>
+                                Add Offer
+                            </Text>
+                        )}
+                    </TouchableOpacity>
+                </View>
             </KeyboardAvoidingView>
             </View>
         </ImageBackground>

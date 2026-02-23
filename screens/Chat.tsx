@@ -34,8 +34,10 @@ interface ChatMessage {
     };
 }
 
-const MessageBubble = ({ item, getTimeFromTimestamp, currentUserEmail }: any) => {
-    const isSent = item.from === '';
+const MessageBubble = ({ item, getTimeFromTimestamp, contact }: any) => {
+    // A message is sent by the current user if it's NOT from the contact
+    // (either item.from is empty string for sent messages, or it's the current user's email)
+    const isSent = item.from !== contact;
     const getStatusIcon = () => {
         if (!isSent) return null;
         
@@ -401,7 +403,7 @@ const Chat = ({ navigation, route }: any) => {
                                 <MessageBubble 
                                     item={item} 
                                     getTimeFromTimestamp={getTimeFromTimestamp}
-                                    currentUserEmail={contact}
+                                    contact={contact}
                                 />
                             )}
                             keyExtractor={(item) => item.messageId}
