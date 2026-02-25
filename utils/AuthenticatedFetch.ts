@@ -91,11 +91,12 @@ export async function authenticatedFetch(url: string, options: RequestInit = {})
     // Log response details for debugging
     Logger.debug('AUTH', `Response Status: ${response.status} ${response.statusText}`);
     Logger.debug('AUTH', `Response Headers: Content-Type: ${response.headers.get('content-type')}`);
+    // Logger.debug('AUTH', `Response Body: body: ${JSON.stringify(await response.clone().json())}`);
     
     // Check if response is JSON and has EXPIRED_TOKEN errorCode
     const contentType = response.headers.get('content-type');
 
-    if (contentType && contentType.includes('application/json')) {
+    if (response.status === 403) {
         // Clone response to read body without consuming it
         const clonedResponse = response.clone();
         try {
@@ -107,8 +108,8 @@ export async function authenticatedFetch(url: string, options: RequestInit = {})
             }
             
             // Check if token is expired
-            if (jsonData.errorCode === 'INVALID_TOKEN') {
-                Logger.warn('AUTH', 'Access token expired, attempting refresh');
+            if ((jsonData.errorCode === 'INVALID_TOKEN' || jsonData.errorCode === 'EXPIRED_TOKEN')) {
+                Logger.warning('AUTH', 'Access token expired, attempting refresh');
                 
                 // Try to refresh the token
                 const newToken = await refreshAccessToken();

@@ -13,6 +13,7 @@ const configs = {
     ITEM_GET_ALL_PATH: '/api/v1/items',
     ITEM_ADD_WITH_IMAGE_PATH: '/api/v1/items', // POST multipart/form-data
     ITEM_ADD_PATH: '/api/v1/items', // POST application/json
+    ITEM_GET_MY_OFFERS_PATH: '/api/v1/items/user/my-items', // GET
     ITEM_UPDATE_WITH_IMAGE_PATH: (id: string) => `/api/v1/items/${id}`, // PUT multipart/form-data
     ITEM_UPDATE_PATH: (id: string) => `/api/v1/items/${id}`, // PUT application/json
     ITEM_DELETE_PATH: (id: string) => `/api/v1/items/${id}`, // DELETE

@@ -93,6 +93,12 @@ const AddItemScreen = () => {
                 if (response.status === 204) {
                     Logger.info('ADDRESS', 'No saved address found - showing search interface');
                     setBackendAddressAvailable(false);
+                    setAutofillAddressSwitch(false);
+                    Alert.alert(
+                        "No Saved Address",
+                        "You don't have a saved address yet. Please select or search for an address below. You'll be asked if you want to save it for future use.",
+                        [{ text: "OK" }]
+                    );
                 } else if (!response.ok) {
                     Logger.error('ADDRESS', 'Failed to fetch address');
                     throw new Error("Could not fetch address");
@@ -448,7 +454,7 @@ const AddItemScreen = () => {
         if (!unit) missingFields.push("• Unit");
         if (!image) missingFields.push("• Image");
         if (!availableTo) missingFields.push("• Available until date");
-        if (!autofillAddressSwitch && (!street || !city || !zip || !lat || !lng)) {
+        if (!street || !city || !zip || !lat || !lng) {
             if (!lat || !lng) missingFields.push("• Location on map (press 'Use Current Position' or click the map)");
         }
 

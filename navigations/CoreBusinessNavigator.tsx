@@ -5,7 +5,7 @@ import { Image } from "react-native";
 import QueryFoodScreen from "../screens/QueryFoodScreen";
 import Results from "../screens/Results";
 import Profile from "../screens/Profile";
-import ItemNavigator from "./ItemNavigator";
+import ItemStackNavigator from "./ItemStackNavigator";
 import ChatNavigator from "./ChatNavigator";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -98,7 +98,7 @@ const CoreBusinessNavigator = () => {
             />
             <Tab.Screen
                 name="Create an offer"
-                component={ItemNavigator}
+                component={ItemStackNavigator}
                 options={{ headerShown: false, tabBarLabel: "" }}
             />
             <Tab.Screen
