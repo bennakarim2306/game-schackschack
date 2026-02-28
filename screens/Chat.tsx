@@ -143,61 +143,66 @@ const MessageBubble = ({ item, getTimeFromTimestamp, contact, onTransactionActio
                     shadowOpacity: 0.06,
                     shadowRadius: 2,
                     shadowOffset: { width: 0, height: 1 },
-                    alignSelf: isSent ? "flex-end" : "flex-start",
+                    // alignSelf: isSent ? "flex-end" : "flex-start",
                 }}>
-                    {/* Item Thumbnail and Info */}
-                    {displayTransaction.item?.thumbnail && (
-                        <Image
-                            source={{ uri: displayTransaction.item.thumbnail }}
-                            style={{ width: '100%', height: 120, borderRadius: 8, marginBottom: 10 }}
-                            resizeMode="cover"
-                        />
-                    )}
-                    
-                    {/* Item Name and Type */}
-                    {displayTransaction.item?.name && (
-                        <Text style={{ fontSize: 14, fontWeight: '600', color: '#333', marginBottom: 2 }}>
-                            {displayTransaction.item.name}
-                        </Text>
-                    )}
-                    {displayTransaction.item?.type && (
-                        <Text style={{ fontSize: 11, color: '#999', marginBottom: 8 }}>
-                            {displayTransaction.item.type}
-                        </Text>
-                    )}
+                    {/* Horizontal layout: thumbnail on left, details on right */}
+                    <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+                        {/* Item Thumbnail */}
+                        {displayTransaction.item?.thumbnail && (
+                            <Image
+                                source={{ uri: displayTransaction.item.thumbnail }}
+                                style={{ 
+                                    width: 80, 
+                                    height: 80, 
+                                    borderRadius: 8,
+                                    backgroundColor: '#f0f0f0',
+                                    marginRight: 12,
+                                }}
+                                resizeMode="cover"
+                            />
+                        )}
+                        
+                        {/* Item Name, Type, and Key Details */}
+                        <View style={{ flex: 1, justifyContent: 'space-between' }}>
+                            {displayTransaction.item?.name && (
+                                <Text style={{ fontSize: 14, fontWeight: '600', color: '#333', marginBottom: 4 }}>
+                                    {displayTransaction.item.name}
+                                </Text>
+                            )}
+                            {displayTransaction.item?.type && (
+                                <Text style={{ fontSize: 11, color: '#999', marginBottom: 4 }}>
+                                    {displayTransaction.item.type}
+                                </Text>
+                            )}
+                            
+                            <Text style={{ fontSize: 12, color: '#666', marginBottom: 2 }}>
+                                <Text style={{ fontWeight: '600' }}>Status:</Text> {displayTransaction.status}
+                            </Text>
+                            <Text style={{ fontSize: 12, color: '#666', marginBottom: 2 }}>
+                                <Text style={{ fontWeight: '600' }}>Qty:</Text> {displayTransaction.quantityOrdered} {displayTransaction.unit || displayTransaction.item?.unit}
+                            </Text>
+                            <Text style={{ fontSize: 12, color: '#2196F3', fontWeight: '600' }}>
+                                Total: €{displayTransaction.totalPrice}
+                            </Text>
+                        </View>
 
-                    <Text style={{ fontSize: 11, color: '#999', marginBottom: 6 }}>Transaction Details</Text>
-                    
-                    <Text style={{ fontSize: 12, color: '#666', marginBottom: 2 }}>
-                        Status: <Text style={{ fontWeight: '600' }}>{displayTransaction.status}</Text>
-                    </Text>
-                    <Text style={{ fontSize: 12, color: '#666', marginBottom: 2 }}>
-                        Quantity: <Text style={{ fontWeight: '600' }}>{displayTransaction.quantityOrdered} {displayTransaction.unit || displayTransaction.item?.unit}</Text>
-                    </Text>
-
-                    <Text style={{ fontSize: 12, color: '#666', marginBottom: 2 }}>
-                        Price: <Text style={{ fontWeight: '600' }}>€{displayTransaction.pricePerUnit || displayTransaction.item?.pricePerUnit}</Text>
-                        {(displayTransaction.unit || displayTransaction.item?.unit) ? ` / ${displayTransaction.unit || displayTransaction.item?.unit}` : ''}
-                    </Text>
-
-                    {displayTransaction.item?.availableTo && (
+                                            {/* Additional Details Section */}
+                    <View style={{ borderLeftWidth: 1, borderLeftColor: '#eee', paddingLeft: 8 }}>
                         <Text style={{ fontSize: 12, color: '#666', marginBottom: 2 }}>
-                            Available To: <Text style={{ fontWeight: '600' }}>{displayTransaction.item.availableTo}</Text>
+                            <Text style={{ fontWeight: '600' }}>Price:</Text> €{displayTransaction.pricePerUnit || displayTransaction.item?.pricePerUnit}{(displayTransaction.unit || displayTransaction.item?.unit) ? ` / ${displayTransaction.unit || displayTransaction.item?.unit}` : ''}
                         </Text>
-                    )}
-                    
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
-                        <Text style={{ fontSize: 12, color: '#666' }}>
-                            Item: <Text style={{ fontWeight: '600' }}>{displayTransaction.item?.name || 'N/A'}</Text>
-                        </Text>
-                        <Text style={{ fontSize: 12, color: '#2196F3', fontWeight: '600' }}>
-                            Total: €{displayTransaction.totalPrice}
-                        </Text>
+
+                        {displayTransaction.item?.availableTo && (
+                            <Text style={{ fontSize: 12, color: '#666', marginBottom: 2 }}>
+                                <Text style={{ fontWeight: '600' }}>Available To:</Text> {displayTransaction.item.availableTo}
+                            </Text>
+                        )}
+                    </View>
                     </View>
 
                     {/* Action buttons for seller role when transaction is pending */}
                     {isSellerRole && displayTransaction.status === 'PENDING' && (
-                        <View style={{ flexDirection: 'row', marginTop: 10, gap: 8 }}>
+                        <View style={{ flexDirection: 'row', marginTop: 10 }}>
                             <TouchableOpacity
                                 onPress={() => onTransactionAction?.('CONFIRMED', displayTransaction.id)}
                                 style={{
@@ -205,7 +210,8 @@ const MessageBubble = ({ item, getTimeFromTimestamp, contact, onTransactionActio
                                     backgroundColor: '#4caf50',
                                     paddingVertical: 8,
                                     borderRadius: 6,
-                                    alignItems: 'center'
+                                    alignItems: 'center',
+                                    marginRight: 8,
                                 }}
                             >
                                 <Text style={{ color: '#fff', fontWeight: '600', fontSize: 12 }}>Accept</Text>
@@ -525,7 +531,7 @@ const Chat = ({ navigation, route }: any) => {
                 name: entry.item.name,
                 type: entry.item.type,
                 pricePerUnit: entry.item.pricePerUnit,
-                thumbnail: entry.item.thumbnail,
+                thumbnail: entry.item.thumbnailUrl,
                 unit: entry.item.unit,
                 availableTo: entry.item.availableTo ?? entry.availableTo
             } : undefined
