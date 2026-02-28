@@ -174,7 +174,7 @@ const Offer = () => {
             });
 
             Logger.response(url, response.status);
-            
+
             // Mark this contact as added
             if (response.ok) {
                 addedContactsRef.current.add(email);
@@ -272,13 +272,28 @@ const Offer = () => {
                     )}
 
                     {/* Item Name and Type */}
-                    <View style={{ marginBottom: 16 }}>
-                        <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#333', marginBottom: 4 }}>
-                            {offer.name}
-                        </Text>
-                        <Text style={{ fontSize: 16, color: '#666', backgroundColor: '#e8f5e9', paddingHorizontal: 10, paddingVertical: 4, alignSelf: 'flex-start', borderRadius: 6 }}>
-                            {offer.type}
-                        </Text>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+
+                        <View style={{ flex: 1, marginRight: 12 }}>
+                            <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#333', marginBottom: 4 }}>
+                                {offer.name}
+                            </Text>
+                            <Text style={{ fontSize: 16, color: '#666', backgroundColor: '#e8f5e9', paddingHorizontal: 10, paddingVertical: 4, alignSelf: 'flex-start', borderRadius: 6 }}>
+                                {offer.type}
+                            </Text>
+                        </View>
+                        <TouchableOpacity
+                            onPress={handleBuyPress}
+                            style={{
+                                flex: 1,
+                                backgroundColor: '#4caf50',
+                                paddingVertical: 10,
+                                borderRadius: 6,
+                                alignItems: 'center'
+                            }}
+                        >
+                            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 14 }}>Buy</Text>
+                        </TouchableOpacity>
                     </View>
 
                     {/* Price and Quantity */}
@@ -310,15 +325,6 @@ const Offer = () => {
                         </View>
                     </View>
 
-                    {/* Seller Information */}
-                    <View style={{ marginBottom: 16, backgroundColor: '#f5f5f5', padding: 12, borderRadius: 8 }}>
-                        <Text style={{ fontSize: 12, color: '#999', marginBottom: 4 }}>Seller</Text>
-                        <Text style={{ fontSize: 16, fontWeight: '600', color: '#333' }}>{offer.seller.contact}</Text>
-                        {!isSeller && (
-                            <Text style={{ fontSize: 12, color: '#666', marginTop: 4 }}>Email: {offer.seller.contact}</Text>
-                        )}
-                    </View>
-
                     {/* Seller Details Card - Show for non-sellers */}
                     {!isSeller && currentUserEmail && (
                         <View style={{ marginBottom: 16, backgroundColor: '#e8f5e9', padding: 12, borderRadius: 8, borderLeftWidth: 4, borderLeftColor: '#4caf50' }}>
@@ -330,18 +336,6 @@ const Offer = () => {
                                 See all products from {offer.seller.contact} and your transaction history with them
                             </Text>
                             <View style={{ flexDirection: 'row', gap: 8 }}>
-                                <TouchableOpacity
-                                    onPress={handleBuyPress}
-                                    style={{
-                                        flex: 1,
-                                        backgroundColor: '#4caf50',
-                                        paddingVertical: 10,
-                                        borderRadius: 6,
-                                        alignItems: 'center'
-                                    }}
-                                >
-                                    <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 14 }}>Buy</Text>
-                                </TouchableOpacity>
                                 <TouchableOpacity
                                     onPress={async () => {
                                         await addSellerAsContact(offer.seller.contact);
