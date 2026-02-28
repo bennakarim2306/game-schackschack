@@ -11,6 +11,8 @@ import configs from "../config/AppConfig";
 import { useFocusEffect } from "@react-navigation/native";
 import Logger from "../config/Logger";
 import { ChatService, ChatServiceCallbacks } from "../services/ChatService";
+import type { TransactionData, TransactionRole } from "../types/transaction.types";
+import { parseTransactionMessage } from "../utils/transactionChat";
 import { ChatServiceContext } from "../Contexts/ChatServiceContext";
 
 const ChatStackNavigator = createNativeStackNavigator();
@@ -35,6 +37,10 @@ interface ChatEntry {
     unreadCount: number;
     isTyping: boolean;
     isOnline: boolean;
+    pinnedTransaction?: {
+        transaction: TransactionData;
+        role: TransactionRole;
+    };
 }
 
 interface ChatState {
@@ -52,6 +58,9 @@ type ChatAction =
     | { type: 'CLEAR_UNREAD_COUNT'; contact: string }
     | { type: 'INITIALIZE_CONTACT'; contact: string }
     | { type: 'LOAD_CONVERSATION_HISTORY'; contact: string; messages: ChatMessage[] }
+    | { type: 'SET_PINNED_TRANSACTION'; contact: string; transaction: TransactionData; role: TransactionRole }
+    | { type: 'UPDATE_PINNED_TRANSACTION_STATUS'; contact: string; status: string }
+    | { type: 'CLEAR_PINNED_TRANSACTION'; contact: string }
 
 const chatReducer = (prevState: ChatState, action: ChatAction): ChatState => {
     switch (action.type) {
@@ -258,6 +267,92 @@ const chatReducer = (prevState: ChatState, action: ChatAction): ChatState => {
             }
         }
 
+        case 'SET_PINNED_TRANSACTION': {
+            const entryIndex = prevState.chat.findIndex(e => e.contact === action.contact);
+            if (entryIndex === -1) {
+                return {
+                    ...prevState,
+                    chat: [
+                        ...prevState.chat,
+                        {
+                            contact: action.contact,
+                            messages: [],
+                            unreadCount: 0,
+                            isTyping: false,
+                            isOnline: false,
+                            pinnedTransaction: {
+                                transaction: action.transaction,
+                                role: action.role
+                            }
+                        }
+                    ]
+                };
+            }
+
+            return {
+                ...prevState,
+                chat: prevState.chat.map((entry, idx) =>
+                    idx === entryIndex
+                        ? {
+                            ...entry,
+                            pinnedTransaction: {
+                                transaction: action.transaction,
+                                role: action.role
+                            }
+                        }
+                        : entry
+                )
+            };
+        }
+
+        case 'UPDATE_PINNED_TRANSACTION_STATUS': {
+            const entryIndex = prevState.chat.findIndex(e => e.contact === action.contact);
+            if (entryIndex === -1) {
+                return prevState;
+            }
+
+            const entry = prevState.chat[entryIndex];
+            if (!entry.pinnedTransaction?.transaction) {
+                return prevState;
+            }
+
+            const existingPinned = entry.pinnedTransaction;
+
+            return {
+                ...prevState,
+                chat: prevState.chat.map((item, idx) =>
+                    idx === entryIndex
+                        ? {
+                            ...item,
+                            pinnedTransaction: {
+                                ...existingPinned,
+                                transaction: {
+                                    ...existingPinned.transaction,
+                                    status: action.status
+                                }
+                            }
+                        }
+                        : item
+                )
+            };
+        }
+
+        case 'CLEAR_PINNED_TRANSACTION': {
+            const entryIndex = prevState.chat.findIndex(e => e.contact === action.contact);
+            if (entryIndex === -1) {
+                return prevState;
+            }
+
+            return {
+                ...prevState,
+                chat: prevState.chat.map((item, idx) =>
+                    idx === entryIndex
+                        ? { ...item, pinnedTransaction: undefined }
+                        : item
+                )
+            };
+        }
+
         case 'UPDATE_UNREAD_COUNTS': {
             for (const [contact, count] of Object.entries(action.counts)) {
                 const entry = prevState.chat.find(e => e.contact === contact);
@@ -346,6 +441,19 @@ const ChatNavigator = () => {
                     onMessageReceived: (data) => {
                         if (isMounted) {
                             const contactEmail = data.from.sub || data.from;
+                            if (typeof data.message === 'string') {
+                                const parsed = parseTransactionMessage(data.message);
+                                if (parsed) {
+                                    dispatch({
+                                        type: 'SET_PINNED_TRANSACTION',
+                                        contact: contactEmail,
+                                        transaction: parsed.transaction,
+                                        role: parsed.roleForRecipient
+                                    });
+                                    service.markMessageDelivered(data.messageId);
+                                    return;
+                                }
+                            }
                             Logger.info('CHAT', `Received message from ${contactEmail}: ${data.message}`);
                             
                             dispatch({
@@ -470,8 +578,8 @@ const ChatNavigator = () => {
 
     return (
         <ChatServiceContext.Provider value={chatService}>
-            <ChatContext.Provider value={chat}>
-                <ChatDispatchContext.Provider value={dispatch}>
+            <ChatContext.Provider value={chat as any}>
+                <ChatDispatchContext.Provider value={dispatch as any}>
                     <ChatStackNavigator.Navigator
                         initialRouteName="ContactsList"
                         screenOptions={{

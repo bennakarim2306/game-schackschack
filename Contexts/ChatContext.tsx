@@ -4,7 +4,8 @@ interface ChatMessage {
     messageId: string;
     from: string;
     to: string;
-    message: string;
+    content: string;
+    message?: string;
     timestamp: number;
     status: {
         sent?: number;
@@ -19,6 +20,10 @@ interface ChatEntry {
     unreadCount: number;
     isTyping: boolean;
     isOnline: boolean;
+    pinnedTransaction?: {
+        transaction: any;
+        role: 'buyer' | 'seller';
+    };
 }
 
 interface ChatState {

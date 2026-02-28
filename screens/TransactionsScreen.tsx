@@ -1,40 +1,90 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, ImageBackground, ScrollView, ActivityIndicator, Alert } from "react-native";
-import { useRoute } from "@react-navigation/native";
+import React, { useMemo, useState, useEffect } from "react";
+import { View, Text, ImageBackground, ScrollView, ActivityIndicator, TouchableOpacity } from "react-native";
+import { useRoute, useNavigation, NavigationProp } from "@react-navigation/native";
 import configs from "../config/AppConfig";
 import Logger from "../config/Logger";
 import { authenticatedFetch } from '../utils/AuthenticatedFetch';
-import Transaction from './Transaction';
+import { getCurrentUserEmail } from '../utils/UserHelper';
+import type { TransactionData } from '../types/transaction.types';
 
-interface TransactionData {
-    id: string;
-    itemId: string;
-    buyerName: string;
-    quantity: number;
-    unit: string;
-    totalPrice: number;
-    status: string;
-    createdAt: string;
-}
+type OfferStackParamList = {
+    TransactionsScreen: { itemId: string };
+    TransactionDetails: { transaction: TransactionData };
+};
+
+const STATUS_FILTERS = ["ALL", "PENDING", "CONFIRMED", "REJECTED", "CANCELLED", "COMPLETED"]; 
 
 const TransactionsScreen = () => {
     const route = useRoute();
-    const { itemId } = route.params as { itemId: string };
+    Logger.debug('TRANSACTIONS_SCREEN', `Route params: ${JSON.stringify(route.params)}`); // Debug log for screen load
 
+    const navigation = useNavigation<NavigationProp<OfferStackParamList>>();
+    const itemId = (route.params as any)?.itemId || '';
     const [transactions, setTransactions] = useState<TransactionData[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [statusFilter, setStatusFilter] = useState("ALL");
+    const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+    const [isSeller, setIsSeller] = useState(false);
 
     useEffect(() => {
-        fetchTransactions();
+        if (!itemId) {
+            Logger.error('TRANSACTIONS_SCREEN', 'No itemId provided');
+            setError('Invalid item ID');
+            setLoading(false);
+            return;
+        }
+
+        const loadUserAndTransactions = async () => {
+            try {
+                const email = await getCurrentUserEmail();
+                setCurrentUserEmail(email);
+                await fetchTransactions(email);
+            } catch (err) {
+                Logger.error('TRANSACTIONS_SCREEN', 'Failed to load user email', err);
+                await fetchTransactions(null);
+            }
+        };
+        loadUserAndTransactions();
     }, [itemId]);
 
-    const fetchTransactions = async () => {
+    const fetchTransactions = async (userEmail: string | null) => {
         setLoading(true);
         setError(null);
         try {
-            const url = `${configs.USER_AUTH_BASE_URL}api/v1/items/${itemId}/transactions`;
-            Logger.info('TRANSACTIONS', `Fetching transactions for item: ${itemId}`);
+            if (!userEmail) {
+                throw new Error('User email not available');
+            }
+
+            // First, fetch the item to check if current user is the seller
+            const itemUrl = `${configs.USER_AUTH_BASE_URL}/api/v1/items/${itemId}`;
+            let sellerEmail = '';
+            
+            try {
+                const itemResponse = await authenticatedFetch(itemUrl, {
+                    method: 'GET',
+                    headers: { Accept: 'application/json' }
+                });
+                if (itemResponse.ok) {
+                    const itemData = await itemResponse.json();
+                    sellerEmail = itemData.seller?.email || itemData.sellerEmail || '';
+                }
+            } catch (err) {
+                Logger.debug('TRANSACTIONS_SCREEN', 'Could not fetch item details');
+            }
+
+            const isUserSeller = userEmail === sellerEmail;
+            setIsSeller(isUserSeller);
+
+            // Use role-specific endpoint that already filters by itemId
+            let url: string;
+            if (isUserSeller) {
+                url = `${configs.USER_AUTH_BASE_URL}${configs.TRANSACTIONS_SELLER_MY_SALES_FOR_ITEM_PATH(itemId)}`;
+            } else {
+                url = `${configs.USER_AUTH_BASE_URL}${configs.TRANSACTIONS_CUSTOMER_MY_ORDERS_FOR_ITEM_PATH(itemId)}`;
+            }
+
+            Logger.info('TRANSACTIONS', `Fetching transactions for item: ${itemId}, isSeller: ${isUserSeller}`);
             Logger.request(url, 'GET');
 
             const response = await authenticatedFetch(url, {
@@ -46,29 +96,49 @@ const TransactionsScreen = () => {
 
             Logger.response(url, response.status);
 
-            if (response.status === 204 || response.status === 404) {
-                // No transactions found
-                Logger.info('TRANSACTIONS', 'No transactions found for this item');
-                setTransactions([]);
-                return;
-            }
-
             if (!response.ok) {
                 throw new Error('Failed to fetch transactions');
             }
 
             const data = await response.json();
-            Logger.success('TRANSACTIONS', `Found ${Array.isArray(data) ? data.length : data.transactions?.length || 0} transactions`);
-            setTransactions(Array.isArray(data) ? data : data.transactions || []);
+            const rawTransactions = Array.isArray(data)
+                ? data
+                : data.items || data.transactions || data.content || [];
+            Logger.success('TRANSACTIONS', `Found ${rawTransactions.length} transactions`);
+
+            const normalized = rawTransactions.map((entry: any): TransactionData => ({
+                id: String(entry.id ?? entry.transactionId ?? ''),
+                itemId: entry.itemId ?? entry.item?.id,
+                buyerName: entry.customerName ?? entry.buyerName ?? entry.buyer?.name,
+                buyerEmail: entry.customerEmail ?? entry.buyerEmail ?? entry.buyer?.email,
+                sellerName: entry.sellerName ?? entry.seller?.name,
+                sellerEmail: entry.sellerEmail ?? entry.seller?.email,
+                quantityOrdered: entry.quantityOrdered ?? entry.quantity ?? entry.amount,
+                unit: entry.unit ?? entry.item?.unit,
+                totalPrice: entry.totalPrice ?? entry.total ?? entry.totalAmount,
+                status: entry.status ?? 'UNKNOWN',
+                notes: entry.notes ?? entry.note,
+                createdAt: entry.createdAt ?? entry.createdDate ?? entry.created,
+                updatedAt: entry.updatedAt ?? entry.updatedDate ?? entry.updated,
+            }));
+
+            setTransactions(normalized);
         } catch (error: any) {
             Logger.error('TRANSACTIONS', `Exception fetching transactions: ${error.message}`, error);
             setError(error.message || 'Failed to load transactions');
-            // Don't alert on error for empty state, just log
-            Logger.info('TRANSACTIONS', 'Treating as no transactions found');
             setTransactions([]);
         } finally {
             setLoading(false);
         }
+    };
+
+    const filteredTransactions = useMemo(() => {
+        if (statusFilter === "ALL") return transactions;
+        return transactions.filter((transaction) => (transaction.status || '').toUpperCase() === statusFilter);
+    }, [transactions, statusFilter]);
+
+    const handleTransactionPress = (transaction: TransactionData) => {
+        navigation.navigate('TransactionDetails', { transaction });
     };
 
     if (loading) {
@@ -100,10 +170,72 @@ const TransactionsScreen = () => {
                 ) : (
                     <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 24 }}>
                         <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 16, color: '#333' }}>
-                            Transactions ({transactions.length})
+                            Transactions ({filteredTransactions.length})
                         </Text>
-                        {transactions.map((transaction) => (
-                            <Transaction key={transaction.id} transaction={transaction} />
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
+                            {STATUS_FILTERS.map((status) => {
+                                const isActive = statusFilter === status;
+                                return (
+                                    <TouchableOpacity
+                                        key={status}
+                                        onPress={() => setStatusFilter(status)}
+                                        style={{
+                                            paddingHorizontal: 12,
+                                            paddingVertical: 6,
+                                            backgroundColor: isActive ? '#2196F3' : '#e0e0e0',
+                                            borderRadius: 16,
+                                            marginRight: 8,
+                                        }}
+                                    >
+                                        <Text style={{ color: isActive ? '#fff' : '#333', fontWeight: '600', fontSize: 12 }}>
+                                            {status}
+                                        </Text>
+                                    </TouchableOpacity>
+                                );
+                            })}
+                        </ScrollView>
+
+                        {filteredTransactions.map((transaction) => (
+                            <TouchableOpacity
+                                key={transaction.id}
+                                onPress={() => handleTransactionPress(transaction)}
+                                style={{
+                                    backgroundColor: '#fff',
+                                    borderRadius: 8,
+                                    padding: 12,
+                                    marginBottom: 12,
+                                    borderLeftWidth: 4,
+                                    borderLeftColor: '#2196F3',
+                                }}
+                            >
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                                    <Text style={{ fontSize: 16, fontWeight: '600', color: '#333', flex: 1 }}>
+                                        {transaction.buyerName || 'Customer'}
+                                    </Text>
+                                    <Text
+                                        style={{
+                                            fontSize: 12,
+                                            fontWeight: '600',
+                                            color: '#fff',
+                                            backgroundColor: '#2196F3',
+                                            paddingHorizontal: 8,
+                                            paddingVertical: 4,
+                                            borderRadius: 4,
+                                        }}
+                                    >
+                                        {transaction.status || 'UNKNOWN'}
+                                    </Text>
+                                </View>
+                                <Text style={{ fontSize: 14, color: '#666', marginBottom: 6 }}>
+                                    Quantity: <Text style={{ fontWeight: '600', color: '#333' }}>{transaction.quantityOrdered ?? '-'} {transaction.unit ?? ''}</Text>
+                                </Text>
+                                <Text style={{ fontSize: 14, color: '#666', marginBottom: 6 }}>
+                                    Total Price: <Text style={{ fontWeight: '600', color: '#2196F3', fontSize: 16 }}>{transaction.totalPrice != null ? `€${transaction.totalPrice}` : '-'}</Text>
+                                </Text>
+                                <Text style={{ fontSize: 12, color: '#999' }}>
+                                    {transaction.createdAt ? new Date(transaction.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '-'}
+                                </Text>
+                            </TouchableOpacity>
                         ))}
                     </ScrollView>
                 )}

@@ -42,7 +42,7 @@ const QueryFoodScreen = () => {
     const [selectedType, setSelectedType] = useState("All");
     const [distance, setDistance] = useState(10);
     const [searchCenter, setSearchCenter] = useState(DEFAULT_CENTER);
-    const [isSearching, setIsSearching] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     
     // Address search state
     const [addressInput, setAddressInput] = useState("");
@@ -196,7 +196,7 @@ const QueryFoodScreen = () => {
     };
 
     const handleSearch = async () => {
-        setIsSearching(true);
+        setIsSubmitting(true);
         try {
             const params = new URLSearchParams();
             if (searchTerm.trim()) params.append("name", searchTerm.trim());
@@ -236,7 +236,7 @@ const QueryFoodScreen = () => {
             Logger.error('SEARCH', 'Search exception', error);
             Alert.alert("Search Error", "An error occurred while searching.");
         } finally {
-            setIsSearching(false);
+            setIsSubmitting(false);
         }
     };
 
@@ -414,12 +414,27 @@ const QueryFoodScreen = () => {
             />
             </ScrollView>
             <View style={{ padding: 16, paddingBottom: 16 }}>
-                <Button
-                    title="Search"
+                <TouchableOpacity
                     onPress={handleSearch}
-                    disabled={isSearching}
-                    color="#2196F3"
-                />
+                    disabled={isSubmitting}
+                    style={{
+                        backgroundColor: isSubmitting ? "#b0c4de" : "#2196F3",
+                        borderRadius: 6,
+                        paddingVertical: 12,
+                        paddingHorizontal: 24,
+                        justifyContent: "center",
+                        alignItems: "center",
+                        minHeight: 48
+                    }}
+                >
+                    {isSubmitting ? (
+                        <ActivityIndicator size="small" color="#fff" />
+                    ) : (
+                        <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>
+                            Search
+                        </Text>
+                    )}
+                </TouchableOpacity>
             </View>
             </View>
         </ImageBackground>

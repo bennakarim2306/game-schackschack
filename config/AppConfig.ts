@@ -24,6 +24,15 @@ const configs = {
     ACCOUNT_SET_ADDRESS_BY_EMAIL_PATH: '/api/v1/account/setAddressByEmail', // POST
     ACCOUNT_GET_ADDRESS_BY_USER_ID_PATH: (userId: string) => `/api/v1/account/getAddressByUserId/${userId}`, // GET
     ACCOUNT_GET_ADDRESS_BY_EMAIL_PATH: '/api/v1/account/getAddressByEmail', // GET
+
+    // Transaction API endpoints
+    TRANSACTIONS_BASE_PATH: '/api/v1/transactions',
+    TRANSACTIONS_SELLER_MY_SALES_PATH: '/api/v1/transactions/seller/my-sales',
+    TRANSACTIONS_CUSTOMER_MY_ORDERS_PATH: '/api/v1/transactions/customer/my-orders',
+    TRANSACTIONS_SELLER_MY_SALES_FOR_ITEM_PATH: (itemId: string) => `/api/v1/transactions/seller/item/${itemId}`,
+    TRANSACTIONS_CUSTOMER_MY_ORDERS_FOR_ITEM_PATH: (itemId: string) => `/api/v1/transactions/customer/item/${itemId}`,
+    TRANSACTIONS_BETWEEN_USERS_PATH: '/api/v1/transactions/between',
+    TRANSACTIONS_STATUS_PATH: (transactionId: string) => `/api/v1/transactions/${transactionId}/status`, // PUT
 };
 
 export default configs;

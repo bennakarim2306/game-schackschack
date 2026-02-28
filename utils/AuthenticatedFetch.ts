@@ -79,12 +79,6 @@ export async function authenticatedFetch(url: string, options: RequestInit = {})
     // Check if body is FormData
     const isFormData = fetchOptions.body instanceof FormData;
 
-    // For FormData requests, let the native fetch handle Content-Type automatically
-    // React Native will set the proper multipart/form-data header with boundary
-    // Individual field MIME types are preserved in the blob/file objects appended to FormData
-    Logger.debug('AUTH', `Request - Method: ${fetchOptions.method || 'GET'}, FormData: ${isFormData} \n headers: ${JSON.stringify(fetchOptions.headers)}`);
-
-
     // Make the initial request
     let response = await fetch(url, fetchOptions);
     

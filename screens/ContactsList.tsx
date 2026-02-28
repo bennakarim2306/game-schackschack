@@ -38,7 +38,7 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
     }
 
     const chatState = useChatContext() as unknown as ChatState;
-    const chatDispatch = useChatDispatchContext();
+    const chatDispatch = useChatDispatchContext() as any;
     const chatService = useChatServiceContext();
 
     if (!chatDispatch) {
@@ -156,6 +156,25 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
             getContactsList()
         }, [])
     );
+
+    useEffect(() => {
+        const autoOpenContact = (route.params as any)?.autoOpenContact;
+        const transaction = (route.params as any)?.transaction;
+        const transactionRole = (route.params as any)?.transactionRole;
+
+        if (autoOpenContact && transaction) {
+            navigation.navigate("Chat", {
+                contact: autoOpenContact,
+                transaction,
+                transactionRole
+            });
+            navigation.setParams({
+                autoOpenContact: undefined,
+                transaction: undefined,
+                transactionRole: undefined
+            });
+        }
+    }, [navigation, route.params]);
 
     useEffect(() => {
         const emails = state.ContactsList
@@ -286,7 +305,7 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
     }
 
     return (
-        <ContactsContext.Provider value={contactsContext}>
+        <ContactsContext.Provider value={null as any}>
             <ImageBackground
                 source={require('../assets/20251202_1542_Smiling Fruit Faces_remix_01kbfr2sr9enx805fare783vsa.png')}
                 style={{ flex: 1 }}
@@ -362,12 +381,23 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
                             </Text>
                         }
                     />
-                    <Button
-                        title="Add a friend"
+                    <TouchableOpacity
+                        style={{
+                            backgroundColor: "#2196F3",
+                            borderRadius: 6,
+                            paddingVertical: 12,
+                            paddingHorizontal: 24,
+                            justifyContent: "center",
+                            alignItems: "center",
+                            minHeight: 48
+                        }}
                         onPress={handleAddContact}
                         disabled={false}
-                        color="#2196F3"
-                    />
+                    >
+                        <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>
+                                                        Add Contact
+                                                    </Text>
+                    </TouchableOpacity>
 
                     {/* Add Contact Modal */}
                     <Modal

@@ -1,20 +1,12 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { View, Text, ScrollView, ImageBackground } from "react-native";
+import { useRoute } from "@react-navigation/native";
+import type { TransactionData } from "../types/transaction.types";
 
-interface TransactionProps {
-    transaction: {
-        id: string;
-        itemId: string;
-        buyerName: string;
-        quantity: number;
-        unit: string;
-        totalPrice: number;
-        status: string;
-        createdAt: string;
-    };
-}
+const Transaction = () => {
+    const route = useRoute();
+    const { transaction } = route.params as { transaction: TransactionData };
 
-const Transaction: React.FC<TransactionProps> = ({ transaction }) => {
     const getStatusColor = (status: string) => {
         switch (status.toLowerCase()) {
             case 'completed':
@@ -23,6 +15,10 @@ const Transaction: React.FC<TransactionProps> = ({ transaction }) => {
                 return '#ff9800';
             case 'cancelled':
                 return '#f44336';
+            case 'confirmed':
+                return '#2196f3';
+            case 'rejected':
+                return '#9c27b0';
             default:
                 return '#2196f3';
         }
@@ -37,52 +33,107 @@ const Transaction: React.FC<TransactionProps> = ({ transaction }) => {
         }
     };
 
+    const statusLabel = transaction.status || 'UNKNOWN';
+    const statusColor = getStatusColor(statusLabel);
+
     return (
-        <View
-            style={{
-                backgroundColor: '#fff',
-                borderRadius: 8,
-                padding: 12,
-                marginBottom: 12,
-                borderLeftWidth: 4,
-                borderLeftColor: getStatusColor(transaction.status),
-            }}
+        <ImageBackground
+            source={require('../assets/20251202_1542_Smiling Fruit Faces_remix_01kbfr2sr9enx805fare783vsa.png')}
+            style={{ flex: 1 }}
+            resizeMode="cover"
         >
-            {/* Header: Buyer Name and Status */}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                <Text style={{ fontSize: 16, fontWeight: '600', color: '#333', flex: 1 }}>
-                    {transaction.buyerName}
-                </Text>
-                <Text
-                    style={{
-                        fontSize: 12,
-                        fontWeight: '600',
-                        color: '#fff',
-                        backgroundColor: getStatusColor(transaction.status),
-                        paddingHorizontal: 8,
-                        paddingVertical: 4,
-                        borderRadius: 4,
-                    }}
-                >
-                    {transaction.status}
-                </Text>
+            <View style={{ flex: 1, backgroundColor: 'rgba(255, 255, 255, 0.85)' }}>
+                <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 24 }}>
+                    <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 16 }}>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                            <Text style={{ fontSize: 20, fontWeight: '700', color: '#333' }}>Transaction</Text>
+                            <Text
+                                style={{
+                                    fontSize: 12,
+                                    fontWeight: '700',
+                                    color: '#fff',
+                                    backgroundColor: statusColor,
+                                    paddingHorizontal: 10,
+                                    paddingVertical: 4,
+                                    borderRadius: 6,
+                                }}
+                            >
+                                {statusLabel}
+                            </Text>
+                        </View>
+                        <Text style={{ fontSize: 12, color: '#999', marginBottom: 6 }}>Transaction ID</Text>
+                        <Text style={{ fontSize: 14, fontWeight: '600', color: '#333', marginBottom: 12 }}>
+                            {transaction.id}
+                        </Text>
+
+                        {transaction.itemId ? (
+                            <>
+                                <Text style={{ fontSize: 12, color: '#999', marginBottom: 6 }}>Item ID</Text>
+                                <Text style={{ fontSize: 14, fontWeight: '600', color: '#333', marginBottom: 12 }}>
+                                    {transaction.itemId}
+                                </Text>
+                            </>
+                        ) : null}
+
+                        {transaction.buyerName ? (
+                            <>
+                                <Text style={{ fontSize: 12, color: '#999', marginBottom: 6 }}>Buyer</Text>
+                                <Text style={{ fontSize: 14, fontWeight: '600', color: '#333', marginBottom: 12 }}>
+                                    {transaction.buyerName}{transaction.buyerEmail ? ` (${transaction.buyerEmail})` : ''}
+                                </Text>
+                            </>
+                        ) : null}
+
+                        {transaction.sellerName ? (
+                            <>
+                                <Text style={{ fontSize: 12, color: '#999', marginBottom: 6 }}>Seller</Text>
+                                <Text style={{ fontSize: 14, fontWeight: '600', color: '#333', marginBottom: 12 }}>
+                                    {transaction.sellerName}{transaction.sellerEmail ? ` (${transaction.sellerEmail})` : ''}
+                                </Text>
+                            </>
+                        ) : null}
+
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
+                            <View style={{ flex: 1 }}>
+                                <Text style={{ fontSize: 12, color: '#999', marginBottom: 6 }}>Quantity</Text>
+                                <Text style={{ fontSize: 16, fontWeight: '600', color: '#333' }}>
+                                    {transaction.quantityOrdered ?? '-'} {transaction.unit ?? ''}
+                                </Text>
+                            </View>
+                            <View style={{ flex: 1, alignItems: 'flex-end' }}>
+                                <Text style={{ fontSize: 12, color: '#999', marginBottom: 6 }}>Total Price</Text>
+                                <Text style={{ fontSize: 16, fontWeight: '700', color: '#2196F3' }}>
+                                    {transaction.totalPrice != null ? `€${transaction.totalPrice}` : '-'}
+                                </Text>
+                            </View>
+                        </View>
+
+                        {transaction.notes ? (
+                            <>
+                                <Text style={{ fontSize: 12, color: '#999', marginBottom: 6 }}>Notes</Text>
+                                <Text style={{ fontSize: 14, color: '#333', marginBottom: 12 }}>
+                                    {transaction.notes}
+                                </Text>
+                            </>
+                        ) : null}
+
+                        <Text style={{ fontSize: 12, color: '#999', marginBottom: 6 }}>Created</Text>
+                        <Text style={{ fontSize: 14, color: '#333', marginBottom: 12 }}>
+                            {transaction.createdAt ? formatDate(transaction.createdAt) : '-'}
+                        </Text>
+
+                        {transaction.updatedAt ? (
+                            <>
+                                <Text style={{ fontSize: 12, color: '#999', marginBottom: 6 }}>Last Updated</Text>
+                                <Text style={{ fontSize: 14, color: '#333' }}>
+                                    {formatDate(transaction.updatedAt)}
+                                </Text>
+                            </>
+                        ) : null}
+                    </View>
+                </ScrollView>
             </View>
-
-            {/* Quantity and Unit */}
-            <Text style={{ fontSize: 14, color: '#666', marginBottom: 6 }}>
-                Quantity: <Text style={{ fontWeight: '600', color: '#333' }}>{transaction.quantity} {transaction.unit}</Text>
-            </Text>
-
-            {/* Price */}
-            <Text style={{ fontSize: 14, color: '#666', marginBottom: 6 }}>
-                Total Price: <Text style={{ fontWeight: '600', color: '#2196F3', fontSize: 16 }}>€{transaction.totalPrice}</Text>
-            </Text>
-
-            {/* Date */}
-            <Text style={{ fontSize: 12, color: '#999' }}>
-                {formatDate(transaction.createdAt)}
-            </Text>
-        </View>
+        </ImageBackground>
     );
 };
 

@@ -7,14 +7,36 @@ import Results from "../screens/Results";
 import Profile from "../screens/Profile";
 import ItemStackNavigator from "./ItemStackNavigator";
 import ChatNavigator from "./ChatNavigator";
+import OfferStackNavigator from "./OfferStackNavigator";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Logger from "../config/Logger";
+const TabRoutes = {
+    FindFood: "FindFood",
+    CreateOffer: "CreateOffer",
+    Profile: "Profile",
+    Chat: "Chat",
+} as const;
 
-const Tab = createBottomTabNavigator();
-const Stack = createNativeStackNavigator();
+const TabLabels = {
+    FindFood: "Find Food",
+    CreateOffer: "Create an offer",
+    Profile: "Profile",
+    Chat: "Chat",
+} as const;
+
+type CoreTabParamList = {
+    [TabRoutes.FindFood]: undefined;
+    [TabRoutes.CreateOffer]: undefined;
+    [TabRoutes.Profile]: undefined;
+    [TabRoutes.Chat]: { screen?: string; params?: any } | undefined;
+};
+
+const Tab = createBottomTabNavigator<CoreTabParamList>();
 
 const TopTab = createMaterialTopTabNavigator();
+
+const Stack = createNativeStackNavigator();
 
 const QueryFoodStack = () => (
     <TopTab.Navigator
@@ -28,6 +50,27 @@ const QueryFoodStack = () => (
     </TopTab.Navigator>
 );
 
+// Find Food Stack with proper navigation structure
+const FindFoodStack = () => (
+    <Stack.Navigator
+        screenOptions={{
+            headerShown: false,
+        }}
+    >
+        <Stack.Screen 
+            name="QueryFoodTab" 
+            component={QueryFoodStack}
+        />
+        <Stack.Screen 
+            name="OfferStackNavigator"
+            component={OfferStackNavigator}
+            options={{
+                headerShown: false,
+            }}
+        />
+    </Stack.Navigator>
+);
+
 const CoreBusinessNavigator = () => {
     const insets = useSafeAreaInsets();
     
@@ -35,7 +78,7 @@ const CoreBusinessNavigator = () => {
     
     return (
         <Tab.Navigator
-            initialRouteName="Find Food"
+            initialRouteName={TabRoutes.FindFood}
             screenOptions={({ route }) => ({
                 headerShown: false,
                 tabBarIcon: ({ color, size, focused }) => {
@@ -46,7 +89,7 @@ const CoreBusinessNavigator = () => {
                         borderRadius: iconSize / 2,
                         opacity: focused ? 1 : 0.5
                     };
-                    if (route.name === "Find Food") {
+                    if (route.name === TabRoutes.FindFood) {
                         return (
                             <Image
                                 source={require('../assets/WhatsApp_Image_2026-02-05_at_16.14.47__5_-removebg-preview.png')}
@@ -54,7 +97,7 @@ const CoreBusinessNavigator = () => {
                             />
                         );
                     }
-                    if (route.name === "Create an offer") {
+                    if (route.name === TabRoutes.CreateOffer) {
                         return (
                             <Image
                                 source={require('../assets/WhatsApp_Image_2026-02-05_at_16.14.47__3_-removebg-preview.png')}
@@ -62,7 +105,7 @@ const CoreBusinessNavigator = () => {
                             />
                         );
                     }
-                    if (route.name === "Profile") {
+                    if (route.name === TabRoutes.Profile) {
                         return (
                             <Image
                                 source={require('../assets/WhatsApp_Image_2026-02-05_at_16.14.47__2_-removebg-preview.png')}
@@ -70,7 +113,7 @@ const CoreBusinessNavigator = () => {
                             />
                         );
                     }
-                    if (route.name === "Chat") {
+                    if (route.name === TabRoutes.Chat) {
                         return (
                             <Image
                                 source={require('../assets/ChatGPT Image 5. Feb. 2026, 16_43_15.png')}
@@ -92,24 +135,29 @@ const CoreBusinessNavigator = () => {
             })}
         >
             <Tab.Screen
-                name="Find Food"
-                component={QueryFoodStack}
-                options={{ tabBarLabel: "" }}
+                name={TabRoutes.FindFood}
+                component={FindFoodStack}
+                options={{ tabBarLabel: TabLabels.FindFood }}
             />
             <Tab.Screen
-                name="Create an offer"
+                name={TabRoutes.CreateOffer}
                 component={ItemStackNavigator}
-                options={{ headerShown: false, tabBarLabel: "" }}
+                options={{ headerShown: false, tabBarLabel: TabLabels.CreateOffer }}
             />
             <Tab.Screen
-                name="Profile"
+                name={TabRoutes.Profile}
                 component={Profile}
-                options={{ headerShown: false, tabBarLabel: "" }}
+                options={{ headerShown: false, tabBarLabel: TabLabels.Profile }}
             />
-            <Tab.Screen
-                name="Chat"
-                component={ChatNavigator}
-                options={{ headerShown: false, tabBarLabel: "" }}
+                <Tab.Screen
+                name={TabRoutes.Chat}
+                    component={ChatNavigator}
+                options={{ headerShown: false, tabBarLabel: TabLabels.Chat }}
+                    listeners={({ navigation }) => ({
+                        tabPress: () => {
+                            navigation.navigate(TabRoutes.Chat, { screen: "ContactsList" });
+                        }
+                    })}
             />
         </Tab.Navigator>
     );

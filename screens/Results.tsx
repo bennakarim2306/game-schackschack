@@ -1,6 +1,9 @@
 import React, { useState } from "react";
-import { View, Text, Button, FlatList, TouchableOpacity, Image, Modal, TextInput, ImageBackground } from "react-native";
+import { View, Text, Button, FlatList, TouchableOpacity, Image, Modal, TextInput, ImageBackground, Alert } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import configs from "../config/AppConfig";
+import { authenticatedFetch } from "../utils/AuthenticatedFetch";
+import type { TransactionData } from "../types/transaction.types";
 import Logger from "../config/Logger";
 
 // Helper to calculate distance between two lat/lng points (Haversine formula)
@@ -50,7 +53,7 @@ type ResultsParams = {
 };
 
 const Results = () => {
-    const navigation = useNavigation();
+    const navigation = useNavigation<any>();
     const route = useRoute();
     const { searchTerm, selectedType, distance, items = [], searchCenter } = (route.params as ResultsParams) || {};
 
@@ -58,13 +61,14 @@ const Results = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [orderQuantity, setOrderQuantity] = useState("");
     const [orderError, setOrderError] = useState("");
+    const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
 
     const handleItemPress = (item: FoodOffer) => {
-        Logger.debug('RESULTS', `Item selected: ${JSON.stringify(item)}`);
-        setSelectedItem(item);
-        setOrderQuantity("");
-        setOrderError("");
-        setModalVisible(true);
+        Logger.debug('RESULTS', `Item selected, navigating to OfferStackNavigator: ${item.id}`);
+        navigation.navigate('OfferStackNavigator' as any, {
+            itemId: item.id,
+            offer: item
+        });
     };
 
     const handleCancelOrder = () => {
@@ -74,17 +78,118 @@ const Results = () => {
         setOrderError("");
     };
 
-    const handleConfirmOrder = () => {
+    const addSellerAsContact = async (email: string) => {
+        if (!email) return;
+
+        try {
+            const url = `${configs.USER_AUTH_BASE_URL}${configs.USER_AUTH_ADD_CONTACT_PATH}?email=${encodeURIComponent(email)}`;
+            Logger.info('CONTACTS', `Auto-adding contact: ${email}`);
+            Logger.request(url, 'POST');
+
+            const response = await authenticatedFetch(url, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            Logger.response(url, response.status);
+        } catch (error) {
+            Logger.error('CONTACTS', 'Failed to auto-add contact', error);
+        }
+    };
+
+    const createTransaction = async (item: FoodOffer, quantityOrdered: number): Promise<TransactionData | null> => {
+        try {
+            const url = `${configs.USER_AUTH_BASE_URL}${configs.TRANSACTIONS_BASE_PATH}`;
+            Logger.info('TRANSACTION', `Creating transaction for item ${item.id}`);
+            Logger.request(url, 'POST', { itemId: item.id, quantityOrdered });
+
+            const response = await authenticatedFetch(url, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    itemId: item.id,
+                    quantityOrdered
+                })
+            });
+
+            Logger.response(url, response.status);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                Logger.error('TRANSACTION', 'Create transaction failed', errorText);
+                return null;
+            }
+
+            const data = await response.json();
+            const transaction = data.transaction ?? data;
+
+            return {
+                id: String(transaction.id ?? transaction.transactionId ?? ''),
+                itemId: transaction.itemId ?? item.id,
+                buyerName: transaction.buyerName ?? transaction.customerName,
+                buyerEmail: transaction.buyerEmail ?? transaction.customerEmail,
+                quantityOrdered: transaction.quantityOrdered ?? transaction.quantity,
+                unit: transaction.unit ?? item.unit,
+                totalPrice: transaction.totalPrice ?? transaction.totalAmount,
+                status: transaction.status ?? 'PENDING',
+                notes: transaction.notes ?? transaction.note,
+                createdAt: transaction.createdAt ?? transaction.createdDate,
+                updatedAt: transaction.updatedAt ?? transaction.updatedDate
+            } as TransactionData;
+        } catch (error) {
+            Logger.error('TRANSACTION', 'Create transaction exception', error);
+            return null;
+        }
+    };
+
+    const handleConfirmOrder = async () => {
         const qty = parseFloat(orderQuantity);
         if (isNaN(qty) || qty <= 0 || qty > (selectedItem?.quantity ?? 0)) {
             setOrderError(`Enter a valid quantity (max ${selectedItem?.quantity})`);
             return;
         }
+
+        if (!selectedItem) {
+            return;
+        }
+
+        setIsSubmittingOrder(true);
+        const transaction = await createTransaction(selectedItem, qty);
+        setIsSubmittingOrder(false);
+
+        if (!transaction) {
+            Alert.alert('Order failed', 'Could not create your transaction. Please try again.');
+            return;
+        }
+
+        const sellerEmail = selectedItem.seller?.contact;
+        if (sellerEmail) {
+            await addSellerAsContact(sellerEmail);
+        }
+
         setModalVisible(false);
-        alert(`Order confirmed!\n${qty} ${selectedItem?.unit} of ${selectedItem?.name} for ${(selectedItem?.price ?? 0) * qty}€`);
         setSelectedItem(null);
         setOrderQuantity("");
         setOrderError("");
+
+        if (sellerEmail) {
+            navigation.navigate('Chat', {
+                screen: 'ContactsList',
+                params: {
+                    autoOpenContact: sellerEmail,
+                    transaction,
+                    transactionRole: 'buyer'
+                }
+            });
+        } else {
+            Alert.alert('Order created', 'Your transaction was created successfully.');
+        }
     };
 
     return (
@@ -151,89 +256,13 @@ const Results = () => {
                     <Text style={{ marginTop: 24, color: "#888" }}>No items found.</Text>
                 }
             />
-            <Button title="Back to Search" onPress={() => navigation.goBack()} />
-
-            {/* Modal for item details and order */}
-            <Modal
-                visible={modalVisible}
-                animationType="slide"
-                transparent={true}
-                onRequestClose={handleCancelOrder}
-            >
-                <View style={{
-                    flex: 1,
-                    justifyContent: "center",
-                    alignItems: "center",
-                    backgroundColor: "rgba(0,0,0,0.3)"
-                }}>
-                    <View style={{
-                        backgroundColor: "#fff",
-                        borderRadius: 16,
-                        padding: 24,
-                        width: "85%",
-                        alignItems: "center"
-                    }}>
-                        {selectedItem && (
-                            <>
-                                <Image
-                                    source={{ uri: selectedItem.imageUrl }}
-                                    style={{ width: 120, height: 120, borderRadius: 12, marginBottom: 16 }}
-                                />
-                                <Text style={{ fontSize: 22, fontWeight: "bold", marginBottom: 8 }}>
-                                    {selectedItem.name}
-                                </Text>
-                                <Text style={{ fontSize: 16, marginBottom: 4 }}>
-                                    {selectedItem.type} • {selectedItem.price}€/{selectedItem.unit}
-                                </Text>
-                                <Text style={{ color: "#555", marginBottom: 8 }}>
-                                    {selectedItem.description}
-                                </Text>
-                                <Text style={{ fontSize: 13, color: "#888", marginBottom: 8 }}>
-                                    Seller: {selectedItem.seller.name} ({selectedItem.seller.contact})
-                                </Text>
-                                <Text style={{ fontSize: 13, color: "#888", marginBottom: 8 }}>
-                                    Address: {selectedItem.address.city}, {selectedItem.address.street}
-                                </Text>
-                                <Text style={{ fontSize: 13, color: "#888", marginBottom: 8 }}>
-                                    Available: {selectedItem.availableFrom} - {selectedItem.availableTo}
-                                </Text>
-                                <TextInput
-                                    placeholder={`Quantity (max ${selectedItem.quantity})`}
-                                    value={orderQuantity}
-                                    onChangeText={setOrderQuantity}
-                                    keyboardType="numeric"
-                                    style={{
-                                        borderWidth: 1,
-                                        borderColor: "#ccc",
-                                        borderRadius: 8,
-                                        padding: 10,
-                                        fontSize: 16,
-                                        width: "100%",
-                                        marginBottom: 8
-                                    }}
-                                />
-                                {orderQuantity && !isNaN(parseFloat(orderQuantity)) && (
-                                    <Text style={{ fontSize: 16, marginBottom: 8 }}>
-                                        Total: {((selectedItem.price) * (parseFloat(orderQuantity) || 0)).toFixed(2)}€
-                                    </Text>
-                                )}
-                                {orderError ? (
-                                    <Text style={{ color: "red", marginBottom: 8 }}>{orderError}</Text>
-                                ) : null}
-                                <View style={{ flexDirection: "row", justifyContent: "space-between", width: "100%" }}>
-                                    <Button title="Cancel" color="#888" onPress={handleCancelOrder} />
-                                    <View style={{ width: 16 }} />
-                                    <Button title="Confirm Order" color="#009966" onPress={handleConfirmOrder} />
-                                </View>
-                            </>
-                        )}
-                    </View>
-                </View>
-            </Modal>
-            </View>
-            </View>
-        </ImageBackground>
-    );
+            <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginTop: 16, padding: 12, backgroundColor: "#2196F3", borderRadius: 8 }}>
+                <Text style={{ color: "#fff", textAlign: "center", fontWeight: "bold", fontSize: 16 }}>Back to Search</Text>
+            </TouchableOpacity>
+        </View>
+        </View>
+    </ImageBackground>
+);
 };
 
 export default Results;
