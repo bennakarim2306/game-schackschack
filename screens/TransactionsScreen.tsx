@@ -1,11 +1,12 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { View, Text, ImageBackground, ScrollView, ActivityIndicator, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity } from "react-native";
 import { useRoute, useNavigation, NavigationProp } from "@react-navigation/native";
 import configs from "../config/AppConfig";
 import Logger from "../config/Logger";
 import { authenticatedFetch } from '../utils/AuthenticatedFetch';
 import { getCurrentUserEmail } from '../utils/UserHelper';
 import type { TransactionData } from '../types/transaction.types';
+import ScreenBackground from '../utils/ScreenBackground';
 
 type OfferStackParamList = {
     TransactionsScreen: { itemId: string };
@@ -143,24 +144,16 @@ const TransactionsScreen = () => {
 
     if (loading) {
         return (
-            <ImageBackground
-                source={require('../assets/20251202_1542_Smiling Fruit Faces_remix_01kbfr2sr9enx805fare783vsa.png')}
-                style={{ flex: 1 }}
-                resizeMode="cover"
-            >
+            <ScreenBackground>
                 <View style={{ flex: 1, backgroundColor: 'rgba(255, 255, 255, 0.85)', justifyContent: 'center', alignItems: 'center' }}>
                     <ActivityIndicator size="large" color="#2196F3" />
                 </View>
-            </ImageBackground>
+            </ScreenBackground>
         );
     }
 
     return (
-        <ImageBackground
-            source={require('../assets/20251202_1542_Smiling Fruit Faces_remix_01kbfr2sr9enx805fare783vsa.png')}
-            style={{ flex: 1 }}
-            resizeMode="cover"
-        >
+        <ScreenBackground>
             <View style={{ flex: 1, backgroundColor: 'rgba(255, 255, 255, 0.85)' }}>
                 {transactions.length === 0 ? (
                     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -240,7 +233,7 @@ const TransactionsScreen = () => {
                     </ScrollView>
                 )}
             </View>
-        </ImageBackground>
+        </ScreenBackground>
     );
 };
 

@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { View, Text, Button, FlatList, TouchableOpacity, Image, Modal, TextInput, ImageBackground, Alert } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import configs from "../config/AppConfig";
 import { authenticatedFetch } from "../utils/AuthenticatedFetch";
 import type { TransactionData } from "../types/transaction.types";
 import Logger from "../config/Logger";
+import ScreenBackground from "../utils/ScreenBackground";
 
 // Helper to calculate distance between two lat/lng points (Haversine formula)
 function getDistanceKm(lat1: number, lng1: number, lat2: number, lng2: number) {
@@ -62,6 +63,7 @@ const Results = () => {
     const [orderQuantity, setOrderQuantity] = useState("");
     const [orderError, setOrderError] = useState("");
     const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
+    const addedContactsRef = useRef<Set<string>>(new Set());
 
     const handleItemPress = (item: FoodOffer) => {
         Logger.debug('RESULTS', `Item selected, navigating to OfferStackNavigator: ${item.id}`);
@@ -81,6 +83,12 @@ const Results = () => {
     const addSellerAsContact = async (email: string) => {
         if (!email) return;
 
+        // Check if we've already added this contact in this session
+        if (addedContactsRef.current.has(email)) {
+            Logger.info('CONTACTS', `Contact ${email} already added in this session, skipping`);
+            return;
+        }
+
         try {
             const url = `${configs.USER_AUTH_BASE_URL}${configs.USER_AUTH_ADD_CONTACT_PATH}?email=${encodeURIComponent(email)}`;
             Logger.info('CONTACTS', `Auto-adding contact: ${email}`);
@@ -95,6 +103,11 @@ const Results = () => {
             });
 
             Logger.response(url, response.status);
+            
+            // Mark this contact as added
+            if (response.ok) {
+                addedContactsRef.current.add(email);
+            }
         } catch (error) {
             Logger.error('CONTACTS', 'Failed to auto-add contact', error);
         }
@@ -180,9 +193,9 @@ const Results = () => {
 
         if (sellerEmail) {
             navigation.navigate('Chat', {
-                screen: 'ContactsList',
+                screen: 'Chat',
                 params: {
-                    autoOpenContact: sellerEmail,
+                    contact: sellerEmail,
                     transaction,
                     transactionRole: 'buyer'
                 }
@@ -193,12 +206,7 @@ const Results = () => {
     };
 
     return (
-        <ImageBackground
-            source={require('../assets/20251202_1542_Smiling Fruit Faces_remix_01kbfr2sr9enx805fare783vsa.png')}
-            style={{ flex: 1 }}
-            resizeMode="cover"
-        >
-            <View style={{ flex: 1, backgroundColor: 'rgba(255, 255, 255, 0.85)' }}>
+            <View style={{ flex: 1, backgroundColor: 'white' }}>
                 <View style={{ flex: 1, padding: 24 }}>
                 <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 16 }}>
                     Results
@@ -261,7 +269,6 @@ const Results = () => {
             </TouchableOpacity>
         </View>
         </View>
-    </ImageBackground>
 );
 };
 

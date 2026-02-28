@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, Alert, Platform, ScrollView, Pressable, ActivityIndicator, ImageBackground, FlatList, TouchableOpacity } from "react-native";
+import { View, Text, TextInput, Button, Alert, Platform, ScrollView, Pressable, ActivityIndicator, FlatList, TouchableOpacity } from "react-native";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
@@ -10,6 +10,7 @@ import configs from "../config/AppConfig";
 import Logger from "../config/Logger";
 import { MapView, Marker, Circle } from "../utils/MapImports";
 import { authenticatedFetch } from '../utils/AuthenticatedFetch';
+import ScreenBackground from '../utils/ScreenBackground';
 
 type MapPressEvent = any;
 
@@ -241,12 +242,8 @@ const QueryFoodScreen = () => {
     };
 
     return (
-        <ImageBackground
-            source={require('../assets/20251202_1542_Smiling Fruit Faces_remix_01kbfr2sr9enx805fare783vsa.png')}
-            style={{ flex: 1 }}
-            resizeMode="cover"
-        >
-            <View style={{ flex: 1, backgroundColor: 'rgba(217, 242, 217, 0.85)' }}>
+        <ScreenBackground>
+            <View style={{ flex: 1 }}>
                 <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
             <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 16 }}>
                 Query for food in the area
@@ -437,7 +434,7 @@ const QueryFoodScreen = () => {
                 </TouchableOpacity>
             </View>
             </View>
-        </ImageBackground>
+        </ScreenBackground>
     );
 };
 

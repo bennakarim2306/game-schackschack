@@ -182,7 +182,12 @@ export class ChatService {
             return;
         }
 
-        Logger.info('CHATSERVICE', `Sending message to ${recipientEmail}`);
+        if (!this.socket.connected) {
+            Logger.error('CHATSERVICE', 'Socket not connected - cannot send message');
+            return;
+        }
+
+        Logger.info('CHATSERVICE', `Sending message to ${recipientEmail}, messageText: ${messageText}, messageId: ${messageId}`);
         this.socket.emit('private-message', {
             to: recipientEmail,
             message: messageText,
@@ -200,6 +205,11 @@ export class ChatService {
     ): void {
         if (!this.socket) {
             Logger.error('CHATSERVICE', 'Socket not initialized');
+            return;
+        }
+
+        if (!this.socket.connected) {
+            Logger.error('CHATSERVICE', 'Socket not connected - cannot load conversation history');
             return;
         }
 

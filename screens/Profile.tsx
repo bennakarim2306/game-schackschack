@@ -57,7 +57,7 @@ const Profile = () => {
             resizeMode="cover"
         >
             <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-                <View style={[ProfileStyles.profileViewStyle, { backgroundColor: 'rgba(217, 242, 217, 0.85)' }]}>
+                <View style={[ProfileStyles.profileViewStyle, { backgroundColor: 'white' }]}>
                 <Text style={ProfileStyles.profileHeaderStyle}>Profile Settings</Text>
 
                 <Text style={ProfileStyles.profileKeyStyle}>Username</Text>

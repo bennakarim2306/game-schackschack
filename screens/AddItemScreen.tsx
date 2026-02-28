@@ -1,5 +1,6 @@
-import React, { useState, useLayoutEffect, useRef } from "react";
-import { ScrollView, Text, TextInput, Button, Alert, Image, TouchableOpacity, View, ActivityIndicator, Switch, Modal, ImageBackground, FlatList, Platform, KeyboardAvoidingView } from "react-native";
+import React, { useState, useLayoutEffect, useRef, useContext } from "react";
+import { ScrollView, Text, TextInput, Button, Alert, Image, TouchableOpacity, View, ActivityIndicator, Switch, Modal, FlatList, Platform, KeyboardAvoidingView } from "react-native";
+import ScreenBackground from "../utils/ScreenBackground";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from "@react-native-picker/picker";
 import * as ImagePicker from "expo-image-picker";
@@ -12,6 +13,7 @@ import Logger from "../config/Logger";
 import { MapView, Marker } from '../utils/MapImports';
 import { authenticatedFetch, authenticatedFetchWithErrorHandling } from '../utils/AuthenticatedFetch';
 import { getFileExtensionFromUri, getMimeTypeFromExtension } from '../utils/FileUploadHelper';
+import AuthContext from "../Contexts/AuthContext";
 
 const foodTypes = [
     "Vegetables", "Fruits", "Dairy", "Meat", "Bakery", "Other"
@@ -32,6 +34,7 @@ type RootStackParamList = {
 
 const AddItemScreen = () => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+    const authContext = useContext(AuthContext);
 
     const [name, setName] = useState("");
     const [type, setType] = useState(foodTypes[0]);
@@ -65,84 +68,37 @@ const AddItemScreen = () => {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Autofill address from backend when switch is turned on
+    // Autofill address from authContext when switch is turned on
     const handleAutofillSwitch = async (value: boolean) => {
         setAutofillAddressSwitch(value);
         if (value) {
             setLoadingAddress(true);
-            let token: string | null = null;
             try {
-                token = await SecureStore.getItemAsync("userToken");
-            } catch (e) {
-                Logger.error('ADDRESS', 'Failed to read token from SecureStore', e);
-            }
-            try {
-                const url = configs.USER_AUTH_BASE_URL + configs.ACCOUNT_GET_ADDRESS_BY_EMAIL_PATH;
-                Logger.info('ADDRESS', 'Fetching saved address for autofill');
-                Logger.request(url, 'GET');
+                const currentUser = authContext?.getCurrentUser();
+                Logger.info('ADDRESS', 'Attempting to load address from authContext');
                 
-                const response = await authenticatedFetchWithErrorHandling(url, {
-                    method: "GET",
-                    headers: {
-                        Accept: "application/json"
-                    }
-                });
-                
-                Logger.response(url, response.status);
-                
-                if (response.status === 204) {
-                    Logger.info('ADDRESS', 'No saved address found - showing search interface');
+                if (!currentUser || !currentUser.address || !currentUser.address.street || !currentUser.address.city || !currentUser.address.zip) {
+                    Logger.info('ADDRESS', 'No address available in authContext - showing error');
                     setBackendAddressAvailable(false);
                     setAutofillAddressSwitch(false);
                     Alert.alert(
-                        "No Saved Address",
-                        "You don't have a saved address yet. Please select or search for an address below. You'll be asked if you want to save it for future use.",
+                        "No Address Available",
+                        "No address is available for this account. Please select or search for an address below. You'll be asked if you want to save it as your default address.",
                         [{ text: "OK" }]
                     );
-                } else if (!response.ok) {
-                    Logger.error('ADDRESS', 'Failed to fetch address');
-                    throw new Error("Could not fetch address");
                 } else {
-                    const data = await response.json();
-                    if (data && (data.street || data.city || data.zip)) {
-                        Logger.success('ADDRESS', `Address autofilled: ${data.street}, ${data.city} ${data.zip}`);
-                        setStreet(data.street || "");
-                        setCity(data.city || "");
-                        setZip(data.zip || "");
-                        
-                        // Geocode the address to get lat/lng coordinates
-                        const addressForGeocoding = `${data.street || ""}, ${data.city || ""}, ${data.zip || ""}`.trim();
-                        try {
-                            const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(addressForGeocoding)}&key=${configs.MAPS_API_KEY}`;
-                            Logger.info('GEOCODING', `Geocoding backend address: ${addressForGeocoding}`);
-                            Logger.request(geocodeUrl, 'GET');
-                            
-                            const geocodeResponse = await fetch(geocodeUrl);
-                            const geocodeData = await geocodeResponse.json();
-                            
-                            Logger.response(geocodeUrl, geocodeResponse.status);
-                            
-                            if (geocodeData.results && geocodeData.results.length > 0) {
-                                const { lat, lng } = geocodeData.results[0].geometry.location;
-                                Logger.success('GEOCODING', `Got coordinates from backend address: (${lat}, ${lng})`);
-                                setLat(lat);
-                                setLng(lng);
-                            } else {
-                                Logger.error('GEOCODING', 'No geocoding results for backend address');
-                            }
-                        } catch (geocodingError) {
-                            Logger.error('GEOCODING', 'Exception geocoding backend address', geocodingError);
-                        }
-                        
-                        setBackendAddressAvailable(true);
-                    } else {
-                        Logger.info('ADDRESS', 'Empty address data - showing search interface');
-                        setBackendAddressAvailable(false);
-                    }
+                    const addressData = currentUser.address;
+                    Logger.success('ADDRESS', `Address loaded from authContext: ${addressData.street}, ${addressData.city} ${addressData.zip}`);
+                    setStreet(addressData.street || "");
+                    setCity(addressData.city || "");
+                    setZip(addressData.zip || "");
+                    setLat(addressData.lat || 0);
+                    setLng(addressData.lng || 0);
+                    setBackendAddressAvailable(true);
                 }
             } catch (e) {
-                Logger.error('ADDRESS', 'Exception fetching address', e);
-                Alert.alert("Error", "Could not fetch your address from the backend.");
+                Logger.error('ADDRESS', 'Exception loading address from authContext', e);
+                Alert.alert("Error", "Could not load your address.");
                 setAutofillAddressSwitch(false);
             } finally {
                 setLoadingAddress(false);
@@ -150,17 +106,19 @@ const AddItemScreen = () => {
         }
     };
 
-    // Save address to backend
-    const saveAddressToBackend = async (addressText: string, coords: { lat: number; lng: number }) => {
+    // Save address to backend and update authContext
+    const saveAddressToBackend = async (street: string, city: string, zip: string, lat: number, lng: number) => {
         try {
             const url = configs.USER_AUTH_BASE_URL + configs.ACCOUNT_SET_ADDRESS_BY_EMAIL_PATH;
             const addressData = {
-                street: addressText,
-                city: "",
-                zip: ""
+                street,
+                city,
+                zip,
+                lat,
+                lng
             };
             
-            Logger.info('ADDRESS', `Saving address: ${addressText}`);
+            Logger.info('ADDRESS', `Saving address to backend: ${street}, ${city} ${zip} (${lat}, ${lng})`);
             Logger.request(url, 'POST', addressData);
             
             const response = await authenticatedFetchWithErrorHandling(url, {
@@ -175,11 +133,22 @@ const AddItemScreen = () => {
             Logger.response(url, response.status);
             
             if (!response.ok) {
-                Logger.error('ADDRESS', 'Failed to save address');
+                Logger.error('ADDRESS', 'Failed to save address to backend');
                 throw new Error("Could not save address");
             }
             
-            Logger.success('ADDRESS', 'Address saved successfully');
+            Logger.success('ADDRESS', 'Address saved to backend successfully');
+            
+            // Update authContext with new address
+            try {
+                await authContext?.updateUserProfile({
+                    address: { street, city, zip, lat, lng }
+                });
+                Logger.success('ADDRESS', 'Address updated in authContext');
+            } catch (e) {
+                Logger.error('ADDRESS', 'Failed to update authContext', e);
+            }
+            
             return true;
         } catch (e) {
             Logger.error('ADDRESS', 'Exception saving address', e);
@@ -260,36 +229,34 @@ const AddItemScreen = () => {
                     setZip(zipCode);
                     setAddressSuggestions([]);
                     
-                    // If autofill is on, ask user if they want to save this address
-                    if (autofillAddressSwitch) {
-                        Alert.alert(
-                            "Save Address",
-                            "Do you want to save this address as your user address?",
-                            [
-                                {
-                                    text: "No",
-                                    onPress: () => {
-                                        Logger.info('ADDRESS', 'User chose not to save current location');
-                                    },
-                                    style: "cancel"
+                    // Always ask user if they want to save this address as default
+                    Alert.alert(
+                        "Save as Default Address",
+                        "Do you want to save this location as your default account address?",
+                        [
+                            {
+                                text: "No",
+                                onPress: () => {
+                                    Logger.info('ADDRESS', 'User chose not to save current location as default');
                                 },
-                                {
-                                    text: "Yes",
-                                    onPress: async () => {
-                                        Logger.info('ADDRESS', 'User chose to save current location');
-                                        const saved = await saveAddressToBackend(addressName, { lat: latitude, lng: longitude });
-                                        if (saved) {
-                                            setBackendAddressAvailable(true);
-                                            Logger.success('ADDRESS', 'Location saved successfully as user address');
-                                        } else {
-                                            Logger.error('ADDRESS', 'Failed to save location as user address');
-                                            Alert.alert("Error", "Could not save your location to the backend.");
-                                        }
+                                style: "cancel"
+                            },
+                            {
+                                text: "Yes",
+                                onPress: async () => {
+                                    Logger.info('ADDRESS', 'User chose to save current location as default');
+                                    const saved = await saveAddressToBackend(addressName, cityName, zipCode, latitude, longitude);
+                                    if (saved) {
+                                        setBackendAddressAvailable(true);
+                                        Logger.success('ADDRESS', 'Location saved successfully as default address');
+                                    } else {
+                                        Logger.error('ADDRESS', 'Failed to save location as default address');
+                                        Alert.alert("Error", "Could not save your location.");
                                     }
                                 }
-                            ]
-                        );
-                    }
+                            }
+                        ]
+                    );
                 }
             } catch (error) {
                 Logger.error('GEOCODING', 'Exception reverse geocoding', error);
@@ -331,36 +298,34 @@ const AddItemScreen = () => {
                 setZip(zipCode);
                 setStreet(addressName);
                 
-                // If autofill is on, ask user if they want to save this address
-                if (autofillAddressSwitch) {
-                    Alert.alert(
-                        "Save Address",
-                        "Do you want to save this address as your user address?",
-                        [
-                            {
-                                text: "No",
-                                onPress: () => {
-                                    Logger.info('ADDRESS', 'User chose not to save address');
-                                },
-                                style: "cancel"
+                // Always ask user if they want to save this address as default
+                Alert.alert(
+                    "Save as Default Address",
+                    "Do you want to save this address as your default account address?",
+                    [
+                        {
+                            text: "No",
+                            onPress: () => {
+                                Logger.info('ADDRESS', 'User chose not to save address as default');
                             },
-                            {
-                                text: "Yes",
-                                onPress: async () => {
-                                    Logger.info('ADDRESS', 'User chose to save address');
-                                    const saved = await saveAddressToBackend(description, { lat, lng });
-                                    if (saved) {
-                                        setBackendAddressAvailable(true);
-                                        Logger.success('ADDRESS', 'Address saved successfully from search');
-                                    } else {
-                                        Logger.error('ADDRESS', 'Failed to save address from search');
-                                        Alert.alert("Error", "Could not save your address to the backend.");
-                                    }
+                            style: "cancel"
+                        },
+                        {
+                            text: "Yes",
+                            onPress: async () => {
+                                Logger.info('ADDRESS', 'User chose to save address as default');
+                                const saved = await saveAddressToBackend(addressName, cityName, zipCode, lat, lng);
+                                if (saved) {
+                                    setBackendAddressAvailable(true);
+                                    Logger.success('ADDRESS', 'Address saved as default');
+                                } else {
+                                    Logger.error('ADDRESS', 'Failed to save address as default');
+                                    Alert.alert("Error", "Could not save your address.");
                                 }
                             }
-                        ]
-                    );
-                }
+                        }
+                    ]
+                );
             }
         } catch (error) {
             Logger.error('PLACES_API', 'Exception getting place details', error);
@@ -395,36 +360,34 @@ const AddItemScreen = () => {
                 setCity(cityName);
                 setZip(zipCode);
                 
-                // If autofill is on, ask user if they want to save this address
-                if (autofillAddressSwitch) {
-                    Alert.alert(
-                        "Save Address",
-                        "Do you want to save this address as your user address?",
-                        [
-                            {
-                                text: "No",
-                                onPress: () => {
-                                    Logger.info('ADDRESS', 'User chose not to save map location');
-                                },
-                                style: "cancel"
+                // Always ask user if they want to save this address as default
+                Alert.alert(
+                    "Save as Default Address",
+                    "Do you want to save this location as your default account address?",
+                    [
+                        {
+                            text: "No",
+                            onPress: () => {
+                                Logger.info('ADDRESS', 'User chose not to save map location as default');
                             },
-                            {
-                                text: "Yes",
-                                onPress: async () => {
-                                    Logger.info('ADDRESS', 'User chose to save map location');
-                                    const saved = await saveAddressToBackend(addressName, { lat: latitude, lng: longitude });
-                                    if (saved) {
-                                        setBackendAddressAvailable(true);
-                                        Logger.success('ADDRESS', 'Map location saved successfully');
-                                    } else {
-                                        Logger.error('ADDRESS', 'Failed to save map location');
-                                        Alert.alert("Error", "Could not save your location to the backend.");
-                                    }
+                            style: "cancel"
+                        },
+                        {
+                            text: "Yes",
+                            onPress: async () => {
+                                Logger.info('ADDRESS', 'User chose to save map location as default');
+                                const saved = await saveAddressToBackend(addressName, cityName, zipCode, latitude, longitude);
+                                if (saved) {
+                                    setBackendAddressAvailable(true);
+                                    Logger.success('ADDRESS', 'Map location saved successfully as default address');
+                                } else {
+                                    Logger.error('ADDRESS', 'Failed to save map location as default address');
+                                    Alert.alert("Error", "Could not save your location.");
                                 }
                             }
-                        ]
-                    );
-                }
+                        }
+                    ]
+                );
             }
         } catch (error) {
             Logger.error('MAP', 'Exception reverse geocoding map location', error);
@@ -638,12 +601,7 @@ const AddItemScreen = () => {
     };
 
     return (
-        <ImageBackground
-            source={require('../assets/20251202_1542_Smiling Fruit Faces_remix_01kbfr2sr9enx805fare783vsa.png')}
-            style={{ flex: 1 }}
-            resizeMode="cover"
-        >
-            <View style={{ flex: 1, backgroundColor: 'rgba(217, 242, 217, 0.85)' }}>
+        <ScreenBackground>
                 <KeyboardAvoidingView
                     style={{ flex: 1 }}
                     behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -931,8 +889,7 @@ const AddItemScreen = () => {
                     </TouchableOpacity>
                 </View>
             </KeyboardAvoidingView>
-            </View>
-        </ImageBackground>
+        </ScreenBackground>
     );
 };
 

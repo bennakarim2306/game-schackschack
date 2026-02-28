@@ -20,7 +20,7 @@ const OfferStackNavigator = ({ route }: any) => {
         <Stack.Navigator
             screenOptions={{
                 headerStyle: {
-                    backgroundColor: '#D9F2D9'
+                    backgroundColor: 'white'
                 },
                 headerTintColor: '#333',
                 headerTitleStyle: {

@@ -101,9 +101,6 @@ class Logger {
     if (!this.enabled) return;
     const level = status >= 200 && status < 300 ? LogLevel.SUCCESS : LogLevel.ERROR;
     console.log(`${this.getTimestamp()} ${level} [HTTP] ${status} ${url}`);
-    if (data) {
-      console.log(`${this.getTimestamp()} ${LogLevel.DEBUG} [HTTP] Response:`, typeof data === 'string' ? data : JSON.stringify(data, null, 2));
-    }
   }
 }
 

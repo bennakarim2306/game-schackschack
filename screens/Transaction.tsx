@@ -1,7 +1,8 @@
 import React from "react";
-import { View, Text, ScrollView, ImageBackground } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import type { TransactionData } from "../types/transaction.types";
+import ScreenBackground from '../utils/ScreenBackground';
 
 const Transaction = () => {
     const route = useRoute();
@@ -37,11 +38,7 @@ const Transaction = () => {
     const statusColor = getStatusColor(statusLabel);
 
     return (
-        <ImageBackground
-            source={require('../assets/20251202_1542_Smiling Fruit Faces_remix_01kbfr2sr9enx805fare783vsa.png')}
-            style={{ flex: 1 }}
-            resizeMode="cover"
-        >
+        <ScreenBackground>
             <View style={{ flex: 1, backgroundColor: 'rgba(255, 255, 255, 0.85)' }}>
                 <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 24 }}>
                     <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 16 }}>
@@ -133,7 +130,7 @@ const Transaction = () => {
                     </View>
                 </ScrollView>
             </View>
-        </ImageBackground>
+        </ScreenBackground>
     );
 };
 

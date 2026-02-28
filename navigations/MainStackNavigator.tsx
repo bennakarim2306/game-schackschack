@@ -5,7 +5,7 @@ import GameNavigator from './GameNavigator';
 import LoginStackNavigator from './LoginStackNavigator'
 import { createContext, useEffect, useMemo, useReducer, useState } from 'react';
 import * as SecureStore from 'expo-secure-store';
-import AuthContext from '../Contexts/AuthContext';
+import AuthContext, { UserProfile } from '../Contexts/AuthContext';
 import GameContext from '../Contexts/GameContext';
 import InGameNavigator from './InGameNavigator';
 import { Alert } from 'react-native';
@@ -17,7 +17,7 @@ const Stack = createNativeStackNavigator();
 
 const MainStackNavigator = () => {
   const [state, dispatch] = useReducer(
-    (prevState, action) => {
+    (prevState: any, action: any) => {
       switch (action.type) {
         case 'RESTORE_TOKEN':
           return {
@@ -30,19 +30,29 @@ const MainStackNavigator = () => {
             ...prevState,
             isSignout: false,
             userToken: action.token,
+            userProfile: action.userProfile || prevState.userProfile,
           };
         case 'SIGN_OUT':
           return {
             ...prevState,
             isSignout: true,
             userToken: null,
+            userProfile: null,
           };
+        case 'UPDATE_PROFILE':
+          return {
+            ...prevState,
+            userProfile: prevState.userProfile ? { ...prevState.userProfile, ...action.profile } : action.profile,
+          };
+        default:
+          return prevState;
       }
     },
     {
       isLoading: true,
       isSignout: false,
       userToken: null,
+      userProfile: null,
       gameStarted: false,
       gameId: null
     }
@@ -72,7 +82,8 @@ const MainStackNavigator = () => {
   const authContext = useMemo(
     () => ({
       getUserToken: () => state.userToken,
-      signIn: async (data) => {
+      getCurrentUser: () => state.userProfile,
+      signIn: async (data: { email: string; password: string }) => {
         try {
             const url = configs.USER_AUTH_BASE_URL + configs.USER_AUTH_SIGN_IN_PATH;
             
@@ -103,7 +114,13 @@ const MainStackNavigator = () => {
                 await SecureStore.setItemAsync('userToken', jsonResponse.token);
                 await SecureStore.setItemAsync('refreshToken', jsonResponse.refreshToken);
                 await SecureStore.setItemAsync('userEmail', data.email);
-                dispatch({ type: 'SIGN_IN', token: jsonResponse.token });
+                
+                const userProfile: UserProfile = {
+                  email: data.email,
+                  username: jsonResponse.username || data.email.split('@')[0],
+                };
+                
+                dispatch({ type: 'SIGN_IN', token: jsonResponse.token, userProfile });
             }
         } catch (e) {
             Logger.error('AUTH', 'Login exception', e);
@@ -118,7 +135,7 @@ const MainStackNavigator = () => {
         dispatch({ type: 'SIGN_OUT' });
         Logger.success('AUTH', 'User signed out successfully');
       },
-      signUp: async (data) => {
+      signUp: async (data: { email: string; password: string }) => {
         try {
           const url = configs.USER_AUTH_BASE_URL + configs.USER_AUTH_SIGN_UP_PATH;
           
@@ -153,7 +170,13 @@ const MainStackNavigator = () => {
             await SecureStore.setItemAsync('userToken', jsonResponse.token);
             await SecureStore.setItemAsync('refreshToken', jsonResponse.refreshToken);
             await SecureStore.setItemAsync('userEmail', data.email);
-            dispatch({ type: 'SIGN_IN', token: jsonResponse.token });
+            
+            const userProfile: UserProfile = {
+              email: data.email,
+              username: jsonResponse.username || data.email.split('@')[0],
+            };
+            
+            dispatch({ type: 'SIGN_IN', token: jsonResponse.token, userProfile });
           }
         } catch (e) {
           Alert.alert(
@@ -164,8 +187,24 @@ const MainStackNavigator = () => {
           console.error(`some error occured while registration request${e}`);
         }
       },
+      updateUserProfile: async (profile: Partial<UserProfile>) => {
+        try {
+          // Dispatch local update immediately for optimistic UI
+          dispatch({ type: 'UPDATE_PROFILE', profile });
+          
+          // Optionally persist to SecureStore if needed
+          if (profile.email) {
+            await SecureStore.setItemAsync('userEmail', profile.email);
+          }
+          
+          Logger.success('AUTH', 'User profile updated');
+        } catch (e) {
+          Logger.error('AUTH', 'Profile update exception', e);
+          throw e;
+        }
+      },
     }),
-    [state.userToken]
+    [state.userToken, state.userProfile]
   );
 
 

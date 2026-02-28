@@ -4,7 +4,6 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    ImageBackground,
     View,
     KeyboardAvoidingView,
     Platform,
@@ -13,7 +12,8 @@ import {
     Alert,
     Modal,
     ScrollView,
-    ActivityIndicator
+    ActivityIndicator,
+    Image
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useChatDispatchContext } from "../Contexts/ChatDisptachContext";
@@ -24,8 +24,9 @@ import Logger from "../config/Logger";
 import configs from "../config/AppConfig";
 import { authenticatedFetch } from "../utils/AuthenticatedFetch";
 import { getCurrentUserEmail } from "../utils/UserHelper";
+import ScreenBackground from "../utils/ScreenBackground";
 import type { TransactionData, TransactionRole } from "../types/transaction.types";
-import { buildTransactionMessage } from "../utils/transactionChat";
+import { buildTransactionMessage, getTransactionDisplayMessage, parseTransactionMessage } from "../utils/transactionChat";
 import uuid from 'react-native-uuid';
 
 interface ChatMessage {
@@ -42,10 +43,38 @@ interface ChatMessage {
     };
 }
 
-const MessageBubble = ({ item, getTimeFromTimestamp, contact }: any) => {
+const TRANSACTION_MESSAGE_PATTERNS = [
+    'Great news — your order has been confirmed',
+    'Update: your order has been declined',
+    'Update: this order has been cancelled',
+    'You have confirmed this order',
+    'You have declined this order',
+    'This order has been cancelled',
+    'Hey, I want to buy this from you',
+    'Hey, this is an update regarding your order'
+];
+
+const isTransactionMessageText = (content: string): boolean => {
+    return TRANSACTION_MESSAGE_PATTERNS.some((pattern) => content.includes(pattern));
+};
+
+const extractTransactionIdFromMessage = (content: string): string | null => {
+    const match = content.match(/^- Transaction ID:\s*(.+)$/m);
+    const transactionId = match?.[1]?.trim();
+    return transactionId || null;
+};
+
+const MessageBubble = ({ item, getTimeFromTimestamp, contact, onTransactionAction, resolvedTransaction, currentUserEmail }: any) => {
     // A message is sent by the current user if it's NOT from the contact
     // (either item.from is empty string for sent messages, or it's the current user's email)
     const isSent = item.from !== contact;
+    
+    // Parse transaction data from message if present (legacy messages with embedded JSON)
+    const transactionData = useMemo(() => parseTransactionMessage(item.content), [item.content]);
+    const displayTransaction = useMemo(() => {
+        return transactionData?.transaction ?? resolvedTransaction ?? null;
+    }, [resolvedTransaction, transactionData?.transaction]);
+    
     const getStatusIcon = () => {
         if (!isSent) return null;
         
@@ -59,47 +88,146 @@ const MessageBubble = ({ item, getTimeFromTimestamp, contact }: any) => {
         return null;
     };
 
+    const isSellerRole = !isSent
+        && !!currentUserEmail
+        && !!displayTransaction?.sellerEmail
+        && displayTransaction.sellerEmail.toLowerCase() === currentUserEmail.toLowerCase();
+
     return (
         <View style={{
-            maxWidth: "80%",
+            maxWidth: "90%",
             alignSelf: isSent ? "flex-end" : "flex-start",
             marginHorizontal: 12,
-            backgroundColor: isSent ? "#2196F3" : "#e0e0e0",
-            borderRadius: 18,
             marginVertical: 4,
-            padding: 12,
-            shadowColor: "#000",
-            shadowOpacity: 0.06,
-            shadowRadius: 2,
-            shadowOffset: { width: 0, height: 1 },
         }}>
-            <Text style={{
-                fontSize: 12,
-                color: isSent ? "#bbdefb" : "#888",
-                marginBottom: 2,
-                textAlign: isSent ? "right" : "left"
+            <View style={{
+                backgroundColor: isSent ? "#2196F3" : "#e0e0e0",
+                borderRadius: 18,
+                padding: 12,
+                shadowColor: "#000",
+                shadowOpacity: 0.06,
+                shadowRadius: 2,
+                shadowOffset: { width: 0, height: 1 },
             }}>
-                {getTimeFromTimestamp(item.timestamp)}
-            </Text>
-            <Text style={{
-                fontSize: 16,
-                color: isSent ? "#fff" : "#333",
-                textAlign: isSent ? "right" : "left"
-            }}>
-                {item.content}
-            </Text>
-            {isSent && (
-                <View style={{ marginTop: 2, alignItems: 'flex-end' }}>
-                    {getStatusIcon()}
+                <Text style={{
+                    fontSize: 12,
+                    color: isSent ? "#bbdefb" : "#888",
+                    marginBottom: 2,
+                    textAlign: isSent ? "right" : "left"
+                }}>
+                    {getTimeFromTimestamp(item.timestamp)}
+                </Text>
+                <Text style={{
+                    fontSize: 16,
+                    color: isSent ? "#fff" : "#333"
+                }}>
+                    {getTransactionDisplayMessage(item.content)}
+                </Text>
+                {isSent && (
+                    <View style={{ marginTop: 2, alignItems: 'flex-end' }}>
+                        {getStatusIcon()}
+                    </View>
+                )}
+            </View>
+
+            {/* Transaction Details Box */}
+            {displayTransaction && (
+                <View style={{
+                    marginTop: 8,
+                    backgroundColor: '#fff',
+                    borderRadius: 12,
+                    padding: 12,
+                    borderLeftWidth: 4,
+                    borderLeftColor: '#2196F3',
+                    shadowColor: '#000',
+                    shadowOpacity: 0.06,
+                    shadowRadius: 2,
+                    shadowOffset: { width: 0, height: 1 },
+                    alignSelf: isSent ? "flex-end" : "flex-start",
+                }}>
+                    {/* Item Thumbnail and Info */}
+                    {displayTransaction.item?.thumbnail && (
+                        <Image
+                            source={{ uri: displayTransaction.item.thumbnail }}
+                            style={{ width: '100%', height: 120, borderRadius: 8, marginBottom: 10 }}
+                            resizeMode="cover"
+                        />
+                    )}
+                    
+                    {/* Item Name and Type */}
+                    {displayTransaction.item?.name && (
+                        <Text style={{ fontSize: 14, fontWeight: '600', color: '#333', marginBottom: 2 }}>
+                            {displayTransaction.item.name}
+                        </Text>
+                    )}
+                    {displayTransaction.item?.type && (
+                        <Text style={{ fontSize: 11, color: '#999', marginBottom: 8 }}>
+                            {displayTransaction.item.type}
+                        </Text>
+                    )}
+
+                    <Text style={{ fontSize: 11, color: '#999', marginBottom: 6 }}>Transaction Details</Text>
+                    
+                    <Text style={{ fontSize: 12, color: '#666', marginBottom: 2 }}>
+                        Status: <Text style={{ fontWeight: '600' }}>{displayTransaction.status}</Text>
+                    </Text>
+                    <Text style={{ fontSize: 12, color: '#666', marginBottom: 2 }}>
+                        Quantity: <Text style={{ fontWeight: '600' }}>{displayTransaction.quantityOrdered} {displayTransaction.unit || displayTransaction.item?.unit}</Text>
+                    </Text>
+
+                    <Text style={{ fontSize: 12, color: '#666', marginBottom: 2 }}>
+                        Price: <Text style={{ fontWeight: '600' }}>€{displayTransaction.pricePerUnit || displayTransaction.item?.pricePerUnit}</Text>
+                        {(displayTransaction.unit || displayTransaction.item?.unit) ? ` / ${displayTransaction.unit || displayTransaction.item?.unit}` : ''}
+                    </Text>
+
+                    {displayTransaction.item?.availableTo && (
+                        <Text style={{ fontSize: 12, color: '#666', marginBottom: 2 }}>
+                            Available To: <Text style={{ fontWeight: '600' }}>{displayTransaction.item.availableTo}</Text>
+                        </Text>
+                    )}
+                    
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+                        <Text style={{ fontSize: 12, color: '#666' }}>
+                            Item: <Text style={{ fontWeight: '600' }}>{displayTransaction.item?.name || 'N/A'}</Text>
+                        </Text>
+                        <Text style={{ fontSize: 12, color: '#2196F3', fontWeight: '600' }}>
+                            Total: €{displayTransaction.totalPrice}
+                        </Text>
+                    </View>
+
+                    {/* Action buttons for seller role when transaction is pending */}
+                    {isSellerRole && displayTransaction.status === 'PENDING' && (
+                        <View style={{ flexDirection: 'row', marginTop: 10, gap: 8 }}>
+                            <TouchableOpacity
+                                onPress={() => onTransactionAction?.('CONFIRMED', displayTransaction.id)}
+                                style={{
+                                    flex: 1,
+                                    backgroundColor: '#4caf50',
+                                    paddingVertical: 8,
+                                    borderRadius: 6,
+                                    alignItems: 'center'
+                                }}
+                            >
+                                <Text style={{ color: '#fff', fontWeight: '600', fontSize: 12 }}>Accept</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => onTransactionAction?.('REJECTED', displayTransaction.id)}
+                                style={{
+                                    flex: 1,
+                                    backgroundColor: '#f44336',
+                                    paddingVertical: 8,
+                                    borderRadius: 6,
+                                    alignItems: 'center'
+                                }}
+                            >
+                                <Text style={{ color: '#fff', fontWeight: '600', fontSize: 12 }}>Decline</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
                 </View>
             )}
         </View>
     );
-};
-
-type PinnedTransaction = {
-    transaction: TransactionData;
-    role: TransactionRole;
 };
 
 const Chat = ({ navigation, route }: any) => {
@@ -115,6 +243,8 @@ const Chat = ({ navigation, route }: any) => {
     const typingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const lastLoadedMessagesRef = useRef<number>(0);
     const transactionInitRef = useRef(false);
+    const transactionMessageSentRef = useRef(false);
+    const transactionInitKeyRef = useRef<string | null>(null);
     const transactionFetchRef = useRef<string | null>(null);
     const contact = route.params?.contact || 'Chat';
     
@@ -148,15 +278,30 @@ const Chat = ({ navigation, route }: any) => {
         Logger.info('CHAT', `Chat screen opened with contact: ${route.params?.contact || 'unknown'}`);
         Logger.debug('CHAT', `ChatState available: ${!!chatState}`);
         Logger.debug('CHAT', `Current chat entries: ${chatState?.chat?.length || 0}`);
-        
+        if (route.params?.transaction) return;
         // Reset loading state for new contact
         lastLoadedMessagesRef.current = 0;
         setIsLoadingHistory(true);
         
-        // Load conversation history when opening chat
+        // Load conversation history when opening chat - wait for socket to be connected
         if (chatService && route.params?.contact) {
-            Logger.debug('CHAT', `Loading conversation history for: ${route.params.contact}`);
-            chatService.getConversationHistory(route.params.contact, 50, 0);
+            const loadHistory = (retryCount = 0) => {
+                if (!chatService.isConnected()) {
+                    if (retryCount < 10) {
+                        Logger.warning('CHAT', `Socket not connected yet, retrying history load in 200ms (attempt ${retryCount + 1}/10)`);
+                        setTimeout(() => loadHistory(retryCount + 1), 200);
+                    } else {
+                        Logger.error('CHAT', 'Failed to load conversation history - socket never connected');
+                        setIsLoadingHistory(false);
+                    }
+                    return;
+                }
+
+                Logger.debug('CHAT', `Loading conversation history for: ${route.params.contact}`);
+                chatService.getConversationHistory(route.params.contact, 50, 0);
+            };
+
+            loadHistory();
         }
         
         return () => {
@@ -196,12 +341,10 @@ const Chat = ({ navigation, route }: any) => {
         return entry || null;
     }, [chatState, route.params?.contact]);
 
-    const pinnedTransaction = chatEntry?.pinnedTransaction as PinnedTransaction | undefined;
-
     const chatMessages = useMemo(() => {
         const messages = chatEntry?.messages || [];
-        // Sort messages by timestamp in ascending order (oldest first)
-        const sortedMessages = [...messages].sort((a, b) => a.timestamp - b.timestamp);
+        // Sort messages by timestamp in descending order for inverted list (newest first)
+        const sortedMessages = [...messages].sort((a, b) => b.timestamp - a.timestamp);
         Logger.debug('CHAT', `Rendering ${sortedMessages.length} messages`);
         return sortedMessages;
     }, [chatEntry]);
@@ -260,41 +403,106 @@ const Chat = ({ navigation, route }: any) => {
         }
     }, [messageToSend, route.params?.contact, chatDispatch, chatService]);
 
-    const setPinnedTransaction = useCallback((transaction: TransactionData, role: TransactionRole) => {
-        if (!chatDispatch || !route.params?.contact) {
+    const sendTransactionStatusMessage = useCallback((transaction: TransactionData, status: 'CONFIRMED' | 'REJECTED' | 'CANCELLED') => {
+        if (!chatService || !route.params?.contact || !chatDispatch) {
             return;
         }
 
+        const messageId = String(uuid.v4());
+        const transactionMessage = buildTransactionMessage(
+            {
+                ...transaction,
+                status,
+                updatedAt: new Date().toISOString(),
+            },
+            'buyer'
+        );
+
+        chatService.sendMessage(route.params.contact, transactionMessage, messageId);
         chatDispatch({
-            type: 'SET_PINNED_TRANSACTION',
+            type: "ADD_MESSAGE_TO_CHAT",
+            message: transactionMessage,
             contact: route.params.contact,
-            transaction,
-            role
+            isSent: true,
+            timestamp: Date.now(),
+            messageId: messageId
         });
-    }, [chatDispatch, route.params?.contact]);
+    }, [chatDispatch, chatService, route.params?.contact]);
 
-    const updatePinnedTransactionStatus = useCallback((status: string) => {
-        if (!chatDispatch || !route.params?.contact) {
-            return;
+    const transactionsById = useMemo(() => {
+        const map = new Map<string, TransactionData>();
+
+        allTransactions.forEach((transaction) => {
+            if (transaction?.id) {
+                map.set(String(transaction.id), transaction);
+            }
+        });
+
+        const incomingTransaction = route.params?.transaction as TransactionData | undefined;
+        if (incomingTransaction?.id) {
+            map.set(String(incomingTransaction.id), incomingTransaction);
         }
 
-        chatDispatch({
-            type: 'UPDATE_PINNED_TRANSACTION_STATUS',
-            contact: route.params.contact,
-            status
-        });
-    }, [chatDispatch, route.params?.contact]);
+        return map;
+    }, [allTransactions, route.params?.transaction]);
 
-    const clearPinnedTransaction = useCallback(() => {
-        if (!chatDispatch || !route.params?.contact) {
-            return;
+    const updateLocalTransactionStatus = useCallback((transactionId: string, status: string) => {
+        const nowIso = new Date().toISOString();
+        setAllTransactions((previous) => {
+            let hasUpdated = false;
+
+            const updated = previous.map((transaction) => {
+                if (String(transaction.id) !== String(transactionId)) {
+                    return transaction;
+                }
+                hasUpdated = true;
+                return {
+                    ...transaction,
+                    status,
+                    updatedAt: nowIso,
+                };
+            });
+
+            if (hasUpdated) {
+                return updated;
+            }
+
+            return [
+                ...updated,
+                {
+                    id: String(transactionId),
+                    status,
+                    updatedAt: nowIso,
+                } as TransactionData,
+            ];
+        });
+    }, []);
+
+    const resolveTransactionForMessage = useCallback((message: ChatMessage): TransactionData | null => {
+        const legacyPayload = parseTransactionMessage(message.content);
+        if (legacyPayload?.transaction) {
+            return legacyPayload.transaction;
         }
 
-        chatDispatch({
-            type: 'CLEAR_PINNED_TRANSACTION',
-            contact: route.params.contact
-        });
-    }, [chatDispatch, route.params?.contact]);
+        const explicitTransactionId = extractTransactionIdFromMessage(message.content);
+        if (explicitTransactionId) {
+            return transactionsById.get(String(explicitTransactionId)) ?? null;
+        }
+
+        if (!isTransactionMessageText(message.content) || allTransactions.length === 0) {
+            return null;
+        }
+
+        const closest = [...allTransactions].sort((left, right) => {
+            const leftTime = new Date(left.updatedAt ?? left.createdAt ?? 0).getTime();
+            const rightTime = new Date(right.updatedAt ?? right.createdAt ?? 0).getTime();
+            const leftDistance = Math.abs(message.timestamp - leftTime);
+            const rightDistance = Math.abs(message.timestamp - rightTime);
+            return leftDistance - rightDistance;
+        })[0];
+
+        return closest ?? null;
+    }, [allTransactions, transactionsById]);
 
     const normalizeTransaction = useCallback((entry: any): TransactionData => {
         return {
@@ -307,10 +515,20 @@ const Chat = ({ navigation, route }: any) => {
             quantityOrdered: entry.quantityOrdered ?? entry.quantity ?? entry.amount,
             unit: entry.unit ?? entry.item?.unit,
             totalPrice: entry.totalPrice ?? entry.total ?? entry.totalAmount,
+            pricePerUnit: entry.pricePerUnit,
             status: entry.status ?? 'UNKNOWN',
             notes: entry.notes ?? entry.note,
             createdAt: entry.createdAt ?? entry.createdDate ?? entry.created,
             updatedAt: entry.updatedAt ?? entry.updatedDate ?? entry.updated,
+            item: entry.item ? {
+                id: entry.item.id,
+                name: entry.item.name,
+                type: entry.item.type,
+                pricePerUnit: entry.item.pricePerUnit,
+                thumbnail: entry.item.thumbnail,
+                unit: entry.item.unit,
+                availableTo: entry.item.availableTo ?? entry.availableTo
+            } : undefined
         };
     }, []);
 
@@ -399,31 +617,25 @@ const Chat = ({ navigation, route }: any) => {
                 return;
             }
 
-            const sorted = related.sort((a, b) => {
-                const left = a.updatedAt ?? a.createdAt ?? '';
-                const right = b.updatedAt ?? b.createdAt ?? '';
-                return new Date(right).getTime() - new Date(left).getTime();
+            setAllTransactions((previous) => {
+                const byId = new Map<string, TransactionData>();
+                previous.forEach((transaction) => byId.set(String(transaction.id), transaction));
+                related.forEach((transaction) => byId.set(String(transaction.id), transaction));
+                return Array.from(byId.values());
             });
-
-            const latest = sorted[0];
-            const role: TransactionRole = latest.buyerEmail?.toLowerCase() === contactEmail.toLowerCase()
-                ? 'seller'
-                : 'buyer';
-
-            setPinnedTransaction(latest, role);
         } catch (error) {
             Logger.error('TRANSACTION', 'Failed to load chat transactions', error);
         }
-    }, [normalizeTransaction, setPinnedTransaction]);
+    }, [normalizeTransaction]);
 
-    const handleTransactionAction = useCallback(async (status: 'CONFIRMED' | 'REJECTED') => {
-        if (!pinnedTransaction?.transaction?.id) {
+    const handleTransactionAction = useCallback(async (status: 'CONFIRMED' | 'REJECTED', transactionId?: string) => {
+        if (!transactionId) {
             return;
         }
 
         try {
-            const url = `${configs.USER_AUTH_BASE_URL}${configs.TRANSACTIONS_STATUS_PATH(pinnedTransaction.transaction.id)}`;
-            Logger.info('TRANSACTION', `Updating transaction ${pinnedTransaction.transaction.id} to ${status}`);
+            const url = `${configs.USER_AUTH_BASE_URL}${configs.TRANSACTIONS_STATUS_PATH(transactionId)}`;
+            Logger.info('TRANSACTION', `Updating transaction ${transactionId} to ${status}`);
             Logger.request(url, 'PUT', { status });
 
             const response = await authenticatedFetch(url, {
@@ -442,131 +654,85 @@ const Chat = ({ navigation, route }: any) => {
                 return;
             }
 
-            updatePinnedTransactionStatus(status);
+            const baseTransaction = transactionsById.get(String(transactionId))
+                ?? ({ id: String(transactionId) } as TransactionData);
+            const updatedTransaction: TransactionData = {
+                ...baseTransaction,
+                status,
+                updatedAt: new Date().toISOString(),
+            };
 
-            if (chatService && route.params?.contact) {
-                const updated = {
-                    ...pinnedTransaction.transaction,
-                    status
-                };
-                chatService.sendMessage(
-                    route.params.contact,
-                    buildTransactionMessage(updated, 'buyer'),
-                    String(uuid.v4())
-                );
-            }
+            updateLocalTransactionStatus(String(transactionId), status);
+            sendTransactionStatusMessage(updatedTransaction, status);
         } catch (error) {
             Logger.error('TRANSACTION', 'Failed to update transaction status', error);
             Alert.alert('Transaction update failed', 'Please try again.');
         }
-    }, [chatService, pinnedTransaction?.transaction, route.params?.contact, updatePinnedTransactionStatus]);
-
-    const handleCancelTransaction = useCallback(async () => {
-        if (!pinnedTransaction?.transaction?.id) {
-            return;
-        }
-
-        try {
-            const url = `${configs.USER_AUTH_BASE_URL}${configs.TRANSACTIONS_STATUS_PATH(pinnedTransaction.transaction.id)}`;
-            Logger.info('TRANSACTION', `Cancelling transaction ${pinnedTransaction.transaction.id}`);
-            Logger.request(url, 'PUT', { status: 'CANCELLED' });
-
-            const response = await authenticatedFetch(url, {
-                method: 'PUT',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ status: 'CANCELLED' })
-            });
-
-            Logger.response(url, response.status);
-
-            if (!response.ok) {
-                Alert.alert('Transaction update failed', 'Please try again.');
-                return;
-            }
-
-            updatePinnedTransactionStatus('CANCELLED');
-
-            if (chatService && route.params?.contact) {
-                const updated = {
-                    ...pinnedTransaction.transaction,
-                    status: 'CANCELLED'
-                };
-                chatService.sendMessage(
-                    route.params.contact,
-                    buildTransactionMessage(updated, 'buyer'),
-                    String(uuid.v4())
-                );
-            }
-        } catch (error) {
-            Logger.error('TRANSACTION', 'Failed to cancel transaction', error);
-            Alert.alert('Transaction update failed', 'Please try again.');
-        }
-    }, [chatService, pinnedTransaction?.transaction, route.params?.contact, updatePinnedTransactionStatus]);
-
-    const handleDeleteTransaction = useCallback(async () => {
-        if (!pinnedTransaction?.transaction?.id) {
-            return;
-        }
-
-        try {
-            const url = `${configs.USER_AUTH_BASE_URL}${configs.TRANSACTIONS_BASE_PATH}/${pinnedTransaction.transaction.id}`;
-            Logger.info('TRANSACTION', `Deleting transaction ${pinnedTransaction.transaction.id}`);
-            Logger.request(url, 'DELETE');
-
-            const response = await authenticatedFetch(url, {
-                method: 'DELETE',
-                headers: {
-                    Accept: 'application/json'
-                }
-            });
-
-            Logger.response(url, response.status);
-
-            if (!response.ok && response.status !== 204) {
-                Alert.alert('Transaction update failed', 'Please try again.');
-                return;
-            }
-
-            clearPinnedTransaction();
-
-            if (chatService && route.params?.contact) {
-                chatService.sendMessage(
-                    route.params.contact,
-                    buildTransactionMessage(
-                        { ...pinnedTransaction.transaction, status: 'REJECTED' },
-                        'buyer'
-                    ),
-                    String(uuid.v4())
-                );
-            }
-        } catch (error) {
-            Logger.error('TRANSACTION', 'Failed to delete transaction', error);
-            Alert.alert('Transaction update failed', 'Please try again.');
-        }
-    }, [chatService, clearPinnedTransaction, pinnedTransaction?.transaction, route.params?.contact]);
+    }, [sendTransactionStatusMessage, transactionsById, updateLocalTransactionStatus]);
 
     useEffect(() => {
         const incomingTransaction = route.params?.transaction as TransactionData | undefined;
         const role = (route.params?.transactionRole as TransactionRole | undefined) || 'buyer';
+        const contactEmail = route.params?.contact;
 
-        if (!incomingTransaction || !route.params?.contact || transactionInitRef.current) {
+        if (!incomingTransaction || !contactEmail) {
             return;
         }
 
-        transactionInitRef.current = true;
-        setPinnedTransaction(incomingTransaction, role);
-
-        if (role === 'buyer' && chatService) {
-            chatService.sendMessage(
-                route.params.contact,
-                buildTransactionMessage(incomingTransaction, 'seller'),
-                String(uuid.v4())
-            );
+        const transactionKey = `${contactEmail}:${incomingTransaction.id ?? ''}`;
+        if (transactionInitKeyRef.current !== transactionKey) {
+            transactionInitRef.current = false;
+            transactionMessageSentRef.current = false;
+            transactionInitKeyRef.current = transactionKey;
         }
-    }, [chatService, route.params?.contact, route.params?.transaction, route.params?.transactionRole, setPinnedTransaction]);
+
+        if (!transactionInitRef.current) {
+            transactionInitRef.current = true;
+            setAllTransactions((previous) => {
+                const byId = new Map<string, TransactionData>();
+                previous.forEach((transaction) => byId.set(String(transaction.id), transaction));
+                byId.set(String(incomingTransaction.id), incomingTransaction);
+                return Array.from(byId.values());
+            });
+        }
+        Logger.debug('CHAT', `Received transaction via route params: ${incomingTransaction.id}, role: ${role}, contact: ${contactEmail}, transactionMessageSent: ${transactionMessageSentRef.current}`);
+        if (role === 'buyer' && chatService && !transactionMessageSentRef.current) {
+            transactionMessageSentRef.current = true;
+            const messageId = String(uuid.v4());
+            const transactionMessage = buildTransactionMessage(incomingTransaction, 'seller');
+            
+            // Wait for socket to be connected before sending message
+            const sendTransactionMessage = (retryCount = 0) => {
+                if (!chatService.isConnected()) {
+                    if (retryCount < 10) {
+                        Logger.warning('CHAT', `Socket not connected yet, retrying in 200ms (attempt ${retryCount + 1}/10)`);
+                        setTimeout(() => sendTransactionMessage(retryCount + 1), 200);
+                    } else {
+                        Logger.error('CHAT', 'Failed to send transaction message - socket never connected');
+                    }
+                    return;
+                }
+
+                Logger.info('CHAT', `Sending transaction message to ${contactEmail}`);
+                // Send message to server
+                chatService.sendMessage(contactEmail, transactionMessage, messageId);
+                
+                // Add message to local state optimistically so it appears immediately
+                if (chatDispatch) {
+                    chatDispatch({
+                        type: "ADD_MESSAGE_TO_CHAT",
+                        message: transactionMessage,
+                        contact: contactEmail,
+                        isSent: true,
+                        timestamp: Date.now(),
+                        messageId: messageId
+                    });
+                }
+            };
+
+            sendTransactionMessage();
+        }
+    }, [chatDispatch, chatService, route.params?.contact, route.params?.transaction, route.params?.transactionRole]);
 
     const loadTransactionListForModal = useCallback(async () => {
         if (!route.params?.contact) return;
@@ -585,6 +751,43 @@ const Chat = ({ navigation, route }: any) => {
             setLoadingTransactions(false);
         }
     }, [route.params?.contact, fetchTransactionsBetweenUsers]);
+
+    const handleTransactionActionFromModal = useCallback(async (transaction: TransactionData, status: 'CONFIRMED' | 'REJECTED') => {
+        if (!transaction?.id) {
+            return;
+        }
+
+        try {
+            const url = `${configs.USER_AUTH_BASE_URL}${configs.TRANSACTIONS_STATUS_PATH(transaction.id)}`;
+            Logger.info('TRANSACTION', `Updating transaction ${transaction.id} to ${status} from modal`);
+            Logger.request(url, 'PUT', { status });
+
+            const response = await authenticatedFetch(url, {
+                method: 'PUT',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status })
+            });
+
+            Logger.response(url, response.status);
+
+            if (!response.ok) {
+                Alert.alert('Transaction update failed', 'Please try again.');
+                return;
+            }
+
+            updateLocalTransactionStatus(String(transaction.id), status);
+
+            sendTransactionStatusMessage(transaction, status);
+            await loadTransactionListForModal();
+            Alert.alert('Success', status === 'CONFIRMED' ? 'Transaction confirmed' : 'Transaction declined');
+        } catch (error) {
+            Logger.error('TRANSACTION', 'Failed to update transaction from modal', error);
+            Alert.alert('Error', status === 'CONFIRMED' ? 'Failed to confirm transaction' : 'Failed to decline transaction');
+        }
+    }, [loadTransactionListForModal, sendTransactionStatusMessage, updateLocalTransactionStatus]);
 
     const openTransactionListModal = useCallback(() => {
         setShowTransactionList(true);
@@ -638,17 +841,13 @@ const Chat = ({ navigation, route }: any) => {
             return;
         }
 
-        if (pinnedTransaction?.transaction) {
-            return;
-        }
-
         if (transactionFetchRef.current === route.params.contact) {
             return;
         }
 
         transactionFetchRef.current = route.params.contact;
         fetchTransactionsForContact(route.params.contact);
-    }, [chatService, fetchTransactionsForContact, pinnedTransaction?.transaction, route.params?.contact]);
+    }, [chatService, fetchTransactionsForContact, route.params?.contact]);
 
     const handleTyping = useCallback((text: string) => {
         setMessageToSend(text);
@@ -694,12 +893,6 @@ const Chat = ({ navigation, route }: any) => {
         const ampm = hours >= 12 ? 'PM' : 'AM';
         return `${displayHours.toString().padStart(2, '0')}:${minutes} ${ampm}`;
     }, []);
-
-    useEffect(() => {
-        if (flatListRef.current && chatMessages.length > 0) {
-            flatListRef.current.scrollToEnd({ animated: true });
-        }
-    }, [chatMessages.length]);
 
     useEffect(() => {
         // Stop loading only when messages actually change from the request
@@ -760,19 +953,14 @@ const Chat = ({ navigation, route }: any) => {
     Logger.debug('CHAT', `isLoadingHistory: ${isLoadingHistory}, chatMessages: ${chatMessages.length}`);
 
     return (
-        <ImageBackground
-            source={require('../assets/20251202_1542_Smiling Fruit Faces_remix_01kbfr2sr9enx805fare783vsa.png')}
-            style={{ flex: 1 }}
-            resizeMode="cover"
-        >
-            <View style={{ flex: 1, backgroundColor: 'rgba(217, 242, 217, 0.85)' }}>
+        <View style={{ flex: 1, backgroundColor: "white" }}>
                 {/* Custom Header with Online Status */}
                 <View style={{
                     flexDirection: 'row',
                     alignItems: 'center',
                     paddingHorizontal: 12,
                     paddingBottom: 12,
-                    backgroundColor: 'rgba(217, 242, 217, 0.85)',
+                    backgroundColor: 'white',
                     borderBottomWidth: 1,
                     borderBottomColor: '#c5bebeff'
                 }}>
@@ -793,12 +981,15 @@ const Chat = ({ navigation, route }: any) => {
                     <TouchableOpacity
                         onPress={openTransactionListModal}
                         style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
                             padding: 8,
                             backgroundColor: '#2196F3',
                             borderRadius: 8,
                         }}
                     >
-                        <Ionicons name="receipt-outline" size={22} color="#fff" />
+                        <Ionicons name="swap-horizontal" size={18} color="#fff" style={{ marginRight: 6 }} />
+                        <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 14 }}>Transactions</Text>
                     </TouchableOpacity>
                 </View>
                 
@@ -807,61 +998,6 @@ const Chat = ({ navigation, route }: any) => {
                     behavior={Platform.OS === "ios" ? "padding" : "height"}
                     keyboardVerticalOffset={Platform.OS === "ios" ? 50 : 30}
                 >
-                    {pinnedTransaction?.transaction && pinnedTransaction.transaction.status === 'PENDING' ? (
-                        <View style={{ paddingHorizontal: 12, paddingTop: 12 }}>
-                            <View style={{
-                                backgroundColor: '#fff',
-                                borderRadius: 12,
-                                padding: 14,
-                                borderLeftWidth: 4,
-                                borderLeftColor: '#2196F3',
-                                shadowColor: '#000',
-                                shadowOpacity: 0.06,
-                                shadowRadius: 2,
-                                shadowOffset: { width: 0, height: 1 },
-                            }}>
-                                <Text style={{ fontSize: 12, color: '#999', marginBottom: 4 }}>Pinned transaction</Text>
-                                <Text style={{ fontSize: 14, fontWeight: '600', color: '#333', marginBottom: 6 }}>
-                                    {pinnedTransaction.transaction.id}
-                                </Text>
-                                <Text style={{ fontSize: 13, color: '#666', marginBottom: 8 }}>
-                                    Status: {pinnedTransaction.transaction.status}
-                                </Text>
-                                <Text style={{ fontSize: 13, color: '#666' }}>
-                                    Quantity: {pinnedTransaction.transaction.quantityOrdered ?? '-'} {pinnedTransaction.transaction.unit ?? ''}
-                                </Text>
-                                {pinnedTransaction.role === 'seller' && (
-                                    <View style={{ flexDirection: 'row', marginTop: 12 }}>
-                                        <TouchableOpacity
-                                            onPress={() => handleTransactionAction('CONFIRMED')}
-                                            style={{
-                                                flex: 1,
-                                                backgroundColor: '#4caf50',
-                                                paddingVertical: 8,
-                                                borderRadius: 8,
-                                                marginRight: 8,
-                                                alignItems: 'center'
-                                            }}
-                                        >
-                                            <Text style={{ color: '#fff', fontWeight: '600' }}>Accept</Text>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity
-                                            onPress={handleDeleteTransaction}
-                                            style={{
-                                                flex: 1,
-                                                backgroundColor: '#f44336',
-                                                paddingVertical: 8,
-                                                borderRadius: 8,
-                                                alignItems: 'center'
-                                            }}
-                                        >
-                                            <Text style={{ color: '#fff', fontWeight: '600' }}>Decline</Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                )}
-                            </View>
-                        </View>
-                    ) : null}
                     {isLoadingHistory ? (
                         <View style={{ 
                             flex: 1, 
@@ -876,10 +1012,11 @@ const Chat = ({ navigation, route }: any) => {
                     ) : (
                         <FlatList
                             ref={flatListRef}
+                            inverted
                             style={{ flex: 1 }}
                             contentContainerStyle={{
                                 flexGrow: 1,
-                                justifyContent: "flex-end",
+                                justifyContent: "flex-start",
                                 paddingBottom: 12
                             }}
                             data={chatMessages}
@@ -889,6 +1026,14 @@ const Chat = ({ navigation, route }: any) => {
                                     item={item} 
                                     getTimeFromTimestamp={getTimeFromTimestamp}
                                     contact={contact}
+                                    currentUserEmail={currentUserEmail}
+                                    resolvedTransaction={resolveTransactionForMessage(item)}
+                                    onTransactionAction={(status: 'CONFIRMED' | 'REJECTED', transactionId: string) => {
+                                        // Use the specific transaction ID passed from the message bubble
+                                        if (transactionId) {
+                                            handleTransactionAction(status, transactionId);
+                                        }
+                                    }}
                                 />
                             )}
                             keyExtractor={(item) => item.messageId}
@@ -908,11 +1053,6 @@ const Chat = ({ navigation, route }: any) => {
                                     </Text>
                                 </View>
                             }
-                            onContentSizeChange={() => {
-                                if (flatListRef.current) {
-                                    flatListRef.current.scrollToEnd({ animated: true });
-                                }
-                            }}
                             keyboardShouldPersistTaps="handled"
                             onScrollBeginDrag={Keyboard.dismiss}
                         />
@@ -936,7 +1076,7 @@ const Chat = ({ navigation, route }: any) => {
                             paddingHorizontal: 12,
                             paddingBottom: 8,
                             paddingTop: 8,
-                            backgroundColor: "rgba(217, 242, 217, 0.85)",
+                            backgroundColor: "white",
                             borderTopWidth: 1,
                             borderTopColor: "#eee",
                             shadowColor: "#000",
@@ -979,7 +1119,6 @@ const Chat = ({ navigation, route }: any) => {
                         </View>
                     </TouchableWithoutFeedback>
                 </KeyboardAvoidingView>
-            </View>
 
             {/* Transaction List Modal */}
             <Modal
@@ -1198,25 +1337,7 @@ const Chat = ({ navigation, route }: any) => {
                                             {isPending && isSeller && (
                                                 <View style={{ flexDirection: 'row', marginTop: 12 }}>
                                                     <TouchableOpacity
-                                                        onPress={async () => {
-                                                            try {
-                                                                const url = `${configs.USER_AUTH_BASE_URL}${configs.TRANSACTIONS_STATUS_PATH(transaction.id)}`;
-                                                                const response = await authenticatedFetch(url, {
-                                                                    method: 'PUT',
-                                                                    headers: {
-                                                                        Accept: 'application/json',
-                                                                        'Content-Type': 'application/json',
-                                                                    },
-                                                                    body: JSON.stringify({ status: 'CONFIRMED' })
-                                                                });
-                                                                if (response.ok) {
-                                                                    loadTransactionListForModal();
-                                                                    Alert.alert('Success', 'Transaction confirmed');
-                                                                }
-                                                            } catch (error) {
-                                                                Alert.alert('Error', 'Failed to confirm transaction');
-                                                            }
-                                                        }}
+                                                        onPress={() => handleTransactionActionFromModal(transaction, 'CONFIRMED')}
                                                         style={{
                                                             flex: 1,
                                                             backgroundColor: '#4caf50',
@@ -1231,20 +1352,7 @@ const Chat = ({ navigation, route }: any) => {
                                                         </Text>
                                                     </TouchableOpacity>
                                                     <TouchableOpacity
-                                                        onPress={async () => {
-                                                            try {
-                                                                const url = `${configs.USER_AUTH_BASE_URL}/api/v1/transactions/${transaction.id}`;
-                                                                const response = await authenticatedFetch(url, {
-                                                                    method: 'DELETE'
-                                                                });
-                                                                if (response.ok) {
-                                                                    loadTransactionListForModal();
-                                                                    Alert.alert('Success', 'Transaction declined');
-                                                                }
-                                                            } catch (error) {
-                                                                Alert.alert('Error', 'Failed to decline transaction');
-                                                            }
-                                                        }}
+                                                        onPress={() => handleTransactionActionFromModal(transaction, 'REJECTED')}
                                                         style={{
                                                             flex: 1,
                                                             backgroundColor: '#f44336',
@@ -1267,7 +1375,7 @@ const Chat = ({ navigation, route }: any) => {
                     </View>
                 </View>
             </Modal>
-        </ImageBackground>
+            </View>
     );
 };
 

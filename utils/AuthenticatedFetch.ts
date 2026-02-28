@@ -63,6 +63,8 @@ async function refreshAccessToken(): Promise<string | null> {
 export async function authenticatedFetch(url: string, options: RequestInit = {}): Promise<Response> {
     // Get the current access token
     const token = await SecureStore.getItemAsync('userToken');
+
+    Logger.debug('AUTH', `Making authenticated request with token: ${token ? token.substring(0, 4) + '***' : 'No Token'}`);
     
     // Create a new options object for this fetch call
     const fetchOptions: RequestInit = {

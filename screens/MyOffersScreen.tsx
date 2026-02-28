@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useFocusEffect } from "react";
-import { View, Text, ImageBackground, ScrollView, ActivityIndicator, TouchableOpacity, Image, Alert } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, Image, Alert } from "react-native";
 import { useNavigation, NavigationProp, useFocusEffect as useRNFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import configs from "../config/AppConfig";
 import Logger from "../config/Logger";
 import { authenticatedFetch } from "../utils/AuthenticatedFetch";
-
+import ScreenBackground from '../utils/ScreenBackground';
 interface OfferItem {
     id: string;
     name: string;
@@ -88,28 +88,20 @@ const MyOffersScreen = () => {
 
     if (loading && offers.length === 0) {
         return (
-            <ImageBackground
-                source={require('../assets/20251202_1542_Smiling Fruit Faces_remix_01kbfr2sr9enx805fare783vsa.png')}
-                style={{ flex: 1 }}
-                resizeMode="cover"
-            >
+            <ScreenBackground>
                 <View style={{ flex: 1, backgroundColor: 'rgba(255, 255, 255, 0.85)', justifyContent: 'center', alignItems: 'center' }}>
                     <ActivityIndicator size="large" color="#2196F3" />
                 </View>
-            </ImageBackground>
+            </ScreenBackground>
         );
     }
 
     return (
-        <ImageBackground
-            source={require('../assets/20251202_1542_Smiling Fruit Faces_remix_01kbfr2sr9enx805fare783vsa.png')}
-            style={{ flex: 1 }}
-            resizeMode="cover"
-        >
-            <View style={{ flex: 1, backgroundColor: 'rgba(217, 242, 217, 0.85)' }}>
+        <ScreenBackground>
+            <View style={{ flex: 1, backgroundColor: 'white' }}>
                 {offers.length === 0 ? (
                     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                        <Ionicons name="box-outline" size={64} color="#ccc" style={{ marginBottom: 16 }} />
+                        <Ionicons name="cube-outline" size={64} color="#ccc" style={{ marginBottom: 16 }} />
                         <Text style={{ fontSize: 18, fontWeight: '600', color: '#666', marginBottom: 8 }}>No Offers Yet</Text>
                         <Text style={{ fontSize: 14, color: '#999' }}>Create an offer to get started</Text>
                     </View>
@@ -203,7 +195,7 @@ const MyOffersScreen = () => {
                     </View>
                 )}
             </View>
-        </ImageBackground>
+        </ScreenBackground>
     );
 };
 

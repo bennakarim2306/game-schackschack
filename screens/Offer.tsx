@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useLayoutEffect } from "react";
-import { View, Text, ScrollView, ImageBackground, Image, ActivityIndicator, Alert, TouchableOpacity, StyleSheet, Modal, TextInput, Button } from "react-native";
+import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
+import { View, Text, ScrollView, Image, ActivityIndicator, Alert, TouchableOpacity, StyleSheet, Modal, TextInput, Button } from "react-native";
 import { useRoute, useNavigation, NavigationProp } from "@react-navigation/native";
 import { MapView, Marker } from '../utils/MapImports';
 import { Ionicons } from "@expo/vector-icons";
@@ -8,6 +8,7 @@ import Logger from "../config/Logger";
 import { authenticatedFetch } from '../utils/AuthenticatedFetch';
 import { getCurrentUserEmail } from '../utils/UserHelper';
 import type { TransactionData } from "../types/transaction.types";
+import ScreenBackground from '../utils/ScreenBackground';
 
 interface ItemOffer {
     id: string;
@@ -52,6 +53,7 @@ const Offer = () => {
     const [orderError, setOrderError] = useState("");
     const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
     const [offer, setOffer] = useState<ItemOffer | null>(null);
+    const addedContactsRef = useRef<Set<string>>(new Set());
 
     // Normalize the offer data from FoodOffer to ItemOffer
     useEffect(() => {
@@ -152,6 +154,12 @@ const Offer = () => {
     const addSellerAsContact = async (email: string) => {
         if (!email) return;
 
+        // Check if we've already added this contact in this session
+        if (addedContactsRef.current.has(email)) {
+            Logger.info('CONTACTS', `Contact ${email} already added in this session, skipping`);
+            return;
+        }
+
         try {
             const url = `${configs.USER_AUTH_BASE_URL}${configs.USER_AUTH_ADD_CONTACT_PATH}?email=${encodeURIComponent(email)}`;
             Logger.info('CONTACTS', `Auto-adding contact: ${email}`);
@@ -166,6 +174,11 @@ const Offer = () => {
             });
 
             Logger.response(url, response.status);
+            
+            // Mark this contact as added
+            if (response.ok) {
+                addedContactsRef.current.add(email);
+            }
         } catch (error) {
             Logger.error('CONTACTS', 'Failed to auto-add contact', error);
         }
@@ -199,12 +212,13 @@ const Offer = () => {
             setOrderQuantity("");
             setOrderError("");
 
-            // Navigate to Chat tab with the transaction
+            // Navigate directly to Chat screen with the transaction
             navigation.getParent()?.navigate('Chat', {
-                screen: 'ContactsList',
+                screen: 'Chat',
                 params: {
-                    autoOpenContact: offer.seller.contact,
-                    transaction: transaction
+                    contact: offer.seller.contact,
+                    transaction: transaction,
+                    transactionRole: 'buyer'
                 }
             });
         } catch (error) {
@@ -230,11 +244,7 @@ const Offer = () => {
 
     if (loading || !offer) {
         return (
-            <ImageBackground
-                source={require('../assets/20251202_1542_Smiling Fruit Faces_remix_01kbfr2sr9enx805fare783vsa.png')}
-                style={{ flex: 1 }}
-                resizeMode="cover"
-            >
+            <ScreenBackground>
                 <View style={{ flex: 1, backgroundColor: 'rgba(255, 255, 255, 0.85)', justifyContent: 'center', alignItems: 'center' }}>
                     {loading ? (
                         <ActivityIndicator size="large" color="#2196F3" />
@@ -242,18 +252,14 @@ const Offer = () => {
                         <Text style={{ fontSize: 18, color: '#666' }}>Offer not found</Text>
                     )}
                 </View>
-            </ImageBackground>
+            </ScreenBackground>
         );
     }
 
     const formattedAddress = `${offer.address.street}, ${offer.address.city} ${offer.address.zip}`;
 
     return (
-        <ImageBackground
-            source={require('../assets/20251202_1542_Smiling Fruit Faces_remix_01kbfr2sr9enx805fare783vsa.png')}
-            style={{ flex: 1 }}
-            resizeMode="cover"
-        >
+        <ScreenBackground>
             <View style={{ flex: 1, backgroundColor: 'rgba(255, 255, 255, 0.85)' }}>
                 <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 24 }}>
                     {/* Item Image */}
@@ -337,10 +343,13 @@ const Offer = () => {
                                     <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 14 }}>Buy</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
-                                    onPress={() => navigation.getParent()?.navigate('Chat', {
-                                        screen: 'ContactsList',
-                                        params: { autoOpenContact: offer.seller.contact }
-                                    })}
+                                    onPress={async () => {
+                                        await addSellerAsContact(offer.seller.contact);
+                                        navigation.getParent()?.navigate('Chat', {
+                                            screen: 'Chat',
+                                            params: { contact: offer.seller.contact }
+                                        });
+                                    }}
                                     style={{
                                         flex: 1,
                                         backgroundColor: '#2196F3',
@@ -467,7 +476,7 @@ const Offer = () => {
                     </View>
                 </Modal>
             </View>
-        </ImageBackground>
+        </ScreenBackground>
     );
 };
 

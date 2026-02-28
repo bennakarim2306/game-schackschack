@@ -1,5 +1,5 @@
 import React, { MutableRefObject, useContext, useEffect, useMemo, useReducer, useRef, useState, useCallback } from "react";
-import { Alert, Button, FlatList, GestureResponderEvent, Text, TextInput, TouchableOpacity, View, Modal, ImageBackground } from "react-native";
+import { Alert, Button, FlatList, GestureResponderEvent, Text, TextInput, TouchableOpacity, View, Modal } from "react-native";
 import ContactsContext from "../Contexts/ContactsContext";
 import * as SecureStore from 'expo-secure-store'
 import ContactsListStyles from "../styles/ContactsListStyles";
@@ -9,6 +9,7 @@ import { useChatDispatchContext } from "../Contexts/ChatDisptachContext";
 import { useChatServiceContext } from "../Contexts/ChatServiceContext";
 import Logger from "../config/Logger";
 import { authenticatedFetch } from '../utils/AuthenticatedFetch';
+import ScreenBackground from '../utils/ScreenBackground';
 
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useFocusEffect, type RouteProp } from '@react-navigation/native';
@@ -306,11 +307,7 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
 
     return (
         <ContactsContext.Provider value={null as any}>
-            <ImageBackground
-                source={require('../assets/20251202_1542_Smiling Fruit Faces_remix_01kbfr2sr9enx805fare783vsa.png')}
-                style={{ flex: 1 }}
-                resizeMode="cover"
-            >
+            <ScreenBackground>
                 <View style={ContactsListStyles.container}>
                     <FlatList
                         data={state.ContactsList}
@@ -442,7 +439,7 @@ const ContactsList = ({ navigation, route }: ContactsListProps) => {
                         </View>
                     </Modal>
                 </View>
-            </ImageBackground>
+            </ScreenBackground>
         </ContactsContext.Provider>
 
     );
