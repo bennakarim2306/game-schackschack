@@ -8,7 +8,7 @@ import * as Location from "expo-location";
 import * as SecureStore from "expo-secure-store";
 import configs from "../config/AppConfig";
 import Logger from "../config/Logger";
-import { MapView, Marker, Circle } from "../utils/MapImports";
+import { MapView, Marker, Circle, PROVIDER_GOOGLE } from "../utils/MapImports";
 import { authenticatedFetch } from '../utils/AuthenticatedFetch';
 import ScreenBackground from '../utils/ScreenBackground';
 
@@ -360,10 +360,11 @@ const QueryFoodScreen = () => {
             </View>
 
             {/* Interactive Map */}
-            <View style={{ width: "100%", height: 300, marginBottom: 12, borderRadius: 8, overflow: "hidden" }}>
+            <View style={{ width: "100%", height: 300, marginBottom: 12, borderRadius: 8 }}>
                 {Platform.OS !== 'web' ? (
                     <MapView
                         style={{ flex: 1 }}
+                        provider={PROVIDER_GOOGLE}
                         region={{
                             latitude: searchCenter.lat,
                             longitude: searchCenter.lng,

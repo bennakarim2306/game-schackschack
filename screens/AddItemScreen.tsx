@@ -10,7 +10,7 @@ import { useNavigation, NavigationProp } from "@react-navigation/native";
 import * as SecureStore from "expo-secure-store";
 import configs from "../config/AppConfig";
 import Logger from "../config/Logger";
-import { MapView, Marker } from '../utils/MapImports';
+import { MapView, Marker, PROVIDER_GOOGLE } from '../utils/MapImports';
 import { authenticatedFetch, authenticatedFetchWithErrorHandling } from '../utils/AuthenticatedFetch';
 import { getFileExtensionFromUri, getMimeTypeFromExtension } from '../utils/FileUploadHelper';
 import AuthContext from "../Contexts/AuthContext";
@@ -835,9 +835,10 @@ const AddItemScreen = () => {
                             </View>
                             
                             {/* Interactive Map */}
-                            <View style={{ width: "100%", height: 300, marginBottom: 12, borderRadius: 8, overflow: "hidden" }}>
+                            <View style={{ width: "100%", height: 300, marginBottom: 12, borderRadius: 8 }}>
                                 <MapView
                                     style={{ flex: 1 }}
+                                    provider={PROVIDER_GOOGLE}
                                     region={{
                                         latitude: lat || 37.78825,
                                         longitude: lng || -122.4324,
